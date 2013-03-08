@@ -1,0 +1,173 @@
+/*var test = "Test";
+
+class SuperClass() {
+	println("In Super");
+}
+
+
+class MyClass(t) is SuperClass() : java.lang.Runnable {
+	println(t);
+	val get = def() return t;
+	val run = def() { println("in run"); }
+}
+
+var m = new MyClass(test);
+println( m.get() );
+*/
+
+class LinkedList() {
+	class Node(v) {
+		var next = null;
+		var prev = null;
+		
+		var value = v;		
+	}
+	
+	var head = new Node();
+	var tail = new Node();
+	head.next = this.tail;
+	tail.prev = this.head;
+	
+	val add = def(E) {
+		var newNode = new Node(E);
+		var prev = this.tail.prev;
+		this.tail.prev = newNode;
+		
+		prev.next = newNode;
+		newNode.prev = prev;
+		newNode.next = this.tail;
+		
+		return this;
+	}
+	
+	val remove = def(E) {
+		
+		var node = this.head.next;
+		var found = false;
+		while( node && !found ) 
+		{
+			if ( node.value == E ) {
+				found = true;
+				var p = node.prev;
+				var n = node.next;
+				
+				if ( p != null ) {					
+					p.next = node.next;						
+				}
+				if ( n != null ) {
+					n.prev = p;					
+				}
+												
+				node.next = null;
+				node.prev = null;
+			}
+			else 
+			{
+				node = node.next;
+			}
+		}
+	}
+	
+	val map = def( f ) {
+		var node = this.head.next;
+		while( node ) 
+		{
+			f( node.value );
+			node = node.next;
+		}
+	}
+}
+
+
+var myList = new LinkedList();
+myList.add(0);
+myList.add(1);
+myList.add(2);
+myList.add(3);
+myList.map( println );
+
+println ( "removing 1" );
+myList.remove(1);
+myList.add(4);
+myList.map( println );
+
+var nn = new Node(10);
+println ( nn );
+
+class ChildLL() is LinkedList() {
+}
+
+var childList = new ChildLL();
+println ( " child list " );
+childList.add(0);
+childList.add(1);
+childList.add(2);
+childList.add(3);
+childList.map( println );
+
+println ( "removing 1" );
+childList.remove(1);
+childList.add(4);
+childList.map( println );
+
+var bigList = new LinkedList();
+var it = 10;
+while( it )
+{
+	bigList.add( it );
+	it = it - 1;
+}
+
+bigList.map ( println );
+
+// 
+println("Testing composition");
+  class Expression(left, right, op) {
+    var eval = def() {
+      return op(left, right);
+    }
+  }
+
+  var add = new Expression(1,2, def(l,r) return l+r );
+  var sub = new Expression(1,2, def(l,r) return l-r );
+  
+  println( add.eval() ); // prints 3
+  println( sub.eval() ); // prints -1
+
+// 
+println("Testing inheritance" );
+
+if ( true ) {
+	class Animal(name) {
+		var makeSound = null;
+	}
+	class Cat() is Animal("Cat") {
+		this.makeSound = def() println("Meow");
+	}
+	class Dog() is Animal("Dog") {
+		this.makeSound = def() println("Whoof");
+	}
+}
+else {
+	class Animal(name, makeSound);
+	class Cat() is Animal("Cat", def() println("Meow"));
+	class Dog() is Animal("Dog", def() println("Whoof"));
+}
+
+var sooty = new Cat();
+sooty.makeSound(); // prints Meow
+var mickey = new Dog();
+mickey.makeSound(); // prints Whoof  
+
+class Dachshund() is Dog() {
+	this.makeSound = def() {
+		print("Whooof! "); 
+		super.makeSound(); 
+	}
+}
+
+var scooby = new Dachshund();
+scooby.makeSound();
+
+
+

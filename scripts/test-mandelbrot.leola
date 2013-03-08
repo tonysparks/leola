@@ -1,0 +1,159 @@
+import( "java.util.concurrent.atomic.AtomicInteger" );
+import("java.io.FileOutputStream");
+import("java.io.BufferedOutputStream");
+
+class mandelbrot() {
+    var out = null; // byte[][] out;
+    var yCt = new java.util.concurrent.atomic.AtomicInteger(0);
+    var Crb = null; // double[] Crb;
+    var Cib = null; // double[] Cib;
+
+	
+    var getByte = def(x,y) {
+        var Ci = Cib[y];
+        var res=0;
+		
+		var i = 0;
+        while(i<8){
+            var Zr1 = Crb[x+i];
+            var Zi1 = Cib[y];
+
+            var Zr2 = Crb[x+i+1];
+            var Zi2 = Cib[y];
+
+			// println(Crb);
+			// println("Zr2 = " + Zr2 + " Zi2 = " + Zi2);
+			
+            var b=0;
+            var j=49;
+			
+			var doto = true;
+			while( (j > 0) || doto) {
+                var nZr1= (Zr1*Zr1) - (Zi1*Zi1) + Crb[x+i];
+                var nZi1= (Zr1*Zi1) + (Zr1*Zi1) + Cib[y];
+                Zr1=nZr1;
+				Zi1=nZi1;
+
+				var idx = x + i + 1;
+                var nZr2= (Zr2*Zr2) - (Zi2*Zi2) + Crb[idx];
+                var nZi2= (Zr2*Zi2) + (Zr2*Zi2) + Cib[y];
+                
+				Zr2=nZr2;
+				Zi2=nZi2;
+
+                if( ((Zr1*Zr1) + (Zi1*Zi1)) > 4) b = b | 2;
+                if( ((Zr2*Zr2) + (Zi2*Zi2)) > 4) b = b | 1;
+				
+                if(b==3) {
+					j = -1; // break 
+				}
+				
+				j = j - 1;
+				doto = false;				
+            }
+            // res= (res<<2) + b;
+			res = (res * 2) + b;
+			
+			i = i + 2
+        }
+        return res ^ (-1);
+    }
+    
+    var putLine = def(y, line){
+		var xb = 0;
+		foreach( line, def(obj) {			
+			line[xb]= getByte(xb*8,y);
+			// println ( "line[xb] : " + line[xb] );
+			xb = xb + 1;			
+		});
+        // for (int xb=0; xb<line.length; xb++)
+            // line[xb]=(byte)getByte(xb*8,y);
+    }
+ 
+    var main = def(args) {
+        var N = 6000;
+        if ( length( args ) >=1 ) {
+			N= toNumber(args[0]);
+		}
+		
+        Crb= newArray(N+7); 
+		Cib= newArray(N+7);
+        var invN = 2.0 / N; 
+		
+		var i = 0;
+		while( i < N ) {
+			Cib[i]=i*invN-1.0; 
+			Crb[i]=i*invN-1.5; 
+			
+			i = i + 1;
+		}
+		
+        yCt=new java.util.concurrent.atomic.AtomicInteger();
+        // out=new byte[N][(N+7)/8];
+		out = newArray( N );
+		var outIndex = 0;
+		while( outIndex < length(out) ) {
+			out[outIndex] = newArray( (N+7) / 8 );
+			outIndex = outIndex + 1;
+		}
+		
+
+        var pool= newArray(8); // Thread[2*Runtime.getRuntime().availableProcessors()];
+		var i = 0;
+		while ( i < length(pool) )
+		{
+			pool[i] = newThread( def() {
+				var y = yCt.getAndIncrement(); 
+				while( y < length(out) ) {
+					putLine(y,out[y]);
+					y = yCt.getAndIncrement();
+				}
+			});
+			
+			i = i + 1;
+		}
+        foreach (pool, def(t) t.start() );
+        foreach (pool, def(t) t.join()  );
+		
+		var pFile = fopen("test-out.txt");
+		var buffer = newBuffer(1024);
+		buffer.putString("P4\n"+N+" "+N+"\n");
+		i = 0;
+		while ( i < N ) {
+			var outBuf = out[i];			
+			foreach( outBuf,  def(element) {
+					if ( element ) {
+						println( element );
+						buffer.putByte(element);
+					}
+				} 
+			);
+			//println(outBuf);
+			i = i + 1;
+		}		
+		buffer.mark();
+		buffer.rewind();
+		fwrite( pFile, buffer);
+		fclose(pFile);
+		
+		/*
+		import( "java.nio.ByteBuffer");
+        var stream = new java.io.BufferedOutputStream(new java.io.FileOutputStream("test-out.txt"));		
+		var buffer = wrap( toBytes("P4\n"+N+" "+N+"\n") );
+				
+        stream.write( buffer.array(), 0, buffer.capacity() );
+		i = 0;
+		while ( i < N ) {
+			var outBuf = out[i];
+			println(outBuf);
+			i = i + 1;
+		}
+        // for(int i=0;i<N;i++) 
+		// stream.write(out[i]);
+        stream.close();
+		*/
+    }
+}
+
+var m = new mandelbrot()
+m.main( [100] );

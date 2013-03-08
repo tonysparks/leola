@@ -1,0 +1,20 @@
+
+var pFile = fopen("./scripts/test-arrays.leola");
+var buffer = newBuffer(1024);
+var bytesRead = fread(pFile, buffer);
+fclose(pFile);
+
+var output = "";
+while(buffer.remaining()) {
+	output = output + buffer.readChar();
+}
+
+println( output );
+
+pFile = fopen("./scripts/test-output.leola");
+buffer.clear();
+buffer.putString("var x = [ 1,2,3 ]");
+buffer.mark();
+buffer.rewind();
+fwrite( pFile, buffer);
+fclose(pFile);

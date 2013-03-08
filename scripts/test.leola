@@ -1,0 +1,77 @@
+
+var alterAccount = def() {
+	var amount = 100;
+	return def(alter) {
+		amount = amount + alter;
+		return amount;
+	};
+}
+
+var deposit = alterAccount();
+var withdraw = alterAccount();
+println ( deposit(10) );
+
+
+/*	Factorial */
+var fact = def (n) {
+	if (n <= 1) return 1
+	else return (n * fact(n-1))
+}
+
+println ( fact(10) );
+
+
+/* Factorial */
+var fact2 = def (n) {
+	var result = 1;
+	while( n > 1 ) {
+	   result = result * n;
+	   n = n - 1;
+	}
+	return result;
+}
+
+println ( fact2(1) ); // prints 1.0
+println ( fact2(10) ); // prints 3628800.0
+
+
+
+var map = new java.util.HashMap();
+map.put( 1, "Hello" );
+
+var x = fact(4);
+var helloWorld = "Hello World!" var b = true || false;
+
+var f = fact;
+
+println( helloWorld + x);
+
+/**/
+x = 1;
+while(x)
+{
+	x = x - 1;
+	println(x);
+}
+
+println( f(10) );
+
+import ( "java.lang.Math" );
+println ( min( 1, 400) );
+
+
+
+var testClosure = def( x, y, op ) 
+{
+	x = op(x, y);
+	return x;
+}
+
+println( "TestClosure: " + testClosure( 1, 2, def(x,y) { return x+y; }) + " "
+				       + testClosure( 1, 2, def(x,y) { return x-y; }) + " "
+					   + testClosure( 1, 2, def(x,y) { return x*y; }) + " "
+); 
+
+println("What is your name?");
+// var input = readln();
+// print( "Your name is: " + input );

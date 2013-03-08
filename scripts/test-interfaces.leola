@@ -1,0 +1,20 @@
+class Functor() : java.lang.Runnable {
+	val run = def() {
+		println( "In Run" );
+	}
+}
+
+val f = new Functor();
+f.run();
+
+val countBits = def(b) {
+	var numberOfBits = 0;	
+	while( b ) {
+		if ( b & 1 ) numberOfBits = numberOfBits + 1;
+		b = b >> 1;
+	}
+	
+	return numberOfBits;
+}
+
+println( "Number Of Bits: "  + countBits( 15 ) );

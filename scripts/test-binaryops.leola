@@ -1,0 +1,41 @@
+
+var x = 1 & 1;
+if ( x == 1 ) 
+	println("Binary Op & worked! " + x);
+else
+	println("Binary Op & failed! " + x);
+
+if ( x | 0 ) 	
+	println("Binary Op | worked! " + (x | 0) );
+else
+	println("Binary Op | failed! " + (x | 0) );
+	
+var y = 2 | 1;
+if ( y == 3 )
+	println("Binary Op | worked! " + y );
+else
+	println("Binary Op | failed! " + y );
+	
+var z = 3 ^ 1;
+if ( z == 2 )
+	println("Binary Op | worked! " + z );
+else
+	println("Binary Op | failed! " + z );	
+	
+var w = ~1;
+if ( w == -2 )
+	println("Binary Op | worked! " + w );
+else
+	println("Binary Op | failed! " + w );		
+	
+var orderOfOps = (4 - 1) * 2 / 2;
+if ( orderOfOps == 3 )
+	println("Order of operations worked! " + orderOfOps );
+else
+	println("orderOfOps | failed! " + orderOfOps );		
+	
+var orderOfOps2 = 2 * (1+3)/2 * 2 - 4;
+if ( orderOfOps2 == 4 )
+	println("Order of operations2 worked! " + orderOfOps2 );
+else
+	println("orderOfOps2 failed! " + orderOfOps2 );		

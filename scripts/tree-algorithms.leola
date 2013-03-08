@@ -1,0 +1,135 @@
+/**
+	A binary tree
+*/
+class binarytree() {
+	
+	/**
+		Simple node
+	*/
+	class node(left, right, value);		
+	
+	var root = null;
+	
+	val add = def( value ) {
+		if ( root == null ) {
+			root = new node(null,null,value);
+		}
+		else {
+			var node = root;
+			while(1) {
+				
+				if ( value < node.value ) {
+					if ( ! node.left ) {
+						node.left = new node(null,null,value);
+						// println("Left: " + value );
+						break;
+					}
+					else node = node.left;
+				}
+				else {
+					if ( ! node.right ) {
+						node.right = new node(null,null,value);
+						// println("Right: " + value );
+						break;
+					}
+					else node = node.right;
+				}
+			}
+		}
+	}
+	
+	// Search the binary tree (in order)
+	/*val traversePostOrder = def( visitor ) {	
+		var stack = [];
+		var node = root;
+		
+		while(1) {
+			if ( node ) {
+				visitor(node.value);
+								
+				stack.push( node );
+				node = node.left;
+				
+			}
+			else if ( !stack.empty() ) {
+				node = stack.pop().right;
+			} else break;			
+		}		
+	}*/
+	
+	val traversePostOrder = def( visitor ) {	
+		var stack = [];
+		var node = root;
+		
+		while(1) {
+			if ( node ) {
+				visitor(node.value);
+								
+				stack.push( node );
+				node = node.left;
+				
+			}
+			else if ( !stack.empty() ) {
+				node = stack.pop().right;
+			} else break;			
+		}		
+	}
+	
+	
+	// Search the binary tree
+	val traverseInOrder = def( visitor ) {	
+		var stack = [];
+		var node = root;
+		
+		while(1) {
+			if ( node ) {				
+				stack.push( node );
+				node = node.left;
+				
+			}
+			else if ( !stack.empty() ) {				
+				node = stack.pop();
+				visitor(node.value);
+				node = node.right;
+				
+			} else break;			
+		}		
+	}
+	
+	val traversePreOrder = def( visitor ) {	
+		var stack = [];
+		var node = root;
+		
+		stack.push(root);
+		while(!stack.empty()) {
+			node = stack.pop();
+			if ( node.right ) {				
+				stack.push( node.right );								
+			}
+			
+			if ( node.left ) {				
+				stack.push( node.left );				
+			} 
+			
+			visitor(node.value);
+		}		
+	}	
+}
+
+var b = new binarytree();
+b.add(2);
+b.add(3);
+
+b.add(1);
+b.add(5);
+b.add(4);
+
+
+
+
+println("in order:");
+b.traverseInOrder( println );
+println("post order:");
+b.traversePostOrder( println );
+println("pre order:");
+b.traversePreOrder( println );

@@ -1,0 +1,18 @@
+var pool= newArray(8); // Thread[2*Runtime.getRuntime().availableProcessors()];
+var i = 0;
+while ( i < length(pool) )
+{
+	pool[i] = newThread( def() {
+		var y = 0; 
+		while( y < 100 ) {
+			y = y + 1;
+			println(y);
+		}
+	});
+	
+	i = i + 1;
+	println( "i = " + i );
+}
+
+foreach (pool, def(t) t.start() );
+foreach (pool, def(t) t.join()  );

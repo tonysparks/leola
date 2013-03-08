@@ -1,0 +1,128 @@
+class Test(name);
+var blah = new Test();
+println( "Should be false: " + blah.hasProperty("get") );
+println( "Should be true: " + blah.hasProperty("name") );
+
+var dict = new java.util.HashMap();
+val m = [println ];
+m[0]("Hello world");
+
+class Y(str) {
+	val p = def(v) println(v);
+	val m = [println];
+}
+class X(y);
+
+println( new X(new Y("hello") ).y.str );
+println( new X(new Y("hello") ).y.p("X") );
+println( new X(new Y("hello") ).y.m[0]("this won't work") );
+println( new X(new Y("hello") ).y.p );
+
+val newObj = def() return new X("h");
+println( newObj().y );
+
+val newFunc = def() return (def() println("bye"));
+println( newFunc()() );
+
+import( "java.lang.Math");
+val xxx = new X(new Y("hello") ).y;
+xxx.m[0] = max;
+println ( xxx.m[0](1,4) );
+//xxx.m[0]("jorb2");
+
+
+// m[0]("Hello World2");
+
+
+var reverseBits = def(n) {
+	var i = 0;
+	
+	var bits = 32;
+	while( bits ) 
+	{
+		if ( n & 1 ) {
+		   i = i | 1;		   
+		}
+		
+		i = i << 1;
+		n = n >> 1;
+		
+		bits = bits - 1;
+	}
+	return i;
+}
+
+println( reverseBits( -2.147483648E9 ) );
+
+
+//	Find the largest and most repeating sequence
+var findLargestSeq = def( array, dict ) {
+	var len = length( array );
+	if ( len == 0 ) return null;
+	
+	var i = 0;	
+	var str = "";
+	
+	while( i < len ) {
+		var c = array[i];
+		str = str + c;
+		
+		if ( dict.containsKey(str) ) {
+			var newCount = dict.get(str) + 1;			
+			dict.put( str, newCount );
+		}
+		else {
+			dict.put( str, 1 );
+		}
+		
+		
+		i = i + 1;
+	}
+	
+	return findLargestSeq( rest( array ), dict );	
+}
+
+
+var retrieveBiggest = def(dict) {
+
+	var biggest = "";
+	var biggestCount = -1;
+	
+	var entries = dict.entrySet();
+	var it = entries.iterator();
+	while( it.hasNext() ) {
+		var entry = it.next();
+		var term = toString(entry.getKey());
+		var count = entry.getValue();
+		
+		// println( term + "   ->   " + count );
+		
+		// always take the biggest count && the biggest term
+		if (count >= biggestCount) {
+			if ( (length( biggest ) < length( term )) ||
+			     (count > biggestCount)) {
+				biggest = term;
+				biggestCount = count;
+			}
+		}
+	}
+	
+	return biggest;
+}
+
+
+var input = 
+	// [5,6,7,5,6,7,5,6,7];
+	// [5,6,7,5,6,7,5,6,9,7];
+	// [1,2,2,2,3,5,4,6,7,5,6,7,5,6,9,7];
+	// [1,2,2,2,3,5,4,7,5,6,7,5,6,9,7,2];
+	// [0,1,2,4,1,2,4,3,5,8,7,5,6,7,5,6,9,7,1,2,4];
+	newArray( 1024 / 4 );
+var rand = new java.util.Random();
+fill ( input, def() { return rand.nextInt(); } );
+
+println(input);
+
+var dict = new java.util.HashMap();
+findLargestSeq( input, dict )
+println( retrieveBiggest(dict) ); // a little weird because number print as 1.0 (with decimal place)

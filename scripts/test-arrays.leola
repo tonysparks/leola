@@ -1,0 +1,77 @@
+
+class Yo() {
+	var i = 0;
+	var inc = def() {
+		i = i + 1;
+		return i;
+	}
+}
+
+var yo = new Yo();
+var fYo = yo.inc;
+println( fYo() + " then should be 2: " + yo.inc() );
+
+
+var aX = newArray( 301 );
+var j = 0;
+fill( aX, def() {
+	j = j + 1;
+	return j;
+});
+println( aX.size() );
+var fSize = aX.size;
+println( aX.remove( 289 ) );
+println( fSize() + " vs. " + aX.size() );
+
+
+println( "\n TESTING ARRAYS \n" );
+
+println("Functions in arrays");
+var functors = 
+[ print, println, def() return 2;];
+var p = functors[0]
+p("Hello");
+p = functors[1];
+p("World!");
+p = functors[2];
+println( p() );
+
+println(" --- END Functions in arrays");
+
+var test = [1,2,3];
+var one = test[0];
+println( "Array element: " + one );
+test[0] = "Hello World";
+
+println( "After assignment: " + test[0] );
+println( "Array" + test );
+
+class b(array);
+var b = new b(test);
+println("Array in class: " + b.array);
+
+var bigArray = newArray( 10 );
+var i = 0;
+fill( bigArray, def() { 
+	i = i + 1;
+	return i;
+});
+foreach( bigArray, def(item) print(item + " ") );
+
+println("append 1000");
+append ( bigArray, 1000 );
+foreach( bigArray, def(item) print(item + " ") );
+
+var myForeach = def( array, function ) {
+	if ( length(array) ) {		
+		var f = first( array );
+		if ( f ) function(f);
+		myForeach( rest (array) , function );
+	}
+}
+println("");
+println( "My foreach: " );
+myForeach( bigArray, def(obj) print(obj + " ") );
+
+
+println( "\n END TESTING ARRAYS \n" );

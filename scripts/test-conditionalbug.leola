@@ -1,0 +1,14 @@
+/*var x = 1;
+if( x == null || x == 1 ) {
+	println("Success!");
+}
+else {
+	println( "Failure!" );
+}*/
+
+var depth = def(x, op) {
+	if ( x <= 0 ) return 1;
+	else return op(x) + depth(x-1, op);
+}
+
+depth(2, def(x) { println(x); return x; });
