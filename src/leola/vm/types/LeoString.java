@@ -1,0 +1,521 @@
+/*
+	Leola Programming Language
+	Author: Tony Sparks
+	See license.txt
+*/
+package leola.vm.types;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import leola.vm.asm.Symbols;
+import leola.vm.exceptions.LeolaRuntimeException;
+import leola.vm.util.ClassUtil;
+
+
+/**
+ * A Leola String
+ *
+ * @author Tony
+ *
+ */
+public class LeoString extends LeoObject {
+
+	private static final Map<String, WeakReference<LeoString>> interns = new ConcurrentHashMap<String, WeakReference<LeoString>>();
+	private static LeoString getString(String ref) {
+		WeakReference<LeoString> str = interns.get(ref);
+		return str != null ? str.get() : null;
+	}
+	private static LeoString putString(String ref) {
+		LeoString lStr = new LeoString(ref);
+		interns.put(ref, new WeakReference<LeoString>(lStr));
+		return lStr;
+	}
+	
+	/**
+	 * Value
+	 */
+	private String value;
+
+	/**
+	 * @param value
+	 */
+	public LeoString(String value) {
+		this(new StringBuilder(value));
+	}
+
+	/**
+	 * @param value
+	 */
+	public LeoString(StringBuilder value) {
+		super(LeoType.STRING);
+		this.value = value==null ? "" : value.toString();
+	}
+
+	/**
+	 * Interns the {@link LeoString}.
+	 * 
+	 * @param str
+	 * @return
+	 */
+	public static LeoString valueOf(String str) {
+		LeoString lStr = getString(str);
+		return lStr != null ? lStr : putString(str);		
+	}
+	
+	/**
+	 */
+	public LeoString() {
+		this(new StringBuilder());
+	}	
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#toLeoString()
+	 */
+	@Override
+	public LeoString toLeoString() {
+		return this;
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.types.LeoObject#isString()
+	 */
+	@Override
+	public boolean isString() {
+		return true;
+	}
+	
+	/**
+	 * @return the value
+	 */
+	public String getString() {
+		return value.toString();
+	}
+
+	/**
+	 * @param value the value to set
+	 */
+	public void setString(String value) {
+		this.value = value;//new StringBuilder(value);
+	}
+
+	/* (non-Javadoc)
+	 * @see leola.types.LeoObject#toString()
+	 */
+	@Override
+	public String toString() {
+		return this.value;
+	}
+
+	/**
+	 * @return a new instance in lower case
+	 */
+	public LeoString toLower() {
+		return LeoString.valueOf(this.value.toLowerCase());
+	}
+
+	/**
+	 * @return a new instance in upper case
+	 */
+	public LeoString toUpper() {
+		return LeoString.valueOf(this.value.toUpperCase());
+	}
+
+	/* (non-Javadoc)
+	 * @see leola.types.LeoObject#add(leola.types.LeoObject)
+	 */
+	@Override
+	public LeoObject $add(LeoObject other) {
+		return append(other);
+	}	
+	@Override
+	public LeoObject $add(double other) {
+		return LeoString.valueOf(other + this.value);
+	}	
+	@Override
+	public LeoObject $add(int other) {
+		return LeoString.valueOf(other + this.value);
+	}
+	@Override
+	public LeoObject $add(long other) {
+		return LeoString.valueOf(other + this.value);
+	}
+	
+	/**
+	 * Appends to this string.
+	 *
+	 * @param v
+	 * @return
+	 */
+	public LeoString append(LeoObject v) {
+	    //this.value.append(v.toString());
+	    return LeoString.valueOf(this.value + v.toString());
+	}
+
+	/**
+	 * inserts a string into the supplied position.
+	 * @param position
+	 * @param v
+	 * @return this string
+	 */
+	public LeoString insert(int position, LeoObject v) {
+//		this.value.insert(position, v.toString());
+		StringBuilder sb = new StringBuilder(this.value);
+		sb.insert(position, v.toString());
+		return LeoString.valueOf(sb.toString());
+	}
+
+	/**
+	 * Determines if this string contains the supplied string (v)
+	 *
+	 * @param v
+	 * @return true if this string contains the supplied string (v)
+	 */
+	public boolean contains(LeoObject v) {
+		return this.value.indexOf(v.toString()) > -1;
+	}
+
+	/**
+	 * The index of the supplied string
+	 * @param v
+	 * @return -1 if the supplied string is not in this string.
+	 */
+	public int indexOf(LeoObject v) {
+		return this.value.indexOf(v.toString());
+	}
+
+	/**
+	 * The rest of the string from position i.
+	 * @param i
+	 * @return
+	 */
+	public LeoString rest(int i) {
+		return new LeoString(this.value.substring(i));
+	}
+
+	/**
+	 * Gets the substring.
+	 *
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	public LeoString substring(int start, int end) {
+		return new LeoString(this.value.substring(start, end));
+	}
+
+
+	/**
+	 * Replaces a portion of the string.
+	 *
+	 * @param start
+	 * @param end
+	 * @param v
+	 * @return
+	 */
+	public LeoString replace(int start, int end, LeoObject v) {
+		//this.value.replace(start, end, v.toString());
+		StringBuilder sb = new StringBuilder(this.value);
+		sb.replace(start, end, v.toString());
+		return LeoString.valueOf(sb.toString());
+	}
+	
+	/**
+	 * Replaces all occurrences of the supplied string.
+	 * 
+	 * @param replaceMe
+	 * @param v
+	 * @return
+	 */
+	public LeoString replaceAll(LeoObject replaceMe, LeoObject v) {
+		return LeoString.valueOf(this.value.replaceAll(replaceMe.toString(), v.toString()));
+//		String source = replaceMe.toString();
+//		String replacementString = v.toString();
+//		
+//		int sourceLength = source.length();
+//		int targetLength = replacementString.length();
+//		
+//		int index = this.value.indexOf(source);
+//	    while (index != -1) {
+//	    	int startIndex = index;
+//	    	int endIndex = index + sourceLength;
+//	    		    	
+//	    	this.value.replace(startIndex, endIndex, replacementString);
+//	        index += targetLength; // Move to the end of the replacement
+//	        index = this.value.indexOf(source, index);	        
+//	    }
+//		return this;
+	}
+
+	/**
+	 * Splits the string by the regex
+	 * @param v
+	 * @return a {@link LeoArray}
+	 */
+	public LeoArray split(LeoObject v) {
+		String[] res = this.value.toString().split(v.toString());
+		List<LeoObject> result = new ArrayList<LeoObject>(res.length);
+		for(String r:res) {
+			result.add(LeoString.valueOf(r));
+		}
+		return new LeoArray(result);
+	}
+
+	public boolean endsWith(LeoObject v) {
+		String suffix = v.toString();
+		return startsWith(suffix, length() - suffix.length());
+	}
+	
+	public boolean startsWith(LeoObject v) {
+		return startsWith(v.toString(), 0);
+	}
+	
+    public boolean startsWith(String prefix, int toffset) {    	
+    	int to = toffset;    	    	
+    	int po = 0;
+    	int pc = prefix.length();
+    	
+    	// Note: toffset might be near -1>>>1.
+    	if ((toffset < 0) || (toffset > this.value.length() - pc)) {
+    	    return false;
+    	}
+    	
+    	while (--pc >= 0) {
+    	    if (this.value.charAt(to++) != prefix.charAt(po++) ) {
+    	        return false;
+    	    }
+    	}
+    	return true;
+    }
+	
+	/**
+	 * @return the length of the string
+	 */
+	public int length() {
+	    return (this.value != null ) ? this.value.length() : 0;
+	}
+
+	/**
+	 * @return true if the string is "" or NULL
+	 */
+	public boolean empty() {
+	    return length() == 0;
+	}
+
+	/**
+	 * @param n
+	 * @return the character at this position
+	 */
+	public LeoString charAt(int n) {
+	    return LeoString.valueOf(String.valueOf( this.value.charAt(n) ));
+	}
+
+	/**
+	 * @param n
+	 * @return the integer value of the character at a location
+	 */
+	public int byteAt(int n) {
+		return this.value.charAt(n);
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#hashCode()
+	 */
+	@Override
+	public int hashCode() {	
+		return (this.value != null) ? this.value.hashCode() : super.hashCode();
+	}
+
+	/* (non-Javadoc)
+	 * @see leola.types.LeoObject#eq(leola.types.LeoObject)
+	 */
+	@Override
+	public boolean $eq(LeoObject other) {
+		boolean result = false;
+		if ( (other != null ) && other.isString() ) {			
+			String a = this.value;
+			String b = other.toString();
+			if ( a != null ) {
+				result = a.equals(b);
+			}
+			else {
+				result = (b==null);
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Compares two {@link StringBuilder}s
+	 * @param l
+	 * @param anotherString
+	 * @return
+	 */
+	private int compareTo(String l, String anotherString) {
+		int len1 = l.length();
+		int len2 = anotherString.length();
+		int n = Math.min(len1, len2);
+
+		int i = 0;
+		int j = 0;
+
+		while (n-- != 0) {
+			char c1 = l.charAt(i++);
+			char c2 = anotherString.charAt(j++);
+			if (c1 != c2) {
+			    return c1 - c2;
+			}
+		}
+		return len1 - len2;
+	}
+
+	/* (non-Javadoc)
+	 * @see leola.types.LeoObject#gt(leola.types.LeoObject)
+	 */
+	@Override
+	public boolean $gt(LeoObject other) {
+		if ( other != null && other.isOfType(LeoType.STRING)) {
+			LeoString str = other.as();
+			int c = compareTo(this.value, str.value);
+			return c > 0;
+		}
+
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see leola.types.LeoObject#gte(leola.types.LeoObject)
+	 */
+	@Override
+	public boolean $gte(LeoObject other) {
+		if ( other != null && other.isOfType(LeoType.STRING)) {
+			LeoString str = other.as();
+			int c = compareTo(this.value, str.value);
+			return c >= 0;
+		}
+
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see leola.types.LeoObject#lt(leola.types.LeoObject)
+	 */
+	@Override
+	public boolean $lt(LeoObject other) {
+		if ( other != null && other.isOfType(LeoType.STRING)) {
+			LeoString str = other.as();
+			int c = compareTo(this.value, str.value);
+			return c < 0;
+		}
+
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see leola.types.LeoObject#lte(leola.types.LeoObject)
+	 */
+	@Override
+	public boolean $lte(LeoObject other) {
+		if ( other != null && other.isOfType(LeoType.STRING)) {
+			LeoString str = other.as();
+			int c = compareTo(this.value, str.value);
+			return c <= 0;
+		}
+
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see leola.types.LeoObject#getValue()
+	 */
+	@Override
+	public Object getValue() {
+		return this.value;
+	}
+	
+	private void checkSizeForConversion() {
+		if ( this.value.length() > 1) {
+			throw new LeolaRuntimeException
+				("The supplied LeoString: " + this.value + " is larger than 1 character and therefore does not match the native type: char");
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#getValue(java.lang.Class)
+	 */
+	@Override
+	public Object getValue(Class<?> type) {
+		Object resultJavaObj = this.value;
+		if(ClassUtil.inheritsFrom(type, LeoObject.class) ) {
+			resultJavaObj = this;
+		}
+		else if(ClassUtil.isType(type, ClassUtil.CHAR) ) {
+			checkSizeForConversion();
+			resultJavaObj = this.value.charAt(0);
+		} else if(ClassUtil.isType(type, ClassUtil.BYTE) ) {
+			checkSizeForConversion();
+			resultJavaObj = (byte)this.value.charAt(0);
+		} else if(ClassUtil.isType(type, ClassUtil.SHORT) ) {
+			checkSizeForConversion();
+			resultJavaObj = (short)this.value.charAt(0);
+		} else if(ClassUtil.isType(type, ClassUtil.INT) ) {
+			checkSizeForConversion();
+			resultJavaObj = (int)this.value.charAt(0);
+		} else if(ClassUtil.isType(type, ClassUtil.LONG) ) {
+			checkSizeForConversion();
+			resultJavaObj = (long)this.value.charAt(0);
+		} else if(ClassUtil.isType(type, ClassUtil.FLOAT) ) {
+			checkSizeForConversion();
+			resultJavaObj = (float)this.value.charAt(0);
+		} else if(ClassUtil.isType(type, ClassUtil.DOUBLE) ) {
+			checkSizeForConversion();
+			resultJavaObj = (double)this.value.charAt(0);
+		} 
+		
+		return resultJavaObj;
+	}
+
+	/* (non-Javadoc)
+	 * @see leola.types.LeoObject#clone()
+	 */
+	@Override
+	public LeoObject clone() {
+		return this;
+	}
+
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#write(java.io.DataOutput)
+	 */
+	@Override
+	public void write(DataOutput out) throws IOException {
+		out.write(this.getType().ordinal());	
+		out.writeInt(this.value.length());
+		out.writeBytes(this.value);
+	}
+
+	/**
+	 * Reads from the {@link DataInput} stream, constructing a {@link LeoObject}
+	 * 
+	 * @param in
+	 * @return the {@link LeoObject}
+	 * @throws IOException
+	 */
+	public static LeoString read(Symbols symbols, DataInput in) throws IOException {
+		String str = "";
+		int length = in.readInt();
+		if ( length > 0 ) {
+			byte[] buf = new byte[length];
+			in.readFully(buf);
+			str = new String(buf);
+		}
+		return LeoString.valueOf(str);
+	}
+}
+
