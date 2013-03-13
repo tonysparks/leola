@@ -620,6 +620,10 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		
 		Expr expr = s.getAccess();
 		expr.appendFlag(ASTAttributes.IS_PROPERTY);
+		
+		loadmember(s, s.getOwner(), true, true);
+		asm.get();
+		
 		expr.visit(this);		
 	}
 
@@ -673,6 +677,12 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		Expr[] superParams = s.getParentClassParams();		
 		if( superParams != null) {
 			for(Expr e: superParams) {
+				
+				/* may pass values from sibling class to parent class */
+				if(e instanceof VarExpr) {
+                    e.appendFlag(ASTAttributes.IS_PROPERTY);
+				}
+				
 				e.visit(this);
 			}
 		}

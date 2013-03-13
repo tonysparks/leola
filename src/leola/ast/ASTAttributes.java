@@ -15,7 +15,7 @@ public interface ASTAttributes {
 	
 	public static final int
 		IS_PROPERTY = (1<<1),
-		NAMESPACE_PROPERTY = (1<<1)
+		NAMESPACE_PROPERTY = (1<<2)
 		;
 	
 	/**

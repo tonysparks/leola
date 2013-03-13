@@ -80,6 +80,13 @@ public abstract class ASTNode {
 	}
 
 	/**
+	 * @return true if this node has no parent nodes (aka is the root)
+	 */
+	public boolean isRootNode() {
+		return this.parentNode == null;
+	}
+	
+	/**
 	 * @return the parentNode
 	 */
 	public ASTNode getParentNode() {
