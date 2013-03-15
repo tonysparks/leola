@@ -368,7 +368,10 @@ public class Opcodes {
 				op = "NOT";
 				break;
 			}
-			
+			case REQ:	{
+				op = "REQ";
+				break;
+			}
 			case EQ:	{
 				op = "EQ";
 				break;
@@ -480,15 +483,16 @@ public class Opcodes {
 		AND = 51,
 		NOT = 52,
 		
-		EQ = 53,
-		NEQ = 54,
-		GT = 55,
-		GTE = 56,
-		LT = 57,
-		LTE = 58,
+		REQ = 53,
+		EQ = 54,
+		NEQ = 55,
+		GT = 56,
+		GTE = 57,
+		LT = 58,
+		LTE = 59,
 		
 		/* debug */
-		LINE = 59
+		LINE = 60
 		;
 	
 	
@@ -555,6 +559,7 @@ public class Opcodes {
 		opcodes.put("OR", OR);
 		opcodes.put("AND", AND);
 		opcodes.put("NOT", NOT);
+		opcodes.put("REQ", REQ);
 		opcodes.put("EQ", EQ);
 		opcodes.put("NEQ", NEQ);
 		opcodes.put("GT", GT);

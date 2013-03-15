@@ -115,7 +115,12 @@ public class LeolaSpecialSymbolToken extends LeolaToken
 
                 if (currentChar == '=') {
                     text += currentChar;
-                    nextChar();  // consume '='
+                    currentChar = nextChar();  // consume '='
+                    
+                    if(currentChar == '=') {
+                    	text += currentChar;
+                    	nextChar();
+                    }
                 }
 
                 break;

@@ -14,6 +14,7 @@ import static leola.frontend.tokens.LeolaTokenType.BIT_SHIFT_RIGHT;
 import static leola.frontend.tokens.LeolaTokenType.DEF;
 import static leola.frontend.tokens.LeolaTokenType.DOT;
 import static leola.frontend.tokens.LeolaTokenType.D_EQUALS;
+import static leola.frontend.tokens.LeolaTokenType.REF_EQUALS;
 import static leola.frontend.tokens.LeolaTokenType.GREATER_EQUALS;
 import static leola.frontend.tokens.LeolaTokenType.GREATER_THAN;
 import static leola.frontend.tokens.LeolaTokenType.IDENTIFIER;
@@ -78,7 +79,7 @@ public class ExprParser extends StmtParser {
     
     // Set of relational operators.
     private static final EnumSet<LeolaTokenType> REL_OPS =
-        EnumSet.of(D_EQUALS, NOT_EQUALS, LESS_THAN, LESS_EQUALS,
+        EnumSet.of(REF_EQUALS, D_EQUALS, NOT_EQUALS, LESS_THAN, LESS_EQUALS,
                    GREATER_THAN, GREATER_EQUALS );
 
     private static final EnumSet<LeolaTokenType> LOGICAL_OPS =

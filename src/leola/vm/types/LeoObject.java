@@ -22,6 +22,7 @@ import leola.vm.exceptions.LeolaRuntimeException;
  */
 public abstract class LeoObject {
 
+	public static final LeoString REQ = LeoString.valueOf("$req");
 	public static final LeoString EQ = LeoString.valueOf("$eq");
 	public static final LeoString NEQ = LeoString.valueOf("$neq");
 	public static final LeoString LT = LeoString.valueOf("$lt");
@@ -304,6 +305,15 @@ public abstract class LeoObject {
 		return this.$eq(other);
 	}
 
+	/**
+	 * Tests if the references are the same.  Java equivalent to '=='
+	 * @param other
+	 * @return true if they are the same reference
+	 */
+	public boolean $req(LeoObject other) {
+		return this == other;
+	}
+	
 	/**
 	 * Determines if it equals another object.
 	 *

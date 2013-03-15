@@ -52,6 +52,7 @@ import static leola.vm.Opcodes.NOT;
 import static leola.vm.Opcodes.OPPOP;
 import static leola.vm.Opcodes.OR;
 import static leola.vm.Opcodes.POP;
+import static leola.vm.Opcodes.REQ;
 import static leola.vm.Opcodes.RET;
 import static leola.vm.Opcodes.SET;
 import static leola.vm.Opcodes.SET_GLOBAL;
@@ -922,6 +923,13 @@ public class VM {
 						continue;
 					}
 
+					case REQ:	{
+						LeoObject r = stack[--top];
+						LeoObject l = stack[--top];
+						LeoObject c = LeoBoolean.get(l.$req(r));
+						stack[top++] = c;
+						continue;
+					}
 					case EQ:	{
 						LeoObject r = stack[--top];
 						LeoObject l = stack[--top];
