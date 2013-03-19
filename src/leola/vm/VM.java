@@ -98,7 +98,7 @@ public class VM {
 	/**
 	 * Maximum stack size
 	 */
-	public static final int DEFAULT_MAX_STACKSIZE = 256 * 8;
+	public static final int DEFAULT_MAX_STACKSIZE = 1024 * 1024;
 
 	/**
 	 * Runtime

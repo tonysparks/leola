@@ -26,6 +26,9 @@ public class ChainedMemberAccessExpr extends OwnableExpr {
 	public ChainedMemberAccessExpr(String parentName, Expr access) {
 		super(parentName);
 		this.access = becomeParentOf(access);
+		if(this.access instanceof OwnableExpr) {
+			((OwnableExpr)this.access).setParent(false);
+		}
 	}
 
 
