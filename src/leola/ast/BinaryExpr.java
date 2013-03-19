@@ -34,6 +34,7 @@ public class BinaryExpr extends Expr {
 		, OR
 		, AND
 		, EQ
+		, REQ
 		, LT
 		, LTE
 		, GT

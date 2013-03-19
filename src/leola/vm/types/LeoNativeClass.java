@@ -250,6 +250,14 @@ public class LeoNativeClass extends LeoObject {
 	}
 
 	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#$req(leola.vm.types.LeoObject)
+	 */
+	@Override
+	public boolean $req(LeoObject other) {	
+		return this.instance == other.getValue();
+	}
+	
+	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#eq(leola.types.LeoObject)
 	 */
 	@Override

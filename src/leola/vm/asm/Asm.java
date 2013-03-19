@@ -15,6 +15,7 @@ import static leola.vm.Opcodes.DEF;
 import static leola.vm.Opcodes.DIV;
 import static leola.vm.Opcodes.DUP;
 import static leola.vm.Opcodes.EQ;
+import static leola.vm.Opcodes.REQ;
 import static leola.vm.Opcodes.GET;
 import static leola.vm.Opcodes.GET_GLOBAL;
 import static leola.vm.Opcodes.GET_NAMESPACE;
@@ -849,6 +850,11 @@ public class Asm {
 	}
 	public void not() {
 		instr(NOT);
+	}
+	
+	public void req() {
+		instr(REQ);
+		decrementMaxstackSize();
 	}
 	
 	public void eq() {

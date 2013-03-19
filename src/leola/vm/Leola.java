@@ -87,6 +87,15 @@ public class Leola {
 	public static final String GLOBAL_SCOPE_NAME = "$G";
 
 	/**
+	 * Converts the supplied Java Object into a {@link LeoObject} equivalent
+	 * @param javaObject
+	 * @return the {@link LeoObject} equivalent of the supplied Java Object
+	 */
+	public static LeoObject toLeoObject(Object javaObject) {
+		return LeoTypeConverter.convertToLeolaType(javaObject);
+	}
+	
+	/**
 	 * Runs the {@link Leola} runtime as a stand alone application
 	 *
 	 * @param args
@@ -610,7 +619,7 @@ public class Leola {
 		return scope.getObject(reference);
 	}
 
-
+	
 	/**
 	 * Executes the supplied {@link Bytecode}
 	 * @param callee
