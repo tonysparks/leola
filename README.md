@@ -37,13 +37,18 @@ var aMap = {
    hello -> "Hola!",
    bye -> "Adios",
 }
+println( aMap.bye ) // prints Adios
 
 // defining a function
 var square = def(x) return x*x
+var v = square(2)
+println(v) // prints 4
 
 // a simple class
 class Person(firstName, lastName, age);
-var tony = new Person("tony", "sparks", 29)
+var aLegend = new Person("Brett", "Favre", 41)
+println( aLegend.lastName + " is " + aLegend.age + " years old.") // prints Favre is 41 years old.
+
 
 ````
 
@@ -68,7 +73,7 @@ println( dCube(4.0) ) // prints 48.00000141358396
 println( dCube(10.0) ) // prints 300.0000003794412
 
 // how about the derivative of sin(x)
-import("java.lang.Math")
+import("java.lang.Math") 
 var dSin = def(x) return derivative(sin)(x)  // should be roughly cos(x)
 println( dSin(1.2) ) // prints 0.36235770828341174
 
