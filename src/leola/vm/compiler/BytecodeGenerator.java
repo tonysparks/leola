@@ -624,9 +624,12 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		
 		Expr expr = s.getAccess();
 		expr.appendFlag(ASTAttributes.IS_PROPERTY);
-		
-		loadmember(s, s.getOwner(), true, true);
-		asm.get();
+
+		// account for x[0].y.C
+		if(expr instanceof MemberAccessExpr) {
+			loadmember(s, s.getOwner(), true, true);
+			asm.get();
+		}
 		
 		expr.visit(this);		
 	}
@@ -907,6 +910,8 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		}
 				
 		if ( s.isMemberAccessChild() ) {
+			/* Member access */
+			
 			asm.movn(nargs);
 			
 			String functionName = s.getFunctionName();
@@ -914,6 +919,8 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 			asm.get(); 
 		}
 		else {
+			/* global/free function */
+			
 			String functionName = s.getFunctionName();
 			loadglobalmember(functionName);
 		}
