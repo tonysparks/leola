@@ -261,6 +261,15 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 		this.array[index.asInt()] = obj;
 	}
 
+	public LeoObject reverse() {
+		LeoArray result = new LeoArray(this.size);
+		for(int i = this.size-1; i >=0; i--) {
+			result.add(get(i));
+		}
+		
+		return result;
+	}
+	
 	/**
 	 * gets a sublist
 	 * @param start
