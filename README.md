@@ -1,7 +1,6 @@
-leola
+Leola Programming Language
 =====
 
-Leola Programming Language
 
 The Leola Programming Language was created on April 1st, 2010.  It wasn't created out of frustration with existing languages nor for a niche requirement.  It was simply created because I find programming languages and compilers interesting.  
   							
@@ -11,3 +10,75 @@ My main goal for Leola is to scratch my itch for learning more about compilers a
 		  					
 Leola is a dynamically typed language which supports Object Orientated Programming, Data Driven Programming and a splash of Functional Programming.  It can be embedded into a Java program or can be executed as a stand alone application.  It is written in the Java programming language and is compiled to Leola bytecode.  Yes, as it stands this is a VM on top of a VM.  A C VM implementation is planned, but currently not available.
 
+Features
+=====
+Leola currently supports these features:
+* classes
+* single inheritance
+* language support for expandable arrays
+* language support for maps
+* easily embeddable in Java programs
+* easily access Java types in Leola code
+* closures
+* higher order functions
+* tailcail optimization
+
+Sample Code
+====
+
+Defining some variables:
+````javascript
+var aString = "Hello World"
+var aNumber = 1024
+var anArray = [ aString, aNumber, 45 ]
+
+// defining a Map
+var aMap = {
+   hello -> "Hola!",
+   bye -> "Adios",
+}
+
+// defining a function
+var square = def(x) return x*x
+
+// a simple class
+class Person(firstName, lastName, age);
+var tony = new Person("tony", "sparks", 29)
+
+````
+
+How about some calculus?
+
+````javascript
+/* the derivative function */
+var derivative = def(f) {
+   var dx = 0.0000001
+   
+   var fPrime = def(x) return (f(x + dx) - f(x)) / dx
+   
+   return fPrime
+}
+
+// take the derivative of a simple function x^3
+var cube = def(x) return x*x*x   // x^3
+var dCube = def(x) return derivative(cube)(x)  // should be roughly 3x^2
+
+
+println( dCube(4.0) ) // prints 48.00000141358396
+println( dCube(10.0) ) // prints 300.0000003794412
+
+// how about the derivative of sin(x)
+import("java.lang.Math")
+var dSin = def(x) return derivative(sin)(x)  // should be roughly cos(x)
+println( dSin(1.2) ) // prints 0.36235770828341174
+
+````
+
+How to run
+=====
+
+````
+java -jar leola.jar "your_script.leola"
+````
+
+More to come..
