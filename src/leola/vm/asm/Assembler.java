@@ -62,13 +62,21 @@ public class Assembler {
 		
 		Assembler asm = new Assembler();		
 		Asm a = asm.parseFile(filename);
-		asm.writeOutput(a, filename + ".lbc");
+		Bytecode code = a.compile();
+		
+		asm.writeOutput(code, filename + ".lbc");
 		
 		if(run) {
-			Leola leola = new Leola();
-			Bytecode code = a.compile();
-			LeoObject obj = leola.execute(code);
-			System.out.println(obj);
+			Leola runtime = new Leola();			
+			try {
+				LeoObject result = runtime.execute(code);
+				if(result.isError()) {
+					System.err.println(result);
+				}
+			}
+			catch(LeolaRuntimeException e) {
+				System.err.println(e.getLeoError());
+			}
 		}
 	}
 
@@ -85,9 +93,7 @@ public class Assembler {
 	 * @param outputfile
 	 * @throws Exception
 	 */
-	private void writeOutput(Asm asm, String outputfile) throws Exception {
-
-		Bytecode bytecode = asm.compile();
+	private void writeOutput(Bytecode bytecode, String outputfile) throws Exception {
 		RandomAccessFile outputFile = new RandomAccessFile(new File(outputfile), "rw");
 		try {
 			bytecode.write(outputFile);
@@ -595,6 +601,11 @@ public class Assembler {
 		opcodes.put("NOT", new Opcode() {			
 			public void invoke(Asm asm, String...  args) {
 				asm.not();
+			}
+		});
+		opcodes.put("REQ", new Opcode() {			
+			public void invoke(Asm asm, String...  args) {
+				asm.req();
 			}
 		});
 		opcodes.put("EQ", new Opcode() {			
