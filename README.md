@@ -79,6 +79,49 @@ println( dSin(1.2) ) // prints 0.36235770828341174
 
 ````
 
+Statements and Expressions
+
+````javascript
+
+/* if statement */
+var x = 10
+if x < 20 {
+   println("x < 20")
+}
+else {
+   println("x >= 20")
+}
+
+/* while statement */
+while x < 20 {
+   if x == 15 break    /* breaks out of the loop */   
+   x += 1
+}
+
+
+/* a switch statement */
+var color = "red"
+switch color {
+   when "red" -> println("A red truck")
+   when "blue" -> println("A blue whale")
+   else println("The night sky")
+} // prints A red truck
+
+/* a case expression is similar to a switch, but it's an expression */
+var text = case color {
+   when "red" -> "A red truck"
+   when "blue" -> "A blue whale"
+   else "The night sky"
+}
+
+println(text) // prints A red truck
+
+/* is expression */
+println(color is String) // prints true
+
+
+````
+
 How to run
 =====
 
