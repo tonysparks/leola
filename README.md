@@ -15,6 +15,7 @@ Features
 Leola currently supports these features:
 * classes
 * single inheritance
+* namespaces
 * language support for expandable arrays
 * language support for maps
 * easily embeddable in Java programs
@@ -49,6 +50,24 @@ class Person(firstName, lastName, age);
 var aLegend = new Person("Brett", "Favre", 41)
 println( aLegend.lastName + " is " + aLegend.age + " years old.") // prints Favre is 41 years old.
 
+// a namespace
+namespace nfl {
+   
+   var getTheBestTeamEver = def() {
+      return new nfl:Team("Green Bay", "Packers")   
+   }
+   
+   class Team(city, name) {      
+      var getFullName = def() return city + " " + name
+   }
+}
+
+var worseTeamEver = new nfl:Team("Chicago", "Bears")
+var bestTeamEver = nfl:getTheBestTeamEver()
+
+
+println("The " + worseTeamEver.getFullName() + " are the worst.")
+println("The " + bestTeamEver.getFullName() + " are the best.")
 
 ````
 
