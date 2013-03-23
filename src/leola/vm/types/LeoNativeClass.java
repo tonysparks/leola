@@ -9,9 +9,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
@@ -37,8 +35,7 @@ public class LeoNativeClass extends LeoObject {
 	 * The instance of the native class
 	 */
 	private Object instance;
-	private Map<String, LeoObject> cache;
-
+	
 	/**
 	 */
 	public LeoNativeClass() {
@@ -97,16 +94,6 @@ public class LeoNativeClass extends LeoObject {
 		return result;
 	}
 
-	/**
-	 * @return the cache
-	 */
-	private Map<String, LeoObject> getCache() {
-		if ( this.cache == null ) {
-			this.cache = new HashMap<String, LeoObject>();
-		}
-		return cache;
-	}
-
 	/* (non-Javadoc)
 	 * @see leola.vm.types.LeoObject#setObject(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
 	 */
@@ -126,43 +113,38 @@ public class LeoNativeClass extends LeoObject {
 
 	public LeoObject getMember(LeoObject member) {
 		String memberName = member.toString();
-		LeoObject result = getCache().get(memberName);
-		if ( result == null ) {
-			List<Method> methods = getMethods(memberName);
-			if ( methods.isEmpty() ) {
-				Field field = getField(memberName);
-				if ( field != null ) {
-					try {
-						Object value = field.get(getInstance());
-						result = LeoTypeConverter.convertToLeolaType(value);
-					}
-					catch(Exception e) {
-						throw new LeolaRuntimeException("Unable to access: " + member, e);
-					}
-				}
-			}
-			else {
-				if (methods.size() > 1) {
-					result = new LeoNativeFunction(methods, getInstance());
-				}
-				else {
-					Method m = methods.get(0);
-					result = new LeoNativeFunction(m, getInstance());
-				}
-			}
 
-			if ( result != null ) {
-				getCache().put(memberName, result);
+		LeoObject result = null;
+		
+		List<Method> methods = getMethods(memberName);
+		if ( methods.isEmpty() ) {
+			Field field = getField(memberName);
+			if ( field != null ) {
+				try {
+					Object value = field.get(getInstance());
+					result = LeoTypeConverter.convertToLeolaType(value);
+				}
+				catch(Exception e) {
+					throw new LeolaRuntimeException("Unable to access: " + member, e);
+				}
 			}
 		}
+		else {
+			if (methods.size() > 1) {
+				result = new LeoNativeFunction(methods, getInstance());
+			}
+			else {
+				Method m = methods.get(0);
+				result = new LeoNativeFunction(m, getInstance());
+			}
+		}
+		
 
 		return result;
 	}
 
 	public void setMember(LeoObject member, LeoObject value) {
 		String memberName = member.toString();
-		getCache().put(memberName, value);
-
 		List<Method> methods = getMethods(memberName);
 		if ( methods.isEmpty() ) {
 			Field field = getField(memberName);
