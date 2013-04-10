@@ -46,8 +46,9 @@ public class SocketClientNetwork implements ClientNetwork {
     }
 
 
-    /* (non-Javadoc)
-     * @see com.expd.arch.depot.repository.fileserver.network.ClientNetwork#connect(java.net.InetAddress, int)
+    /*
+     * (non-Javadoc)
+     * @see leola.network.ClientNetwork#connect(java.net.InetAddress, int)
      */
     public void connect(InetAddress remoteServer, int port) throws Exception {
         close();
@@ -64,8 +65,10 @@ public class SocketClientNetwork implements ClientNetwork {
         socket.setTcpNoDelay(false); /* Turn off Nagle's shitty algorithm */
     }
 
-    /* (non-Javadoc)
-     * @see com.expd.arch.depot.repository.fileserver.network.Network#disconnect()
+
+    /*
+     * (non-Javadoc)
+     * @see java.io.Closeable#close()
      */
     public void close() throws IOException {
         if ( this.socketChannel != null && this.socketChannel.isConnected() ) {
@@ -85,8 +88,9 @@ public class SocketClientNetwork implements ClientNetwork {
 
     }
 
-    /* (non-Javadoc)
-     * @see com.expd.arch.depot.repository.fileserver.network.Network#recv(byte[])
+    /*
+     * (non-Javadoc)
+     * @see leola.network.Network#recv(byte[], int, int)
      */
     public int recv(byte[] data, int off, int len) throws Exception {
         ByteBuffer buffer = ByteBuffer.wrap(data, off, len);
@@ -97,8 +101,9 @@ public class SocketClientNetwork implements ClientNetwork {
         return (bytesRead);
     }
 
-    /* (non-Javadoc)
-     * @see com.expd.arch.depot.repository.fileserver.network.Network#send(byte[], int, int)
+    /*
+     * (non-Javadoc)
+     * @see leola.network.Network#send(byte[], int, int)
      */
     public void send(byte[] data, int off, int len) throws Exception {
         ByteBuffer buffer = ByteBuffer.wrap(data, off, len);
@@ -110,8 +115,9 @@ public class SocketClientNetwork implements ClientNetwork {
         }
     }
 
-    /* (non-Javadoc)
-     * @see com.expd.arch.depot.repository.fileserver.network.ClientNetwork#getConnectedAddress()
+    /*
+     * (non-Javadoc)
+     * @see leola.network.ClientNetwork#getConnectedAddress()
      */
     public InetAddress getConnectedAddress() {
         InetAddress result = null;

@@ -27,8 +27,9 @@ public class SocketServerNetwork implements ServerNetwork {
      */
     private ServerSocketChannel serverSocket;
 
-    /* (non-Javadoc)
-     * @see com.expd.arch.depot.repository.fileserver.network.ServerNetwork#accept()
+    /*
+     * (non-Javadoc)
+     * @see leola.network.ServerNetwork#accept()
      */
     public ClientNetwork accept() throws Exception {
         ClientNetwork clientNetwork = null;
@@ -44,8 +45,9 @@ public class SocketServerNetwork implements ServerNetwork {
         return clientNetwork;
     }
 
-    /* (non-Javadoc)
-     * @see com.expd.arch.depot.repository.fileserver.network.ServerNetwork#disconnect()
+    /*
+     * (non-Javadoc)
+     * @see leola.network.ServerNetwork#disconnect()
      */
     public void disconnect() throws Exception {
         if ( this.serverSocket != null && this.serverSocket.isOpen() ) {
@@ -58,8 +60,9 @@ public class SocketServerNetwork implements ServerNetwork {
         }
     }
 
-    /* (non-Javadoc)
-     * @see com.expd.arch.depot.repository.fileserver.network.ServerNetwork#start(int)
+    /*
+     * (non-Javadoc)
+     * @see leola.network.ServerNetwork#start(int)
      */
     public void start(int port) throws Exception {
         this.serverSocket = ServerSocketChannel.open();
@@ -72,8 +75,9 @@ public class SocketServerNetwork implements ServerNetwork {
         socket.bind(new InetSocketAddress(port));
     }
 
-    /* (non-Javadoc)
-     * @see com.expd.arch.depot.repository.fileserver.network.ServerNetwork#getAddress()
+    /*
+     * (non-Javadoc)
+     * @see leola.network.ServerNetwork#getAddress()
      */
     public InetAddress getAddress() {
         InetAddress address = null;
