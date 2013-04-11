@@ -70,6 +70,9 @@ public class ArrayLeolaLibrary implements LeolaLibrary {
 	public boolean has(LeoArray array, LeoObject v) {
 		return array.has(v);
 	}
+	public LeoObject reverse(LeoArray array) {
+		return array.reverse();
+	}
 	public LeoObject slice(LeoArray array, int start, int end) {
 		return array.slice(start, end);
 	}
