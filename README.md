@@ -224,6 +224,17 @@ map( odds, def(e) return e+1 )
 println(odds) // prints [2,4,6]
 ````
 
+You can also instantiate any Java object on the Leola classpath.  The LeolaLibrary option lets you
+write API's tailored towards Leola.
+
+````javascript
+var jMap = new java.lang.HashMap()
+jMap.put("winners", "Packers")
+var winners = jMap.get("winners")
+println(winners) // prints Packers
+
+````
+
 
 How to run
 =====
