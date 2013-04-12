@@ -148,6 +148,15 @@ Easily create libraries written in Java to call from Leola code.  This allows pr
 critical code in Java and call those functions from Leola.
 
 ````java
+package test;
+
+import leola.vm.Leola;
+import leola.vm.lib.LeolaIgnore;
+import leola.vm.lib.LeolaLibrary;
+
+import leola.vm.types.LeoNamespace;
+import leola.vm.types.LeoObject;
+import leola.vm.types.LeoArray;
 
 /* As a hint to the Leola runtime, by convention
    Java leola libraries should be named as XLeolaLibrary, where
