@@ -141,6 +141,81 @@ println(color is String) // prints true
 
 ````
 
+Interfacing with Java
+=====
+
+Easily create libraries written in Java to call from Leola code.  This allows programmers to put performance
+critical code in Java and call those functions from Leola.
+
+````java
+
+/* As a hint to the Leola runtime, by convention
+   Java leola libraries should be named as XLeolaLibrary, where
+   X is the name of your library.
+*/
+public class MyFirstLeolaLibrary implements LeolaLibrary {
+
+   private Leola runtime;
+
+   @Override
+   @LeolaIgnore // does not import this method in Leola
+   public void init(Leola runtime, LeoNamespace namespace) throws Exception {
+      this.runtime = runtime;
+      
+      // places all of this classes
+      // public methods into the supplied namespace (with the exception of
+      // the @LeolaIgnore methods)
+      this.runtime.putIntoNamespace( this, namespace); 
+   }
+   
+   public int add(int left, int right) {
+      return left + right
+   }
+   
+   public void map(LeoArray input, LeoObject functor) {
+      int size = input.size();
+      for(int i = 0; i < size; i++) {
+         // execute the supplied functor object
+         LeoObject newValue = this.runtime.execute(functor, input.get(i));
+         
+         // set the value back in the array
+         input.set(i, newValue);
+      }
+   }
+}
+````
+
+Now in Leola we can use it as so:
+````javascript
+// after we compile and jar up our java code (say we name the jar file 'myFirst.jar'), we
+// reference it here to import it.  Now it is stored in the "first" namespace
+require("lib/myFirst.jar", "first" )
+
+var sum = first:add( 2, 2 )
+println(sum) // prints 4
+
+var odds = [1,3,5] 
+first:map( odds, def(e) return e+1 )
+
+println(odds) // prints [2,4,6]
+
+
+````
+
+We can also load it to the global namespace by omitting the second parameter on the 'require' call.
+````javascript
+require("lib/myFirst.jar")
+
+var sum = add( 2, 2 )
+println(sum) // prints 4
+
+var odds = [1,3,5] 
+map( odds, def(e) return e+1 )
+
+println(odds) // prints [2,4,6]
+````
+
+
 How to run
 =====
 
