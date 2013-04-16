@@ -240,7 +240,7 @@ How to run
 =====
 
 ````
-java -jar leola.jar "your_script.leola"
+java -jar leola.jar "./your_script.leola"
 ````
 
 More to come..
