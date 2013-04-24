@@ -115,8 +115,18 @@ public abstract class LeoScopedObject extends LeoOuterObject {
 		return this.scope.getObjectNoGlobal(member.toString()) != null;
 	}
 	
+	/**
+	 * Attempts to look up the data member with the supplied name.
+	 * 
+	 * @param member - the name of the property
+	 * @return the property value if found, otherwise {@link LeoNull}
+	 */
 	public LeoObject getProperty(LeoObject member) {
-		return this.scope.getObjectNoGlobal(member.toString());
+		LeoObject result = this.scope.getObjectNoGlobal(member.toString());
+		if(result == null) {
+			result = LeoNull.LEONULL;
+		}
+		return result;
 	}
 	
 		
