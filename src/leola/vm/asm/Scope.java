@@ -323,17 +323,52 @@ public class Scope {
 	}
 
 	/**
-	 * Stores an object in this scope
+	 * Stores an object in this scope and only this scope. This does
+	 * not traverse the parent scopes to see if a value is already
+	 * held.
+	 * 
 	 * @param reference
 	 * @param value
-	 * @return
+	 * @return the previously held value, if any
 	 */
-	public LeoObject storeObject(LeoString reference, LeoObject value) {
+	public LeoObject putObject(LeoString reference, LeoObject value) {
 		if(this.values==null) {
 			this.values = new LeoMap();
 		}
 
-		return this.values.put(reference, value);
+		return this.values.put(reference, value);		
+	}
+		
+	/**
+	 * Stores an object in this scope, it first checks to see if any parent
+	 * values contain the supplied reference, if it does it will override the existing
+	 * value.  This is to account for class data members.
+	 * 
+	 * @param reference
+	 * @param value
+	 * @return the previously held value, if any
+	 */
+	public LeoObject storeObject(LeoString reference, LeoObject newValue) {
+		
+		Scope current = this;
+		while (current != null) {
+			
+			// if the value is the the current scope, break out 
+			if (current.values != null && current.values.getWithJNull(reference) != null ) {
+				break;
+			}
+			
+			// else check the parent 
+			if(current.parent != null && !current.parent.isGlobalScope()) {
+				current = current.parent;
+			}
+			else {
+				current = this;
+				break;
+			}
+		}
+		
+		return current.putObject(reference, newValue);
 	}
 
 	public LeoObject storeObject(String reference, LeoObject value) {
