@@ -115,7 +115,6 @@ public class LeoNativeClass extends LeoObject {
 		String memberName = member.toString();
 
 		LeoObject result = null;
-		
 		List<Method> methods = getMethods(memberName);
 		if ( methods.isEmpty() ) {
 			Field field = getField(memberName);
