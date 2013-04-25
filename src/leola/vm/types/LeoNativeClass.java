@@ -143,6 +143,13 @@ public class LeoNativeClass extends LeoObject {
 		return result;
 	}
 
+	/**
+	 * Attempts to set the Java objects field.  If it isn't found or fails to set
+	 * the field, an exception is thrown.
+	 * 
+	 * @param member
+	 * @param value
+	 */
 	public void setMember(LeoObject member, LeoObject value) {
 		String memberName = member.toString();
 		
