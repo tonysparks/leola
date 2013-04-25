@@ -278,7 +278,7 @@ public class Scope {
 	public LeoObject getObjectNoGlobal(LeoString reference) {
 		LeoObject value = (this.values != null) ? this.values.getWithJNull(reference) : null;
 		if ( value == null && parent != null && !parent.isGlobalScope()) {
-			value = parent.getObject(reference);
+			value = parent.getObjectNoGlobal(reference);
 		}
 
 		return value;
