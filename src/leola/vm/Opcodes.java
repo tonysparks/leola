@@ -18,18 +18,29 @@ import leola.vm.exceptions.LeolaRuntimeException;
  */
 public class Opcodes {
 
+	
+	// instruction for ARG1 ARG2
+	// 0x222111FF
+	
+	// instruction for ARGx
+	// 0xXXXXXXFF
+	
+	// instruction for ARGsx (signed)
+	// 0x7XXXXXFF
+	
 	// instruction
 	// 0x002211FF
 	// FF = opcode
 	// 11 = arg1
 	// 22 = arg2
-	// 10 = 1 for negative arg1 argument
-	// 01 = 1 for negative arg2 argument
+	// X = part of ARG(s)x
+	// 7 = 0111 last bit for signed value
 	
 	public static final int OP_SIZE = 8;
-	public static final int ARG1_SIZE = 8;		// number of bits
-	public static final int ARG2_SIZE = 8;		// number of bits
+	public static final int ARG1_SIZE = 12;		// number of bits
+	public static final int ARG2_SIZE = 12;		// number of bits
 	public static final int ARGx_SIZE = ARG1_SIZE + ARG2_SIZE;
+	public static final int ARGsx_SIZE = ARG1_SIZE + ARG2_SIZE-1;
 	public static final int OP_POS = 0;
 	public static final int ARG1_POS = OP_POS + OP_SIZE;
 	public static final int ARG2_POS = ARG1_POS + ARG1_SIZE;
@@ -39,6 +50,7 @@ public class Opcodes {
 	public static final int MAX_ARG1 = ( (1<<ARG1_SIZE) - 1);
 	public static final int MAX_ARG2 = ( (1<<ARG2_SIZE) - 1);
 	public static final int MAX_ARGx = ( (1<<ARGx_SIZE) - 1);
+	public static final int MAX_ARGsx = (MAX_ARGx>>1);
 	
 	public static final int OP_MASK   = ((1<<OP_SIZE)-1)<<OP_POS; 
 	public static final int ARG1_MASK = ((1<<ARG1_SIZE)-1)<<ARG1_POS;
@@ -50,81 +62,91 @@ public class Opcodes {
 	public static final int NOT_ARG2_MASK = ~ARG2_MASK;
 	public static final int NOT_ARGx_MASK = ~ARGx_MASK;
 	
-	public static final int NEG_ARG1_MASK = 0x10000000;
-	public static final int NEG_ARG2_MASK = 0x01000000;
-	public static final int NEG_ARGx_MASK = 0x10000000;
 	
 	/**
-	 * Strips the opcode out of the supplied integer
-	 * @param code
+	 * Strips the opinstr out of the supplied integer
+	 * @param instr
 	 * @return
 	 */
-	public static int OPCODE(int code) {
-//		return (code >> OP_POS) & MAX_OP;
-		return code & MAX_OP;
+	public static int OPCODE(int instr) {
+//		return (instr >> OP_POS) & MAX_OP;
+		return instr & MAX_OP;
 	}
 	
 	/**
 	 * Returns the first argument
-	 * @param code
-	 * @return
+	 * @param instr
+	 * @return arg1 one value
 	 */
-	public static int ARG1(int code) {
-		return (((code & NEG_ARG1_MASK) != 0) ? ((code >> ARG1_POS) & MAX_ARG1) - 256 :  
-					((code >> ARG1_POS) & MAX_ARG1));
+	public static int ARG1(int instr) {
+		return (instr >>>  ARG1_POS) & MAX_ARG1;
 	}
 
 	/**
 	 * Returns the second argument
-	 * @param code
-	 * @return
+	 * @param instr
+	 * @return arg2 value
 	 */
-	public static int ARG2(int code) {
-		return (((code & NEG_ARG2_MASK) != 0) ? ((code >> ARG2_POS) & MAX_ARG2) - 256 :  
-			((code >> ARG2_POS) & MAX_ARG2));		
+	public static int ARG2(int instr) {
+		return (instr >>> ARG2_POS) & MAX_ARG2;		
 	}
 	
-	public static int ARGx(int code) {
-		return ((code >> ARGx_POS) & MAX_ARGx) | (0xffff0000 * ((code & NEG_ARGx_MASK) >> 28));
+	/**
+	 * Returns the x argument
+	 * @param instr 
+	 * @return the x argument
+	 */
+	public static int ARGx(int instr) {
+		return ((instr >>> ARGx_POS) & MAX_ARGx);
 	}
 	
-	
-	public static int SET_ARGx(int code, int arg1) {
-		return (arg1 < 0) ? ( (NEG_ARGx_MASK | (code & NOT_ARGx_MASK)) | ( arg1 << ARGx_POS & ARGx_MASK)) 
-							: (code & NOT_ARGx_MASK) | ( arg1 << ARGx_POS & ARGx_MASK);
+	/**
+	 * Returns the signed x argument
+	 * @param instr
+	 * @return the signed x argument
+	 */
+	public static int ARGsx(int instr) {
+		return ((instr >> ARGx_POS) & MAX_ARGx) - MAX_ARGsx;
 	}
 	
-	public static int SET_ARG1(int code, int arg1) {
-		return (arg1 < 0) ? ( (NEG_ARG1_MASK | (code & NOT_ARG1_MASK)) | ( arg1 << ARG1_POS & ARG1_MASK)) 
-							: (code & NOT_ARG1_MASK) | ( arg1 << ARG1_POS & ARG1_MASK);
+	/**
+	 * Sets the signed x value on the instruction
+	 * @param instr
+	 * @param x
+	 * @return the instruction with the set value
+	 */
+	public static int SET_ARGsx(int instr, int sx) {
+		return (instr & (NOT_ARGx_MASK)) | (( (sx + MAX_ARGsx) << ARGx_POS) & ARGx_MASK);
 	}
 	
-	public static int SET_ARG2(int code, int arg2) {
-		return (arg2 < 0) ? ((NEG_ARG2_MASK | (code & NOT_ARG2_MASK)) | ( arg2 << ARG2_POS & ARG2_MASK))
-							: (code & NOT_ARG2_MASK) | ( arg2 << ARG2_POS & ARG2_MASK);
+	/**
+	 * Sets the x value on the instruction
+	 * @param instr
+	 * @param x
+	 * @return the instruction with the set value
+	 */
+	public static int SET_ARGx(int instr, int argx) {
+		return (instr & (NOT_ARGx_MASK)) | (( argx << ARGx_POS) & ARGx_MASK);
 	}
-	public static void main(String args[]) {
-		//0x1000dd1e
-		int opcode =JMP; //(0x1000dd00 & ~OP_MASK);// & ~NEG_ARGx_MASK;
-//		i = SET_ARG1(i, 0x00);
-//		i |= SET_ARG2(i, 1);
-		
-		int v= -1256;
-		
-		int x = SET_ARGx(opcode, v);
-		int o = SET_ARG1(opcode, v);
-		int t = SET_ARG2(opcode, v);
-		
-		int code = x;
-		int xx =  ((code >> ARGx_POS) & MAX_ARGx) | (0xffff0000 * ((code & NEG_ARGx_MASK) >> 28)); 			
-		
-		System.out.println("0x"+Integer.toHexString(x) + " \tDec: " + x);
-		System.out.println("X  0x" +Integer.toHexString(ARGx(x)) + " \tDec: " + ARGx(x));
-		System.out.println("XX 0x" +Integer.toHexString(xx) + " \tDec: " + xx);
-		System.out.println("1  0x" +Integer.toHexString(ARG1(o)) + " \tDec: " + ARG1(o));
-		System.out.println("2  0x" +Integer.toHexString(ARG2(t)) + " \tDec: " + ARG2(t));
-		
-		
+	
+	/**
+	 * Sets the arg1 value on the instruction
+	 * @param instr
+	 * @param x
+	 * @return the instruction with the set value
+	 */
+	public static int SET_ARG1(int instr, int arg1) {
+		return (instr & NOT_ARG1_MASK) | (( arg1 << ARG1_POS) & ARG1_MASK);
+	}
+	
+	/**
+	 * Sets the arg2 value on the instruction
+	 * @param instr
+	 * @param x
+	 * @return the instruction with the set value
+	 */
+	public static int SET_ARG2(int instr, int arg2) {
+		return (instr & NOT_ARG2_MASK) | (( arg2 << ARG2_POS) & ARG2_MASK);
 	}
 	
 		
