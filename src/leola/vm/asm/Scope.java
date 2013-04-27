@@ -350,8 +350,8 @@ public class Scope {
 	 */
 	public LeoObject storeObject(LeoString reference, LeoObject newValue) {
 		
-		Scope current = this;
-		while (current != null) {
+		Scope current = this;		
+		while (current != null && current.scopeType.equals(ScopeType.LOCAL_SCOPE)) {
 			
 			// if the value is the the current scope, break out 
 			if (current.values != null && current.values.getWithJNull(reference) != null ) {
