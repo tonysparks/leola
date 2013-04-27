@@ -121,9 +121,16 @@ public class Leola {
 				if ( pargs.displayBytecode()) {
 					System.out.println(code.dump());
 				}
-
-				LeoObject object = runtime.execute(code);
-				System.out.println(object);
+								
+				try {
+					LeoObject result = runtime.execute(code);
+					if(result.isError()) {
+						System.err.println(result);
+					}
+				}
+				catch(LeolaRuntimeException e) {
+					System.err.println(e.getLeoError());
+				}
 			}
 			else {
 				String file = pargs.getFileName();

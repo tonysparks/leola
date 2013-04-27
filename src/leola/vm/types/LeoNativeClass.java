@@ -115,7 +115,6 @@ public class LeoNativeClass extends LeoObject {
 		String memberName = member.toString();
 
 		LeoObject result = null;
-		
 		List<Method> methods = getMethods(memberName);
 		if ( methods.isEmpty() ) {
 			Field field = getField(memberName);
@@ -143,21 +142,28 @@ public class LeoNativeClass extends LeoObject {
 		return result;
 	}
 
+	/**
+	 * Attempts to set the Java objects field.  If it isn't found or fails to set
+	 * the field, an exception is thrown.
+	 * 
+	 * @param member
+	 * @param value
+	 */
 	public void setMember(LeoObject member, LeoObject value) {
 		String memberName = member.toString();
-		List<Method> methods = getMethods(memberName);
-		if ( methods.isEmpty() ) {
-			Field field = getField(memberName);
-			if ( field != null ) {
-				try {
-					field.set(getInstance(), value.getValue(field.getType()));
-				}
-				catch(Exception e) {
-					throw new LeolaRuntimeException("Unable to set access: " + member, e);
-				}
+		
+		Field field = getField(memberName);
+		if ( field != null ) {
+			try {
+				field.set(getInstance(), value.getValue(field.getType()));
+			}
+			catch(Exception e) {
+				throw new LeolaRuntimeException("Unable to set access: " + member, e);
 			}
 		}
-
+		else {
+			throw new LeolaRuntimeException("Unable to set access: " + member);
+		}
 	}
 
 	/**
