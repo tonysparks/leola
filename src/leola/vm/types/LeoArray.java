@@ -44,7 +44,8 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 		super(LeoType.ARRAY);
 
 		this.size = 0;
-		this.array = new LeoObject[initialSize];		
+		this.array = new LeoObject[initialSize];	
+		clear();
 	}
 	
 	/**
@@ -185,7 +186,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 */
 	public void clear() {
 	    for(int i = 0; i < this.size; i++ ) {
-	    	this.array[i] = null;
+	    	this.array[i] = LeoNull.LEONULL;
 	    }
 	    this.size = 0;
 	}
@@ -519,12 +520,11 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	
 	@SuppressWarnings("unchecked")
 	public <T> T[] toArray(T[] a) {
-		if(a.length < this.array.length) {
-			a = (T[])Array.newInstance(a.getClass().getComponentType(), this.array.length);
+		if(a.length < this.size) {
+			a = (T[])Array.newInstance(a.getClass().getComponentType(), this.size);
 		}
 		
-		for(int i = 0; i < this.array.length; i++) {
-			if(this.array[i] == null) break;
+		for(int i = 0; i < this.size; i++) {			
 			a[i] = (T)this.array[i].getValue();
 		}
 		return a;
@@ -542,7 +542,10 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	    	if (newCapacity < minCapacity) newCapacity = minCapacity;
 	    	
 	    	this.array = new LeoObject[newCapacity];
-	    	System.arraycopy(oldData, 0, this.array, 0, oldCapacity);	    	            
+	    	System.arraycopy(oldData, 0, this.array, 0, oldCapacity);	 
+	    	for(int i = this.size; i < newCapacity; i++) {
+	    		this.array[i] = LeoNull.LEONULL;
+	    	}
 		}
 	}
 	
@@ -564,20 +567,14 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 		return _remove(o);
     }
 
-	private boolean _remove(Object o) {
-		if (o == null) {
-            for (int index = 0; index < size; index++)
-			if (this.array[index] == null) {
-			    fastRemove(index);
-			    return true;
-			}
-		} else {
-		    for (int index = 0; index < size; index++)
+	private boolean _remove(Object o) {		
+	    for (int index = 0; index < size; index++) {
 			if (o.equals(this.array[index])) {
 			    fastRemove(index);
 			    return true;
 			}
-	        }
+	    }
+    
 		return false;
 	}
 	
@@ -591,7 +588,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
         if (numMoved > 0)
             System.arraycopy(array, index+1, array, index,
                              numMoved);
-        array[--size] = null; // Let gc do its work
+        array[--size] = LeoNull.LEONULL;
     }
 
 	/* (non-Javadoc)
@@ -685,7 +682,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 		int numMoved = size - index - 1;
 		if (numMoved > 0)
 		    System.arraycopy(this.array, index+1, this.array, index, numMoved);
-		this.array[--size] = null;
+		this.array[--size] = LeoNull.LEONULL;
 		return oldValue;
 	}
 
@@ -693,16 +690,12 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 * @see java.util.List#indexOf(java.lang.Object)
 	 */
 	
-	public int indexOf(Object o) {
-		if (o == null) {
-		    for (int i = 0; i < size; i++)
-			if (this.array[i]==null)
-			    return i;
-		} else {
-		    for (int i = 0; i < size; i++)
+	public int indexOf(Object o) {	
+	    for (int i = 0; i < size; i++) {
 			if (o.equals(this.array[i]))
 			    return i;
-		}
+	    }
+	
 		return -1;
 	}
 
@@ -710,16 +703,11 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 * @see java.util.List#lastIndexOf(java.lang.Object)
 	 */
 	
-	public int lastIndexOf(Object o) {
-		if (o == null) {
-		    for (int i = size-1; i >= 0; i--)
-			if (this.array[i]==null)
-			    return i;
-		} else {
-		    for (int i = size-1; i >= 0; i--)
+	public int lastIndexOf(Object o) {	
+	    for (int i = size-1; i >= 0; i--) {
 			if (o.equals(this.array[i]))
 			    return i;
-		}
+	    }	
 		return -1;
 	}
 

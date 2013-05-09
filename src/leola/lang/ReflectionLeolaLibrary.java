@@ -255,14 +255,14 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 		});
 		
 		LeoNativeClass aClass = new LeoNativeClass(obj);
-		
+		/*
 		List<Method> methods = ClassUtil.getAllDeclaredMethods(jClass);
 		for(Method m : methods) {
 			boolean isPublic= (m.getModifiers() & Modifier.PUBLIC) != 0;
 			if(isPublic) {
 				aClass.setMember(LeoString.valueOf(m.getName()), new LeoNativeFunction(m, obj));
 			}
-		}
+		}*/
 		
 		return aClass;
 	}

@@ -469,6 +469,16 @@ public abstract class LeoObject {
 	}
 	
 	/**
+	 * Sets a property on this object.
+	 * 
+	 * @param key -- converts to a LeoString
+	 * @param value
+	 */
+	public void setObject(String key, LeoObject value) {
+		setObject(LeoString.valueOf(key), value);
+	}
+	
+	/**
 	 * Retrieves a property from this object.
 	 * 
 	 * @param key
@@ -478,6 +488,15 @@ public abstract class LeoObject {
 		throw new LeolaRuntimeException(this + " is not a complex object");
 	}
 	
+	/**
+	 * Retrieves a property from this object.
+	 * 
+	 * @param key - converts to a LeoString
+	 * @return
+	 */
+	public LeoObject getObject(String key) {
+		return getObject(LeoString.valueOf(key));
+	}
 	
 	/**
 	 * Invokes the function
