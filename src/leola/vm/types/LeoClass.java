@@ -162,6 +162,12 @@ public class LeoClass extends LeoScopedObject {
 		return constructor;
 	}
 
+	/**
+	 * @return the superClass
+	 */
+	public LeoObject getSuperClass() {
+		return superClass;
+	}
 		
 	/* (non-Javadoc)
 	 * @see leola.vm.types.LeoObject#isClass()
