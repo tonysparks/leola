@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import leola.vm.asm.Scope;
+import leola.vm.asm.Scope.ScopeType;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.types.LeoClass;
 import leola.vm.types.LeoNull;
@@ -113,7 +114,7 @@ public class ClassDefinitions {
 			parentClass = newInstance(runtime, definition.getSuperClass().getClassName(), superParams);
 		}
 		
-		Scope scope = runtime.getSymbols().newObjectScope();
+		Scope scope = new Scope(runtime.getSymbols(), definition.getDeclaredScope(), ScopeType.OBJECT_SCOPE);
 		if ( parentClass != LeoNull.LEONULL ) {
 			LeoClass p = parentClass.as();
 			scope.setParent(p.getScope());

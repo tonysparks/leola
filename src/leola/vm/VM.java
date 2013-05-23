@@ -9,8 +9,8 @@ import static leola.vm.Opcodes.ADD;
 import static leola.vm.Opcodes.AND;
 import static leola.vm.Opcodes.ARG1;
 import static leola.vm.Opcodes.ARG2;
-import static leola.vm.Opcodes.ARGx;
 import static leola.vm.Opcodes.ARGsx;
+import static leola.vm.Opcodes.ARGx;
 import static leola.vm.Opcodes.BNOT;
 import static leola.vm.Opcodes.BSL;
 import static leola.vm.Opcodes.BSR;
@@ -70,6 +70,7 @@ import static leola.vm.Opcodes.xLOAD_OUTER;
 import leola.vm.asm.Bytecode;
 import leola.vm.asm.Outer;
 import leola.vm.asm.Scope;
+import leola.vm.asm.Scope.ScopeType;
 import leola.vm.asm.Symbols;
 import leola.vm.debug.DebugEvent;
 import leola.vm.debug.DebugListener;
@@ -675,7 +676,7 @@ public class VM {
 						NamespaceDefinitions ndefs = scope.getNamespaceDefinitions();
 						LeoNamespace ns = ndefs.getNamespace(name);
 						if(ns==null) {
-							ns = new LeoNamespace(this.runtime, namespacecode, this.symbols.newObjectScope(), name);
+							ns = new LeoNamespace(this.runtime, namespacecode, new Scope(this.symbols, scope, ScopeType.OBJECT_SCOPE), name);
 							ndefs.storeNamespace(name, ns);
 						}
 						else {
@@ -756,6 +757,7 @@ public class VM {
 
 						ClassDefinition classDefinition = new ClassDefinition(className
 																		    , superClassDefinition
+																		    , scope
 																		    , interfaces
 																		    , paramNames
 																		    , superParams

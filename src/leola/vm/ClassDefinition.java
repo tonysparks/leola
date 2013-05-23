@@ -7,6 +7,7 @@ package leola.vm;
 
 import leola.vm.asm.Bytecode;
 import leola.vm.asm.Outer;
+import leola.vm.asm.Scope;
 import leola.vm.types.LeoObject;
 import leola.vm.types.LeoOuterObject;
 import leola.vm.types.LeoString;
@@ -30,22 +31,37 @@ public class ClassDefinition {
 	private Outer[] outers;
 	
 	/**
+	 * The scope in which the class
+	 * was defined in
+	 */
+	private Scope declaredScope;
+	
+	/**
 	 * @param className
 	 * @param superClass
+	 * @param declaredScope
 	 * @param interfaces
 	 * @param numberOfParams
 	 * @param body
 	 */
-	public ClassDefinition(LeoString className, ClassDefinition superClass,
+	public ClassDefinition(LeoString className, ClassDefinition superClass, Scope declaredScope,
 			LeoString[] interfaces, LeoString[] params, LeoObject[] superParams, Bytecode body) {
 		super();
 		this.className = className;
 		this.superClass = superClass;
+		this.declaredScope = declaredScope;
 		this.interfaces = interfaces;
 		this.params = params;
 		this.superParams = superParams;
 		this.body = body;
 		this.outers = body.numOuters>0 ? new Outer[body.numOuters] : LeoOuterObject.NOOUTERS;
+	}
+	
+	/**
+	 * @return the declaredScope
+	 */
+	public Scope getDeclaredScope() {
+		return declaredScope;
 	}
 	
 	/**
