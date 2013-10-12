@@ -11,9 +11,11 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 import leola.vm.asm.Symbols;
 import leola.vm.exceptions.LeolaRuntimeException;
@@ -483,33 +485,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 */
 	
 	public Iterator<LeoObject> iterator() {
-		return new Iterator<LeoObject>() {
-			int index;
-			
-			/* (non-Javadoc)
-			 * @see java.util.Iterator#hasNext()
-			 */
-			@Override
-			public boolean hasNext() {				
-				return index < size;
-			}
-			
-			/* (non-Javadoc)
-			 * @see java.util.Iterator#next()
-			 */
-			@Override
-			public LeoObject next() {
-				return array[index++];
-			}
-			
-			/* (non-Javadoc)
-			 * @see java.util.Iterator#remove()
-			 */
-			@Override
-			public void remove() {
-				LeoArray.this.remove(index);
-			}
-		};
+		return new LeoArrayListIterator(this, 0);
 	}
 
 	
@@ -716,7 +692,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 */
 	
 	public ListIterator<LeoObject> listIterator() {
-		throw new IllegalStateException("Method not supported");
+		return new LeoArrayListIterator(this, 0);
 	}
 
 	/* (non-Javadoc)
@@ -724,7 +700,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 */
 	
 	public ListIterator<LeoObject> listIterator(int index) {
-		throw new IllegalStateException("Method not supported");
+		return new LeoArrayListIterator(this, index);
 	}
 
 	/* (non-Javadoc)
@@ -734,5 +710,105 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	public List<LeoObject> subList(int fromIndex, int toIndex) {
 		return slice(fromIndex, toIndex);
 	}
+	
+	static class LeoArrayListIterator implements ListIterator<LeoObject> {
+		private int cursor;
+		private int lastRet;
+		private LeoArray array;
+		
+		
+		/**
+		 * 
+		 */
+		public LeoArrayListIterator(LeoArray leoArray, int index) {
+			this.array = leoArray;			
+			this.cursor = index;
+			this.lastRet = -1;
+			
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return cursor < array.size;
+		}
+
+		@Override
+		public LeoObject next() {
+			int i = cursor;
+            if (i >= array.size)
+                throw new NoSuchElementException();
+                                    
+            cursor = i + 1;
+            return array.array[(lastRet = i)];			
+		}
+
+		@Override
+		public boolean hasPrevious() {
+			return cursor > 0;
+		}
+
+		@Override
+		public LeoObject previous() {
+			
+            int i = cursor - 1;
+            if (i < 0)
+                throw new NoSuchElementException();            
+            cursor = i;
+            return array.array[(lastRet = i)];			
+		}
+
+		@Override
+		public int nextIndex() {
+			return cursor;
+		}
+
+		@Override
+		public int previousIndex() {
+			return cursor-1;
+		}
+
+		@Override
+		public void remove() {
+	         if (lastRet < 0)
+                 throw new IllegalStateException();
+             
+             try {
+                 
+                 array.remove(lastRet);
+                 cursor = lastRet;
+                 lastRet = -1;
+                 
+             } catch (IndexOutOfBoundsException ex) {
+                 throw new ConcurrentModificationException();
+             }
+			
+			
+		}
+
+		@Override
+		public void set(LeoObject e) {
+            if (lastRet < 0)
+                throw new IllegalStateException();            
+
+            try {
+            	array.set(lastRet, e);
+            } catch (IndexOutOfBoundsException ex) {
+                throw new ConcurrentModificationException();
+            }
+		}
+
+		@Override
+		public void add(LeoObject e) {
+            try {
+                int i = cursor;                
+                array.add(i, e);
+                cursor = i + 1;
+                lastRet = -1;
+                
+            } catch (IndexOutOfBoundsException ex) {
+                throw new ConcurrentModificationException();
+            }
+		}
+	};
 }
 
