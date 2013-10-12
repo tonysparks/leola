@@ -38,6 +38,17 @@ public class DateLeolaLibrary implements LeolaLibrary {
 		this.runtime = runtime;	
 		this.runtime.putIntoNamespace(this, namespace);		
 	}
+	
+	/**
+	 * Creates a new Date based off of the supplied string date, in the specified format
+	 * @param date
+	 * @param format
+	 * @return the new Date
+	 * @throws Exception
+	 */
+	public Date newDate(String date, String format) throws Exception {
+		return new SimpleDateFormat(format).parse(date);
+	}
 			
 	/**
 	 * Formats the supplied {@link Date}
