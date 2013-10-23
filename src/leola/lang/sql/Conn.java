@@ -121,6 +121,9 @@ public class Conn {
 			this.sqlConn.rollback(savepoint);
 			throw t;
 		}			
+		finally {
+			aQuery.close();
+		}
 	}
 	
 	/**
@@ -149,6 +152,9 @@ public class Conn {
 			this.sqlConn.rollback(savepoint);
 			throw t;
 		}
+		finally {
+			aQuery.close();
+		}
 								
 		return result;	
 	}
@@ -173,6 +179,9 @@ public class Conn {
 		catch(Exception t) {
 			this.sqlConn.rollback(savepoint);
 			throw t;
+		}
+		finally {
+			aQuery.close();
 		}
 								
 		return result;	
