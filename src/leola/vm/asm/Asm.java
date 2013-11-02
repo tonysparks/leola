@@ -56,7 +56,6 @@ import static leola.vm.Opcodes.SET;
 import static leola.vm.Opcodes.SET_ARG1;
 import static leola.vm.Opcodes.SET_ARG2;
 import static leola.vm.Opcodes.SET_ARGx;
-import static leola.vm.Opcodes.SET_ARGsx;
 import static leola.vm.Opcodes.SET_GLOBAL;
 import static leola.vm.Opcodes.SHIFT;
 import static leola.vm.Opcodes.STORE_LOCAL;
@@ -233,7 +232,7 @@ public class Asm {
 				int instrIndex = (int)(l >> 32);
 				int opcode = (int)((l << 32) >> 32);
 				int delta = label.getLabelInstructionIndex() - instrIndex - 1;
-				int instr = SET_ARGsx(opcode,  delta);	
+				int instr = SET_ARGx(opcode,  delta);	
 				
 				getInstructions().set(instrIndex, instr);
 			}
@@ -473,14 +472,10 @@ public class Asm {
 	/**
 	 * Outputs an instruction with 1 argument
 	 * @param opcode
-	 * @param argx
+	 * @param arg1
 	 */
-	private void instrx(int opcode, int argx) {
-		instr(SET_ARGx(opcode, argx));
-	}
-	
-	private void instrsx(int opcode, int argsx) {
-		instr(SET_ARGsx(opcode, argsx));
+	private void instrx(int opcode, int arg1) {
+		instr(SET_ARGx(opcode, arg1));
 	}
 	
 	private void instr1(int opcode, int arg1) {
@@ -650,7 +645,7 @@ public class Asm {
 	}
 	
 	public void jmp(int offset) {
-		instrsx(JMP, offset);
+		instrx(JMP, offset);
 	}
 	
 	public void brk(String label) {
@@ -764,7 +759,7 @@ public class Asm {
 		decrementMaxstackSize();
 	}
 	public void ifeq(int offset) {
-		instrsx(IF, offset);
+		instrx(IF, offset);
 		decrementMaxstackSize();
 	}
 	

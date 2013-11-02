@@ -10,7 +10,6 @@ import static leola.vm.Opcodes.AND;
 import static leola.vm.Opcodes.ARG1;
 import static leola.vm.Opcodes.ARG2;
 import static leola.vm.Opcodes.ARGx;
-import static leola.vm.Opcodes.ARGsx;
 import static leola.vm.Opcodes.BNOT;
 import static leola.vm.Opcodes.BSL;
 import static leola.vm.Opcodes.BSR;
@@ -70,6 +69,7 @@ import static leola.vm.Opcodes.xLOAD_OUTER;
 import leola.vm.asm.Bytecode;
 import leola.vm.asm.Outer;
 import leola.vm.asm.Scope;
+import leola.vm.asm.Scope.ScopeType;
 import leola.vm.asm.Symbols;
 import leola.vm.debug.DebugEvent;
 import leola.vm.debug.DebugListener;
@@ -338,8 +338,7 @@ public class VM {
 				switch(opcode) {
 					/* Debug */
 					case LINE: {
-//						lineNumber = ARGx(i);
-						lineNumber = i>>>8;
+						lineNumber = ARGx(i);
 						DebugListener listener = this.runtime.getDebugListener();
 						if(listener != null ) {
 							LeoObject[] stackSnapshot = new LeoObject[top-base];
@@ -356,20 +355,17 @@ public class VM {
 
 					/* Store operations */
 					case LOAD_CONST: {
-//						int iname = ARGx(i);
-						int iname = i>>>8;
+						int iname = ARGx(i);
 						stack[top++] = constants[iname];
 						continue;
 					}
 					case LOAD_LOCAL: {
-//						int iname = ARGx(i);
-						int iname = i>>>8;
+						int iname = ARGx(i);
 						stack[top++] = stack[base + iname];
 						continue;
 					}
 					case LOAD_OUTER: {
-//						int iname = ARGx(i);
-						int iname = i>>>8;
+						int iname = ARGx(i);
 						stack[top++] = calleeouters[iname].getValue();
 						continue;
 					}
@@ -386,22 +382,19 @@ public class VM {
 						continue;
 					}
 					case STORE_LOCAL: {
-//						int iname = ARGx(i);
-						int iname = i>>>8;
+						int iname = ARGx(i);
 						stack[base + iname] = stack[--top];
 						continue;
 					}
 					case STORE_OUTER: {
-//						int iname = ARGx(i);
-						int iname = i>>>8;
+						int iname = ARGx(i);
 						calleeouters[iname].setValue(stack[--top]);
 						continue;
 					}
 
 					/* stack operators */
 					case SHIFT:	{
-//						int n = ARGx(i);
-						int n = i>>>8;
+						int n = ARGx(i);
 
 						LeoObject t = stack[top-1];
 						for(int j = 1; j < n; j++) {
@@ -440,8 +433,7 @@ public class VM {
 						continue;
 					}
 					case SWAP: {
-//						int n = ARGx(i);
-						int n = i>>>8;
+						int n = ARGx(i);
 						for(int j = 1; j <= n; j++) {
 							LeoObject t = stack[top-j];
 							stack[top-j] 	= stack[top-n-j];
@@ -450,8 +442,7 @@ public class VM {
 						continue;
 					}
 					case MOVN: {
-//						int n = ARGx(i) + 1;
-						int n = (i>>>8) + 1;
+						int n = ARGx(i) + 1;
 
 						LeoObject t = stack[top-n];
 						for(int j = n-1; j > 0; j--) {
@@ -463,7 +454,7 @@ public class VM {
 						continue;
 					}
 					case JMP:	{
-						int pos = ARGsx(i);
+						int pos = ARGx(i);
 						pc += pos;
 						continue;
 					}
@@ -615,8 +606,7 @@ public class VM {
 
 						LeoObject className = stack[--top];
 
-//						int nargs = ARGx(i);
-						int nargs = i>>>8;
+						int nargs = ARGx(i);
 						LeoObject[] args = null;
 						if ( nargs > 0 ) {
 							args = new LeoObject[nargs];
@@ -639,8 +629,7 @@ public class VM {
 						continue;
 					}
 					case NEW_ARRAY:	{
-//						int initialSize = ARGx(i);
-						int initialSize = i>>>8;
+						int initialSize = ARGx(i);
 						LeoArray array = new LeoArray(initialSize);
 
 						for(int j = initialSize; j > 0; j--) {
@@ -652,8 +641,7 @@ public class VM {
 						continue;
 					}
 					case NEW_MAP:	{
-//						int initialSize = ARGx(i);
-						int initialSize = i>>>8;
+						int initialSize = ARGx(i);
 
 						LeoMap map = new LeoMap(initialSize);
 						for(int j = 0; j < initialSize; j++) {
@@ -667,15 +655,14 @@ public class VM {
 						continue;
 					}
 					case NEW_NAMESPACE: {
-//						int innerIndex = ARGx(i);
-						int innerIndex = i>>>8;
+						int innerIndex = ARGx(i);
 						Bytecode namespacecode = inner[innerIndex];
 
 						String name = stack[--top].toString();
 						NamespaceDefinitions ndefs = scope.getNamespaceDefinitions();
 						LeoNamespace ns = ndefs.getNamespace(name);
 						if(ns==null) {
-							ns = new LeoNamespace(this.runtime, namespacecode, this.symbols.newObjectScope(), name);
+							ns = new LeoNamespace(this.runtime, namespacecode, new Scope(this.symbols, scope, ScopeType.OBJECT_SCOPE), name);
 							ndefs.storeNamespace(name, ns);
 						}
 						else {
@@ -694,8 +681,7 @@ public class VM {
 						continue;
 					}
 					case DEF: {
-//						int innerIndex = ARGx(i);
-						int innerIndex = i>>>8;
+						int innerIndex = ARGx(i);
 						Bytecode bytecode = inner[innerIndex];
 						LeoFunction fun = new LeoFunction(scopedObj, bytecode);
 
@@ -734,8 +720,7 @@ public class VM {
 
 
 						LeoString[] interfaces = null;
-//						int numberOfInterfaces = ARGx(i);
-						int numberOfInterfaces = i>>>8;
+						int numberOfInterfaces = ARGx(i);
 						if ( numberOfInterfaces > 0 ) {
 							interfaces = new LeoString[numberOfInterfaces];
 							for(int j = 0; j < numberOfInterfaces; j++) {
@@ -756,6 +741,7 @@ public class VM {
 
 						ClassDefinition classDefinition = new ClassDefinition(className
 																		    , superClassDefinition
+																		    , scope
 																		    , interfaces
 																		    , paramNames
 																		    , superParams
@@ -780,7 +766,7 @@ public class VM {
 					case IF:	{
 						LeoObject cond = stack[--top];
 						if ( ! LeoObject.isTrue(cond) ) {
-							int pos = ARGsx(i);
+							int pos = ARGx(i);
 							pc += pos;
 						}
 						continue;
@@ -814,23 +800,20 @@ public class VM {
 						continue;
 					}
 					case GET_GLOBAL: {
-//						int iname = ARGx(i);
-						int iname = i>>>8;
+						int iname = ARGx(i);
 						LeoObject member = scope.getObject(constants[iname].toLeoString());
 						stack[top++] = member;
 
 						continue;
 					}
 					case SET_GLOBAL: {
-//						int iname = ARGx(i);
-						int iname = i>>>8;
+						int iname = ARGx(i);
 						scopedObj.addProperty(constants[iname].toLeoString(), stack[--top]);
 
 						continue;
 					}
 					case GET_NAMESPACE: {
-//						int iname = ARGx(i);
-						int iname = i>>>8;
+						int iname = ARGx(i);
 						LeoObject member = scope.getNamespace(constants[iname].toLeoString());
 						stack[top++] = member;
 
@@ -1006,9 +989,8 @@ public class VM {
 		finally {
 
 			/* close the outers for this function call */
-			//if ( code.numInners > 0 /*closeOuters*/ ) {
-				int outerScopeSize = base+code.maxstacksize; 
-				for(int j=base;j<outerScopeSize&&j<openouters.length;j++) {
+			//if ( closeOuters /*|| true*/ ) {
+				for(int j=base;j<openouters.length && j<base+code.maxstacksize;j++) {
 					if(openouters[j]!=null) {
 						openouters[j].close();
 						openouters[j] = null;

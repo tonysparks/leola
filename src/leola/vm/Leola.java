@@ -476,7 +476,7 @@ public class Leola {
 		else {
 			nsScope = getSymbols().newObjectScope();
 			ns = new LeoNamespace(nsScope, namespace);
-			getSymbols().getGlobalScope().getNamespaceDefinitions().storeNamespace(namespace, ns);
+			getSymbols().peek().getNamespaceDefinitions().storeNamespace(namespace, ns);
 
 			// TODO: Do we want the namespaces accessible?
 			// putGlobal(namespace, ns);
