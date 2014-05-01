@@ -67,7 +67,7 @@ public class LeoGenerator extends LeoOuterObject {
 	 * @param body
 	 */
 	public LeoGenerator(LeoObject env, Bytecode bytecode) {
-		super(LeoType.FUNCTION, bytecode.numOuters);
+		super(LeoType.GENERATOR, bytecode.numOuters);
 		
 		this.env = env;
 		this.bytecode = bytecode;
