@@ -16,6 +16,7 @@ Leola currently supports these features:
 * classes
 * single inheritance
 * namespaces
+* generators
 * language support for expandable arrays
 * language support for maps
 * easily embeddable in Java programs
@@ -138,6 +139,35 @@ println(text) // prints A red truck
 /* is expression */
 println(color is String) // prints true
 
+
+````
+
+Generators
+=====
+
+Generators in Leola are similar to the generators in Python, with some slight differences.  Mainly, the ability to pass parameters to them with each invocation.  Any other local variables of the generator are stored and retained in the generator (the exception being the parameters).  
+
+````javascript
+/* define a generator */
+var count = gen(n) {
+  var i = 0
+  while i < n {
+    yield i
+    i+=1
+  }
+}
+
+while true {
+  var i = count(10)
+  
+  /* an exhausted generator returns null */
+  if i!=null {
+    print(i + " ")
+  }
+  else break
+}
+
+/* this will print: 0 1 2 3 4 5 6 7 8 9 */
 
 ````
 
