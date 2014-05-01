@@ -21,7 +21,6 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import leola.ast.ASTNode;
 import leola.frontend.ExceptionHandler;
@@ -205,6 +204,16 @@ public class Leola {
 	}
 
 	/**
+	 * A means for retrieving a VM instance
+	 * 
+	 * @author Tony
+	 *
+	 */
+	private static interface VMReference {
+		public VM get();
+	}
+	
+	/**
 	 * Varargs
 	 */
 	private Args args;
@@ -239,18 +248,11 @@ public class Leola {
 	 */
 	private DebugListener debugListener;
 
+
 	/**
 	 * Local thread variable for the VM
-	 */
-	/*
-	private ThreadLocal<VM> vm = new ThreadLocal<VM>() {		
-		@Override
-		protected VM initialValue() {
-			return new VM(Leola.this);
-		}
-	};*/
-	
-	private AtomicReference<VM> vm = new AtomicReference<VM>();
+	 */	
+	private VMReference vm;	
 
 	/**
 	 * The exception handler
@@ -290,9 +292,34 @@ public class Leola {
 		this.global = new LeoNamespace(globalScope, GLOBAL_SCOPE_NAME);
 		globalScope.getNamespaceDefinitions().storeNamespace(GLOBAL_SCOPE_NAME, this.global);
 
-		this.vm.set(new VM(this));
-		this.vm.get();
-
+		if(args.isAllowThreadLocal()) {
+			this.vm = new VMReference() {				
+				private ThreadLocal<VM> vm = new ThreadLocal<VM>() {		
+					@Override
+					protected VM initialValue() {
+						return new VM(Leola.this);
+					}
+				};
+				
+				@Override
+				public VM get() {				
+					return vm.get();
+				}
+			};
+			
+			this.vm.get();
+		}
+		else {
+			this.vm = new VMReference() {
+				private VM vm = new VM(Leola.this);
+				
+				@Override
+				public VM get() {				
+					return this.vm;
+				}
+			};
+		}		
+		
 		putGlobal("$args", args.getScriptArgs());
 		putGlobal("this", this.global);
 

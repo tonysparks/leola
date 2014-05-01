@@ -27,6 +27,7 @@ public class Args {
 	private boolean barebones;
 	private boolean isExecuteStatement;
 	private boolean isDebugMode;
+	private boolean allowThreadLocals;
 	private String statement;
 	private LeoObject scriptArgs;
 	private int stackSize;
@@ -43,6 +44,7 @@ public class Args {
 		{ "s", "Does not include any libraries" },
 		{ "r", "Executes a supplied statement"	},
 		{ "x", "Sets the stack size. Ex. x=1024 "	},
+		{ "t", "Disables allocating a VM per thread. "	},
 		{ "cp", "Path names to be included on include, require look ups.  Use a ';' as " +
 					"a path separater. \n\t\t Ex. \"cp=C:/My Documents/libs;C:/leola/libs\" " },
 	};
@@ -98,6 +100,9 @@ public class Args {
 			else if (arg.startsWith("g")) {
 				pargs.isDebugMode = true;
 			}
+			else if (arg.startsWith("t")) {
+				pargs.allowThreadLocals = false;
+			}				
 			else if ( arg.startsWith("cp=") ) {
 				String[] paths = arg.replace("cp=", "").split(";");
 				for(String path : paths) {
@@ -135,6 +140,13 @@ public class Args {
 		}
 		
 		return pargs;
+	}
+	
+	/**
+	 * 
+	 */
+	public Args() {
+		this.allowThreadLocals=true;
 	}
 	
 	/**
@@ -200,7 +212,7 @@ public class Args {
 		if(this.scriptArgs==null) return new LeoArray(0);
 		return this.scriptArgs;
 	}
-	
+		
 	/**
 	 * @return the includeDirectories
 	 */
@@ -208,6 +220,16 @@ public class Args {
 		return includeDirectories;
 	}
 
+	/**
+	 * Default is true.  
+	 * 
+	 * @see #enableVMThreadLocal(boolean)
+	 * @return true if the use of thread locals is enabled
+	 */
+	public boolean isAllowThreadLocal() {
+		return this.allowThreadLocals;
+	}
+	
 	/**
 	 * @param fileName the fileName to set
 	 */
@@ -276,6 +298,18 @@ public class Args {
 	 */
 	public void setDebugMode(boolean isDebugMode) {
 		this.isDebugMode = isDebugMode;
+	}
+	
+	/**
+	 * When this is disabled, the Leola runtime will not spawn
+	 * a {@link VM} instance per thread in which the runtime is invoked
+	 * on.  This property is enabled by default to allow for better
+	 * multi-threaded support.  
+	 * 
+	 * @param allow
+	 */
+	public void enableVMThreadLocal(boolean allow) {
+		this.allowThreadLocals = allow;
 	}
 }
 
