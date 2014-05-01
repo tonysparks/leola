@@ -251,22 +251,26 @@ public class ResourceLoader {
 	 */
 	private void loadLibrary(Leola runtime, File file, String namespace) throws Exception {		
 	    JarInputStream jarFile = new JarInputStream(new FileInputStream (file));
-	    JarEntry jarEntry;
-
-	    boolean loaded = false;
-	    while(true) {
-	    	jarEntry = jarFile.getNextJarEntry();
-	      
-	    	if(jarEntry == null) {
-	    		break;
-	    	}
-	    	
-	    	String className = jarEntry.getName().replaceAll("/", "\\.").replaceAll("\\.class", "");
-	    	if ( className.endsWith("LeolaLibrary")) {
-	    		loaded = tryLoadingLibrary(runtime, className, namespace) || loaded;
-	    	}
+	    try {
+		    JarEntry jarEntry;
+	
+		    boolean loaded = false;
+		    while(true) {
+		    	jarEntry = jarFile.getNextJarEntry();
+		      
+		    	if(jarEntry == null) {
+		    		break;
+		    	}
+		    	
+		    	String className = jarEntry.getName().replaceAll("/", "\\.").replaceAll("\\.class", "");
+		    	if ( className.endsWith("LeolaLibrary")) {
+		    		loaded = tryLoadingLibrary(runtime, className, namespace) || loaded;
+		    	}
+		    }
 	    }
-	    
+	    finally {
+	    	jarFile.close();
+	    }
 //	    if (! loaded ) {
 //	    	throw new IOException("No *LeolaLibrary found in: " + file.getName());
 //	    }

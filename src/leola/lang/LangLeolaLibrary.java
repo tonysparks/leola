@@ -167,8 +167,13 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	public final String readln() {
 		String result = null;
 		Scanner s = new Scanner(java.lang.System.in);		
-		if ( s.hasNextLine() ) {
-			result = s.nextLine();
+		try {
+			if ( s.hasNextLine() ) {
+				result = s.nextLine();
+			}
+		}
+		finally {
+			s.close();
 		}
 
 		return result;

@@ -130,8 +130,13 @@ public class SystemLeolaLibrary implements LeolaLibrary {
 	
 	public final void pipe(InputStream iStream) throws Exception {
 		Scanner scanner = new Scanner(iStream);
-		while(scanner.hasNext()) {
-			System.out.println(scanner.nextLine());
+		try {
+			while(scanner.hasNext()) {
+				System.out.println(scanner.nextLine());
+			}
+		}
+		finally {
+			scanner.close();
 		}
 	}
 	
