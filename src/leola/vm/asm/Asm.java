@@ -15,7 +15,7 @@ import static leola.vm.Opcodes.DEF;
 import static leola.vm.Opcodes.DIV;
 import static leola.vm.Opcodes.DUP;
 import static leola.vm.Opcodes.EQ;
-import static leola.vm.Opcodes.REQ;
+import static leola.vm.Opcodes.GEN;
 import static leola.vm.Opcodes.GET;
 import static leola.vm.Opcodes.GET_GLOBAL;
 import static leola.vm.Opcodes.GET_NAMESPACE;
@@ -51,6 +51,7 @@ import static leola.vm.Opcodes.OPCODE;
 import static leola.vm.Opcodes.OPPOP;
 import static leola.vm.Opcodes.OR;
 import static leola.vm.Opcodes.POP;
+import static leola.vm.Opcodes.REQ;
 import static leola.vm.Opcodes.RET;
 import static leola.vm.Opcodes.SET;
 import static leola.vm.Opcodes.SET_ARG1;
@@ -65,6 +66,7 @@ import static leola.vm.Opcodes.SWAP;
 import static leola.vm.Opcodes.TAIL_CALL;
 import static leola.vm.Opcodes.THROW;
 import static leola.vm.Opcodes.XOR;
+import static leola.vm.Opcodes.YIELD;
 import static leola.vm.Opcodes.xLOAD_LOCAL;
 import static leola.vm.Opcodes.xLOAD_OUTER;
 
@@ -612,7 +614,11 @@ public class Asm {
 			setInstr(SET_ARG2(instr, 1));			
 		}
 	}
-		
+	
+	public void yield() {
+		instr(YIELD);
+	}
+	
 	public void ret() {
 		instr(RET);
 	}
@@ -731,6 +737,21 @@ public class Asm {
 		peek().asms.add(asm);
 		this.inner.push(asm);
 	}
+	
+	public void gen(int numberOfParameters) {
+		instrx(GEN, getBytecodeIndex());		
+		incrementMaxstackSize(numberOfParameters);
+		
+		Asm asm = new Asm(this.symbols);
+		asm.setDebug(this.isDebug());
+		
+		asm.numArgs = numberOfParameters;					
+		asm.start(ScopeType.LOCAL_SCOPE);
+				
+		peek().asms.add(asm);
+		this.inner.push(asm);
+	}
+	
 	public void def(int numberOfParameters) {
 		instrx(DEF, getBytecodeIndex());		
 		incrementMaxstackSize(numberOfParameters);

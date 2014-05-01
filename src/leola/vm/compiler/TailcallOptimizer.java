@@ -15,6 +15,7 @@ import leola.ast.FuncInvocationExpr;
 import leola.ast.IfStmt;
 import leola.ast.ReturnStmt;
 import leola.ast.Stmt;
+import leola.ast.YieldStmt;
 import leola.frontend.EvalException;
 
 /**
@@ -105,6 +106,18 @@ public class TailcallOptimizer extends ASTNodeVisitorAdapter {
 	 */
 	@Override
 	public void visit(ReturnStmt s) throws EvalException {
+		this.isTerminal = true;
+		Expr r = s.getExpr();
+		if ( r != null ) {
+			r.visit(this);
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ReturnStmt)
+	 */
+	@Override
+	public void visit(YieldStmt s) throws EvalException {
 		this.isTerminal = true;
 		Expr r = s.getExpr();
 		if ( r != null ) {

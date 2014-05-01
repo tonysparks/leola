@@ -253,6 +253,10 @@ public class Opcodes {
 				op = "NEW_MAP";
 				break;
 			}			
+			case GEN: {
+				op = "GEN";
+				break;
+			}
 			case DEF: {
 				op = "DEF";
 				break;
@@ -263,6 +267,10 @@ public class Opcodes {
 			}			
 			case IF:	{					
 				op = "IF";
+				break;
+			}
+			case YIELD: {
+				op = "YIELD";
 				break;
 			}
 			case BREAK: {
@@ -444,55 +452,57 @@ public class Opcodes {
 		NEW_ARRAY = 22,
 		NEW_MAP = 23,		
 		DEF = 24,
-		IS_A = 25,
-		BREAK = 26,
-		CONTINUE = 27,
-		CLASS_DEF = 28,
+		GEN = 25,
+		IS_A = 26,
+		BREAK = 27,
+		CONTINUE = 28,
+		YIELD = 29,
+		CLASS_DEF = 30,
 		
-		INVOKE = 29,
-		NEW_NAMESPACE = 30,
-		TAIL_CALL = 31,		
+		INVOKE = 31,
+		NEW_NAMESPACE = 32,
+		TAIL_CALL = 33,		
 		
 		/* member access */
-		GET = 32,
-		SET = 33,
+		GET = 34,
+		SET = 35,
 		
-		GET_GLOBAL = 34,
-		SET_GLOBAL = 35,
+		GET_GLOBAL = 36,
+		SET_GLOBAL = 37,
 		
-		GET_NAMESPACE = 36,
+		GET_NAMESPACE = 38,
 		
-		THROW = 37,
+		THROW = 39,
 						
 		/* arithmetic operators */
-		ADD = 38,
-		SUB = 39,
-		MUL = 40,
-		DIV = 41,
-		MOD = 42,
-		NEG = 43,
+		ADD = 40,
+		SUB = 41,
+		MUL = 42,
+		DIV = 43,
+		MOD = 44,
+		NEG = 45,
 	
-		BSL = 44,
-		BSR = 45,
-		BNOT = 46,
-		XOR = 47,
-		LOR = 48,
-		LAND = 49,
+		BSL = 46,
+		BSR = 47,
+		BNOT = 48,
+		XOR = 49,
+		LOR = 50,
+		LAND = 51,
 		
-		OR = 50,
-		AND = 51,
-		NOT = 52,
+		OR = 52,
+		AND = 53,
+		NOT = 54,
 		
-		REQ = 53,
-		EQ = 54,
-		NEQ = 55,
-		GT = 56,
-		GTE = 57,
-		LT = 58,
-		LTE = 59,
+		REQ = 55,
+		EQ = 56,
+		NEQ = 57,
+		GT = 58,
+		GTE = 59,
+		LT = 60,
+		LTE = 61,
 		
 		/* debug */
-		LINE = 60
+		LINE = 62
 		;
 	
 	
@@ -529,10 +539,12 @@ public class Opcodes {
 		opcodes.put("NEW_ARRAY", NEW_ARRAY);
 		opcodes.put("NEW_MAP", NEW_MAP);
 		opcodes.put("DEF", DEF);
+		opcodes.put("GEN", GEN);
 		opcodes.put("IS_A", IS_A);
 		opcodes.put("IF", IF);
 		opcodes.put("BREAK", BREAK);
 		opcodes.put("CONTINUE", CONTINUE);
+		opcodes.put("YIELD", YIELD);
 		opcodes.put("CLASS_DEF", CLASS_DEF);
 		opcodes.put("THROW", THROW);
 

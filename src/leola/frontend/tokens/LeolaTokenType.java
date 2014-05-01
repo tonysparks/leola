@@ -22,7 +22,7 @@ public enum LeolaTokenType implements TokenType
     // Reserved words.    
     SWITCH, 
     CASE, WHEN, RETURN, ELSE, NAMESPACE, 
-    DEF, IF, NULL, VAR, WHILE, IS, ON,
+    DEF, GEN, YIELD, IF, NULL, VAR, WHILE, IS, ON,
     NEW, TRUE, FALSE, BREAK, CONTINUE, THROW,
     CLASS,
     // end Reserved words

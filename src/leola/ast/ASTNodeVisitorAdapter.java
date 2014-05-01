@@ -185,6 +185,12 @@ public class ASTNodeVisitorAdapter implements ASTNodeVisitor {
 	 */
 	@Override
 	public void visit(EmptyStmt s) throws EvalException {}
+	
+	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.GenDefExpr)
+	 */
+	@Override
+	public void visit(GenDefExpr s) throws EvalException {}
 
 	/* (non-Javadoc)
 	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.FuncDefExpr)
@@ -240,6 +246,12 @@ public class ASTNodeVisitorAdapter implements ASTNodeVisitor {
 	 */
 	@Override
 	public void visit(StringExpr s) throws EvalException {}
+	
+	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.YieldStmt)
+	 */
+	@Override
+	public void visit(YieldStmt s) throws EvalException {}
 
 	/* (non-Javadoc)
 	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.SwitchStmt)

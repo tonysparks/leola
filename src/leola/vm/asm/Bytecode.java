@@ -30,7 +30,7 @@ public class Bytecode {
 	public static final int VERSION = 1;
 	
 	public final int[] instr;
-	public final int pc;
+	public       int pc;
 	public final int len;
 	
 	public LeoObject[] constants;
@@ -90,6 +90,29 @@ public class Bytecode {
 	
 	public String getSourceFile() {
 		return (this.debugSymbols!=null) ? this.debugSymbols.getSourceFile() : "";
+	}
+	
+	/**
+	 * Clones this {@link Bytecode}
+	 */
+	public Bytecode clone() {
+		Bytecode clone = new Bytecode(instr);
+		clone.constants = this.constants;
+		clone.debug = this.debug;
+		clone.debugSymbols = this.debugSymbols;
+		clone.inner = new Bytecode[this.numInners];
+		for(int i = 0; i<this.numInners;i++) {
+			clone.inner[i] = this.inner[i].clone();
+		}
+		
+		clone.maxstacksize = this.maxstacksize;
+		clone.numArgs = this.numArgs;
+		clone.numConstants = this.numConstants;
+		clone.numInners = this.numInners;
+		clone.numLocals = this.numLocals;
+		clone.numOuters = this.numOuters;
+				
+		return clone;
 	}
 	
 	/**

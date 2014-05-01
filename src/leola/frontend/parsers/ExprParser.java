@@ -14,7 +14,6 @@ import static leola.frontend.tokens.LeolaTokenType.BIT_SHIFT_RIGHT;
 import static leola.frontend.tokens.LeolaTokenType.DEF;
 import static leola.frontend.tokens.LeolaTokenType.DOT;
 import static leola.frontend.tokens.LeolaTokenType.D_EQUALS;
-import static leola.frontend.tokens.LeolaTokenType.REF_EQUALS;
 import static leola.frontend.tokens.LeolaTokenType.GREATER_EQUALS;
 import static leola.frontend.tokens.LeolaTokenType.GREATER_THAN;
 import static leola.frontend.tokens.LeolaTokenType.IDENTIFIER;
@@ -32,10 +31,12 @@ import static leola.frontend.tokens.LeolaTokenType.NOT_EQUALS;
 import static leola.frontend.tokens.LeolaTokenType.NULL;
 import static leola.frontend.tokens.LeolaTokenType.PLUS;
 import static leola.frontend.tokens.LeolaTokenType.REAL;
+import static leola.frontend.tokens.LeolaTokenType.REF_EQUALS;
 import static leola.frontend.tokens.LeolaTokenType.RIGHT_BRACKET;
 import static leola.frontend.tokens.LeolaTokenType.RIGHT_PAREN;
 import static leola.frontend.tokens.LeolaTokenType.SLASH;
 import static leola.frontend.tokens.LeolaTokenType.STAR;
+import static leola.frontend.tokens.LeolaTokenType.GEN;
 import static leola.frontend.tokens.LeolaTokenType.STRING;
 
 import java.util.EnumSet;
@@ -70,7 +71,7 @@ public class ExprParser extends StmtParser {
 
     // Synchronization set for starting an expression.
     public static final EnumSet<LeolaTokenType> EXPR_START_SET =
-        EnumSet.of(PLUS, MINUS, IDENTIFIER, INTEGER, REAL, STRING, DEF, 
+        EnumSet.of(PLUS, MINUS, IDENTIFIER, INTEGER, REAL, STRING, DEF, GEN,
         		   NULL, NOT, BITWISE_NOT, LEFT_PAREN, LEFT_BRACKET);
 
     public static final EnumSet<LeolaTokenType> EXPR_END_SET =
@@ -447,6 +448,11 @@ public class ExprParser extends StmtParser {
         	}
         	case DEF: {
         		FuncDefExprParser parser = new FuncDefExprParser(this);
+        		rootNode = parser.parse(token);
+        		break;
+        	}
+        	case GEN: {
+        		GenDefExprParser parser = new GenDefExprParser(this);
         		rootNode = parser.parse(token);
         		break;
         	}

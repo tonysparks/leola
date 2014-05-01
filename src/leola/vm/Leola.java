@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import leola.ast.ASTNode;
 import leola.frontend.ExceptionHandler;
@@ -241,15 +242,15 @@ public class Leola {
 	/**
 	 * Local thread variable for the VM
 	 */
-	private ThreadLocal<VM> vm = new ThreadLocal<VM>() {
-		/* (non-Javadoc)
-		 * @see java.lang.ThreadLocal#initialValue()
-		 */
+	/*
+	private ThreadLocal<VM> vm = new ThreadLocal<VM>() {		
 		@Override
 		protected VM initialValue() {
 			return new VM(Leola.this);
 		}
-	};
+	};*/
+	
+	private AtomicReference<VM> vm = new AtomicReference<VM>();
 
 	/**
 	 * The exception handler
@@ -289,6 +290,7 @@ public class Leola {
 		this.global = new LeoNamespace(globalScope, GLOBAL_SCOPE_NAME);
 		globalScope.getNamespaceDefinitions().storeNamespace(GLOBAL_SCOPE_NAME, this.global);
 
+		this.vm.set(new VM(this));
 		this.vm.get();
 
 		putGlobal("$args", args.getScriptArgs());
@@ -311,7 +313,8 @@ public class Leola {
 			loadLibrary(new DateLeolaLibrary(), "date");
 		}
 	}
-
+	
+	
 	/**
 	 * @return the varargs
 	 */

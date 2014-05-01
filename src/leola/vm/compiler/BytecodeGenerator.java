@@ -35,6 +35,7 @@ import leola.ast.EmptyStmt;
 import leola.ast.Expr;
 import leola.ast.FuncDefExpr;
 import leola.ast.FuncInvocationExpr;
+import leola.ast.GenDefExpr;
 import leola.ast.IfStmt;
 import leola.ast.IntegerExpr;
 import leola.ast.IsExpr;
@@ -60,6 +61,7 @@ import leola.ast.UnaryExpr.UnaryOp;
 import leola.ast.VarDeclStmt;
 import leola.ast.VarExpr;
 import leola.ast.WhileStmt;
+import leola.ast.YieldStmt;
 import leola.frontend.EvalException;
 import leola.vm.Leola;
 import leola.vm.asm.Asm;
@@ -872,6 +874,27 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	}
 
 	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.GenDefExpr)
+	 */
+	@Override
+	public void visit(GenDefExpr s) throws EvalException {
+		asm.line(s.getLineNumber());
+		
+		String parameters[] = s.getParameters();
+		asm.gen(parameters.length);
+		{
+			asm.line(s.getLineNumber());
+						
+			for(String name : parameters) {
+				asm.addLocal(name);
+			}
+			
+			s.getBody().visit(this);
+		} 
+		asm.end();		
+	}
+	
+	/* (non-Javadoc)
 	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.FuncDefExpr)
 	 */
 	@Override
@@ -891,7 +914,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		} 
 		asm.end(); 		
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.FuncInvocationExpr)
 	 */
@@ -1019,6 +1042,24 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		asm.line(s.getLineNumber());
 		
 		asm.loadnull();
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ReturnStmt)
+	 */
+	@Override
+	public void visit(YieldStmt s) throws EvalException {
+		asm.line(s.getLineNumber());
+		
+		Expr expr = s.getExpr();
+		if ( expr != null ) {		
+			expr.visit(this);
+		}
+		else {
+			asm.loadnull();
+		}
+		
+		asm.yield();
 	}
 
 	/* (non-Javadoc)

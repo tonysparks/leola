@@ -10,6 +10,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import leola.vm.VM;
+import leola.vm.asm.Outer;
+import leola.vm.asm.Scope;
 import leola.vm.asm.Symbols;
 import leola.vm.exceptions.LeolaRuntimeException;
 
@@ -59,6 +61,7 @@ public abstract class LeoObject {
 		  , REAL
 //		  , NUMBER
 		  , STRING
+		  , GENERATOR
 		  , FUNCTION
 		  , NATIVE_FUNCTION
 		  , ARRAY
@@ -96,6 +99,27 @@ public abstract class LeoObject {
 	public LeoType getType() {
 		return type;
 	}
+	
+	/**
+	 * @return the scope
+	 */
+	public Scope getScope() {
+		return null;
+	}
+	
+	/**
+	 * @return the outers
+	 */
+	public Outer[] getOuters() {
+		return null;
+	}
+	
+	/**
+	 * @return the locals
+	 */
+	public LeoObject[] getLocals() {
+		return null;
+	}
 
 	public boolean isNumber() {
 		return false;
@@ -120,7 +144,9 @@ public abstract class LeoObject {
 	public boolean isClass() {
 		return false;
 	}
-	
+	public boolean isGenerator() {
+		return false;
+	}
 	public boolean isFunction() {
 		return false;
 	}
@@ -633,9 +659,14 @@ public abstract class LeoObject {
 			case BOOLEAN: {
 				result = LeoBoolean.read(env, symbols, in);
 				break;
-			}
+			}			
+			case ERROR: 
 			case CLASS: {
 			//	result = LeoClass.read(env, symbols, in); TODO
+				break;
+			}
+			case GENERATOR: {
+				result = LeoGenerator.read(env, symbols, in);
 				break;
 			}
 			case FUNCTION: {

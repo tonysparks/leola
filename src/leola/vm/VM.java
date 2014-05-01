@@ -18,6 +18,7 @@ import static leola.vm.Opcodes.DEF;
 import static leola.vm.Opcodes.DIV;
 import static leola.vm.Opcodes.DUP;
 import static leola.vm.Opcodes.EQ;
+import static leola.vm.Opcodes.GEN;
 import static leola.vm.Opcodes.GET;
 import static leola.vm.Opcodes.GET_GLOBAL;
 import static leola.vm.Opcodes.GET_NAMESPACE;
@@ -64,6 +65,7 @@ import static leola.vm.Opcodes.SWAP;
 import static leola.vm.Opcodes.TAIL_CALL;
 import static leola.vm.Opcodes.THROW;
 import static leola.vm.Opcodes.XOR;
+import static leola.vm.Opcodes.YIELD;
 import static leola.vm.Opcodes.xLOAD_LOCAL;
 import static leola.vm.Opcodes.xLOAD_OUTER;
 import leola.vm.asm.Bytecode;
@@ -78,11 +80,11 @@ import leola.vm.types.LeoArray;
 import leola.vm.types.LeoBoolean;
 import leola.vm.types.LeoError;
 import leola.vm.types.LeoFunction;
+import leola.vm.types.LeoGenerator;
 import leola.vm.types.LeoMap;
 import leola.vm.types.LeoNamespace;
 import leola.vm.types.LeoNull;
 import leola.vm.types.LeoObject;
-import leola.vm.types.LeoOuterObject;
 import leola.vm.types.LeoScopedObject;
 import leola.vm.types.LeoString;
 import leola.vm.util.ClassUtil;
@@ -303,12 +305,29 @@ public class VM {
 
 		final LeoObject[] constants = code.constants;
 		final Bytecode[] inner = code.inner;
-
-//		Outer[] openouters = code.inner.length>0 ? new Outer[stack.length] : ArrayUtil.EMPTY_OUTERS;
-		final Outer[] calleeouters = (callee != null && callee.isOuter()) ?
-				((LeoOuterObject)callee).getOuters() : null;
+		
+		final Outer[] calleeouters;
+		final LeoObject[] genLocals;
+		
+		if(callee != null) {
+			calleeouters = callee.getOuters();
+			genLocals = callee.getLocals();
+			
+			/* if this is a generator, let us copy its local variables onto
+			 * the stack
+			 */
+			if(genLocals != null) {
+				System.arraycopy(genLocals, 0, stack, base+code.numArgs, code.numLocals);
+			}
+		}
+		else {
+			calleeouters = null;
+			genLocals = null;
+		}
+		
 
 		boolean closeOuters = false;
+		boolean yield = false;
 
 		Scope scope = null;
 		LeoScopedObject scopedObj = null;
@@ -317,7 +336,6 @@ public class VM {
 			scope = scopedObj.getScope();
 		}
 
-		final int topStack = base + code.numLocals;
 
 		if(scope==null) {
 			LeoNamespace global = runtime.getGlobalNamespace();
@@ -325,7 +343,9 @@ public class VM {
 			scope=global.getScope();
 			scopedObj=global;
 		}
-
+		
+		
+		final int topStack = base + code.numLocals;
 		top = topStack;
 
 		int lineNumber = -1;
@@ -421,6 +441,22 @@ public class VM {
 					}
 					case RET:	{
 						pc = len;  /* Break out of the bytecode */
+						if ( top>topStack) {
+							result = stack[--top];
+						}
+						break;
+					}
+					case YIELD: {
+						yield = true; /* lets not expire the generator */
+						
+						/* copy what was stored on the stack, back to the
+						 * generators local copy
+						 */
+						System.arraycopy(stack, base+code.numArgs, genLocals, 0, code.numLocals);
+						
+						code.pc = pc;						
+						pc = len;
+						
 						if ( top>topStack) {
 							result = stack[--top];
 						}
@@ -678,6 +714,19 @@ public class VM {
 						this.runtime.execute(ns, namespacecode);
 
 						stack[top++] = ns;
+						continue;
+					}
+					case GEN: {
+						int innerIndex = ARGx(i);
+						Bytecode bytecode = inner[innerIndex];
+						LeoGenerator fun = new LeoGenerator(scopedObj, bytecode.clone());
+
+						Outer[] outers = fun.getOuters();
+						closeOuters = outers(outers, calleeouters, openouters, stack, bytecode.numOuters, base, pc, code, scope, lineNumber, top, topStack)
+										|| closeOuters;
+						pc += bytecode.numOuters;
+
+						stack[top++] = fun;
 						continue;
 					}
 					case DEF: {
@@ -1001,6 +1050,13 @@ public class VM {
 			//}
 
 			top = base;
+			
+			/* expire this generator if we hit the end of the function */
+			if(!yield && callee != null && callee.isGenerator()) {
+				if(pc == len) {
+					code.pc = pc;
+				}
+			}
 		}
 
 		return result;

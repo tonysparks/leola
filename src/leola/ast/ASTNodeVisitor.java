@@ -53,6 +53,7 @@ public interface ASTNodeVisitor {
 	void visit(IsExpr s) throws EvalException;
 
 	void visit(EmptyStmt s) throws EvalException;
+	void visit(GenDefExpr s) throws EvalException;
 	void visit(FuncDefExpr s) throws EvalException;
 	void visit(FuncInvocationExpr s) throws EvalException;
 	void visit(IfStmt s) throws EvalException;
@@ -61,6 +62,7 @@ public interface ASTNodeVisitor {
 	void visit(NewExpr s) throws EvalException;
 	void visit(NullExpr s) throws EvalException;
 	void visit(ReturnStmt s) throws EvalException;
+	void visit(YieldStmt s) throws EvalException;
 	void visit(StringExpr s) throws EvalException;
 	void visit(SwitchStmt s) throws EvalException;
 	
