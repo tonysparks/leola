@@ -317,7 +317,7 @@ public class VM {
 			 * the stack
 			 */
 			if(genLocals != null) {
-				System.arraycopy(genLocals, 0, stack, base+code.numArgs, code.numLocals);
+				System.arraycopy(genLocals, code.numArgs, stack, base+code.numArgs, code.numLocals-code.numArgs);
 			}
 		}
 		else {
@@ -452,7 +452,7 @@ public class VM {
 						/* copy what was stored on the stack, back to the
 						 * generators local copy
 						 */
-						System.arraycopy(stack, base+code.numArgs, genLocals, 0, code.numLocals);
+						System.arraycopy(stack, base+code.numArgs, genLocals, code.numArgs, code.numLocals-code.numArgs);
 						
 						code.pc = pc;						
 						pc = len;
