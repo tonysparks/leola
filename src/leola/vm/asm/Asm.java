@@ -601,7 +601,29 @@ public class Asm {
 		decrementMaxstackSize();
 	}
 	public void oppop() {
-		instr(OPPOP);
+		boolean dupOptimization = false;
+		
+		/* Check to see if there was an unused expression;
+		 * if there was, that means there is a DUP instruction
+		 * that we can ignore, along with this OPPOP
+		 */
+		List<Integer> instructions = peek().instructions;
+		int numberOfInstrs = instructions.size();
+		if(numberOfInstrs > 1) {
+			/* We go back two instructions because the expression
+			 * will DUP the expression value before it does a STORE
+			 */
+			int instr = instructions.get(numberOfInstrs-2);						
+			if(OPCODE(instr) == DUP) {
+				instructions.remove(numberOfInstrs-2);
+				dupOptimization = true;
+			}
+		}
+		
+		if(!dupOptimization) {
+			instr(OPPOP);
+		}
+		
 	}
 	public void dup() {
 		instr(DUP);

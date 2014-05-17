@@ -1315,7 +1315,8 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 			this.tailCallStack.pop();
 		}
 		
-		asm.dup();
+		// asm.dup(); Seems to be causing a stack leak, I'm not sure why this
+		// was here, Variable declaration isn't an 'Expression'
 		if(asm.useLocals()) {									
 			asm.storelocal(index);	
 		}
