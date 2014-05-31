@@ -88,6 +88,7 @@ public class Leola {
 
 	/**
 	 * Converts the supplied Java Object into a {@link LeoObject} equivalent
+	 * 
 	 * @param javaObject
 	 * @return the {@link LeoObject} equivalent of the supplied Java Object
 	 */
