@@ -39,6 +39,11 @@ public class Args {
 		
 		private Args args;
 		
+		/**
+		 */
+		public ArgsBuilder() {
+			this.args = new Args();
+		}
 		
 		/**
 		 * The file name of the executed script.  This is used
