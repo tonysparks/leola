@@ -95,7 +95,7 @@ public class ClassDefinitions {
 		if ( ! getClassDefinitions().containsKey(className)) {
 			throw new LeolaRuntimeException("No class found for: " + className);
 		}
-		
+				
 		ClassDefinition definition = getClassDefinitions().get(className);
 		
 		LeoObject parentClass = LeoNull.LEONULL;

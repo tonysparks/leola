@@ -655,7 +655,13 @@ public class VM {
 
 						ClassDefinitions defs = symbols.lookupClassDefinitions(className);
 						if ( defs == null ) {
-							instance = ClassUtil.newNativeInstance(className.toString(), args);
+
+							if(!runtime.isSandboxed()) {															
+								instance = ClassUtil.newNativeInstance(className.toString(), args);
+							}
+							else {
+								throw new LeolaRuntimeException("Unable to instantiate native Java classes in Sandboxed mode: " + className.toString());
+							}
 						}
 						else {
 							instance = defs.newInstance(runtime, LeoString.valueOf(symbols.getClassName(className.toString())), args);

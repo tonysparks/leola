@@ -324,24 +324,43 @@ public class Leola {
 		putGlobal("$args", args.getScriptArgs());
 		putGlobal("this", this.global);
 
-		loadLibrary(new LangLeolaLibrary());
-		loadLibrary(new StringLeolaLibrary(), "str");
-		loadLibrary(new MapLeolaLibrary(), "map");
-		loadLibrary(new ArrayLeolaLibrary(), "array");
-		loadLibrary(new CollectionsLeolaLibrary());
-
-		// AUX libraries
-		if ( ! args.isBarebones()) {
-			loadLibrary(new IOLeolaLibrary(), "io");
-			loadLibrary(new ActorLibrary(), "act");
-			loadLibrary(new SqlLeolaLibrary(), "db");
-			loadLibrary(new SystemLeolaLibrary(), "sys");
-			loadLibrary(new DebugLeolaLibrary(), "debug");
-			loadLibrary(new ReflectionLeolaLibrary(), "reflect");
+		/* allow default system libraries to be loaded */
+		boolean isSandboxed = args.isSandboxed();
+		args.setSandboxed(false);
+		
+		try {
+			loadLibrary(new LangLeolaLibrary());
+			loadLibrary(new StringLeolaLibrary(), "str");
+			loadLibrary(new MapLeolaLibrary(), "map");
+			loadLibrary(new ArrayLeolaLibrary(), "array");
 			loadLibrary(new DateLeolaLibrary(), "date");
+			loadLibrary(new CollectionsLeolaLibrary());
+	
+			
+			// AUX libraries
+			if ( ! args.isBarebones() && !isSandboxed) {
+				loadLibrary(new IOLeolaLibrary(), "io");
+				loadLibrary(new ActorLibrary(), "act");
+				loadLibrary(new SqlLeolaLibrary(), "db");
+				loadLibrary(new SystemLeolaLibrary(), "sys");
+				loadLibrary(new DebugLeolaLibrary(), "debug");
+				loadLibrary(new ReflectionLeolaLibrary(), "reflect");			
+			}
+		}
+		finally {
+			args.setSandboxed(isSandboxed);
 		}
 	}
 	
+	/**
+	 * In Sandboxed mode, all 
+	 * access to Java classes are disabled and importing {@link LeolaLibrary}s
+	 * is also disabled.
+	 * @return true if in Sandboxed mode, false otherwise
+	 */
+	public boolean isSandboxed() {
+		return args.isSandboxed();
+	}
 	
 	/**
 	 * @return the varargs
@@ -463,8 +482,26 @@ public class Leola {
 	 * @param aClass
 	 */
 	public void loadStatics(Scope scope, Class<?> aClass) {
-		scope.loadStatics(aClass);	}
+		scope.loadStatics(aClass);	
+	}
 
+	/**
+	 * Throws a {@link LeolaRuntimeException} if currently in sandboxed mode.
+	 * 
+	 * This is an internal API used for error checking other components as a convienience method.
+	 */
+	public void errorIfSandboxed() {
+		if(isSandboxed()) {
+			throw new LeolaRuntimeException("Sandboxed mode is enabled, access restricted.");
+		}
+	}
+	
+	private void checkIfSandboxed(Class<?> lib) {
+		if(isSandboxed()) {
+			throw new LeolaRuntimeException("Sandboxed mode is enabled, can not load library: " + lib.getSimpleName());
+		}
+	}
+	
 	/**
 	 * Loads a {@link LeolaLibrary}.
 	 *
@@ -472,10 +509,14 @@ public class Leola {
 	 * @throws Exception
 	 */
 	public void loadLibrary(LeolaLibrary lib) throws Exception {
+		checkIfSandboxed(lib.getClass());
+		
 		lib.init(this, this.global);
 	}
 
 	public void loadLibrary(LeolaLibrary lib, String namespace) throws Exception {
+		checkIfSandboxed(lib.getClass());
+		
 		LeoNamespace ns = getOrCreateNamespace(namespace);
 		lib.init(this, ns);
 	}
@@ -487,6 +528,8 @@ public class Leola {
 	 * @throws Exception
 	 */
 	public void loadLibrary(LeolaLibrary lib, LeoNamespace namespace) throws Exception {
+		checkIfSandboxed(lib.getClass());
+		
 		lib.init(this, namespace);
 	}
 
@@ -538,6 +581,8 @@ public class Leola {
 	 * @throws Exception
 	 */
 	public void loadLibrary(Class<?> libClass, LeoNamespace namespace) throws Exception {
+		checkIfSandboxed(libClass);
+		
 		LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
 		loadLibrary(lib, namespace);
 	}
@@ -549,6 +594,8 @@ public class Leola {
 	 * @throws Exception
 	 */
 	public void loadLibrary(Class<?> libClass, String namespace) throws Exception {
+		checkIfSandboxed(libClass);
+		
 		LeoNamespace ns = getOrCreateNamespace(namespace);
 		LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
 		loadLibrary(lib, ns);
@@ -561,6 +608,8 @@ public class Leola {
 	 * @throws Exception
 	 */
 	public void loadLibrary(Class<?> libClass) throws Exception {
+		checkIfSandboxed(libClass);
+		
 		LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
 		loadLibrary(lib);
 	}

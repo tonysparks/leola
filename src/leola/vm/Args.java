@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import leola.vm.lib.LeolaLibrary;
 import leola.vm.types.LeoArray;
 import leola.vm.types.LeoObject;
 import leola.vm.util.LeoTypeConverter;
@@ -181,6 +182,19 @@ public class Args {
 			return this;
 		}
 		
+		/**
+		 * Sets the VM to sandboxed mode.  In sandboxed mode, all 
+		 * access to Java classes are disabled and importing {@link LeolaLibrary}s
+		 * is also disabled.
+		 * Defaults to disabling Sandboxed mode.
+		 * 
+		 * @param isSandboxed
+		 * @return the {@link ArgsBuilder} for method chaining 
+		 */
+		public ArgsBuilder setSandboxed(boolean isSandboxed) {
+			args.setSandboxed(isSandboxed);
+			return this;
+		}
 		
 		/**
 		 * Directories to be included on scanning for include and require
@@ -212,6 +226,7 @@ public class Args {
 	private boolean isExecuteStatement;
 	private boolean isDebugMode;
 	private boolean allowThreadLocals;
+	private boolean isSandboxed;
 	private String statement;
 	private LeoObject scriptArgs;
 	private int stackSize;
@@ -412,6 +427,20 @@ public class Args {
 	 */
 	public boolean isAllowThreadLocal() {
 		return this.allowThreadLocals;
+	}
+	
+	/**
+	 * @return the isSandboxed
+	 */
+	public boolean isSandboxed() {
+		return isSandboxed;
+	}
+	
+	/**
+	 * @param isSandboxed the isSandboxed to set
+	 */
+	public void setSandboxed(boolean isSandboxed) {
+		this.isSandboxed = isSandboxed;
 	}
 	
 	/**

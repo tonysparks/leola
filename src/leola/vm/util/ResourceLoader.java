@@ -46,6 +46,7 @@ public class ResourceLoader {
 	 * The runtime
 	 */
 	private Leola runtime;
+		
 	
 	/**
 	 * @param runtime
@@ -109,7 +110,7 @@ public class ResourceLoader {
 					else if ( ext.endsWith("leola") || ext.endsWith("leolac") ) {
 						runtime.eval(libFile, namespace);
 					}
-					else {
+					else if(!runtime.isSandboxed()){
 						
 						/* load the jar file */
 						if (ext.endsWith("jar") ) {
@@ -285,15 +286,17 @@ public class ResourceLoader {
 	private boolean tryLoadingLibrary(Leola runtime, String className, String namespace) throws Exception {
 		boolean loaded = false;
 		
-		Class<?> lib = null;
-		try {
-			lib = Class.forName(className);
-			if ( ClassUtil.doesImplement(lib, LeolaLibrary.class) ) {
-				runtime.loadLibrary(lib, namespace);
-				loaded = true;
+		if(!runtime.isSandboxed()) {
+			Class<?> lib = null;
+			try {
+				lib = Class.forName(className);
+				if ( ClassUtil.doesImplement(lib, LeolaLibrary.class) ) {
+					runtime.loadLibrary(lib, namespace);
+					loaded = true;
+				}
 			}
-		}
-		catch(Exception e) {			
+			catch(Exception e) {			
+			}
 		}
 				
 		return loaded;

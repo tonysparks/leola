@@ -86,7 +86,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 * @param jarFile
 	 * @throws Exception
 	 */
-	public final static void loadJar(String jarFile) throws IOException {
+	public final static void loadJar(String jarFile) throws IOException {		
 		Classpath.addFile(jarFile);
 	}
 	
@@ -96,7 +96,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 * @param directory
 	 * @throws IOException
 	 */
-	public final static void loadJars(String directory) throws IOException {
+	public final static void loadJars(String directory) throws IOException {				
 		File dir = new File(directory);
 		if ( dir.isDirectory() ) {
 			File[] jars = dir.listFiles(new FileFilter() {				
@@ -117,7 +117,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 * @param url
 	 * @throws IOException
 	 */
-	public final static void loadURL(String url) throws IOException {
+	public final static void loadURL(String url) throws IOException {		
 		File dir = new File(url);
 		Classpath.addURL(dir.toURI().toURL());
 	}
@@ -128,6 +128,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 * @param lib
 	 */
 	public final void loadLibrary(String lib) throws Exception {
+		runtime.errorIfSandboxed();
 		runtime.loadLibrary(Class.forName(lib));
 	}
 
@@ -140,6 +141,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 */
 	@LeolaMethod(alias="import")
 	public final void __import(String className) throws Exception {
+		runtime.errorIfSandboxed();
 		runtime.loadStatics(Class.forName(className));
 	}
 
