@@ -166,8 +166,9 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 * TODO - move to io
 	 * @return
 	 */
+	@SuppressWarnings("resource")
 	public final String readln() {
-		String result = null;
+		String result = null;		
 		Scanner s = new Scanner(java.lang.System.in);		
 		try {
 			if ( s.hasNextLine() ) {
@@ -175,7 +176,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 			}
 		}
 		finally {
-			s.close();
+		//	s.close(); DO NOT close because this will close SysIn
 		}
 
 		return result;
