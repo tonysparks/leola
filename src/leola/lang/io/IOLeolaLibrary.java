@@ -48,6 +48,10 @@ public class IOLeolaLibrary implements LeolaLibrary {
 		return new File(filename).isFile();
 	}
 	
+	public boolean rename(String filename, String newname) {
+		return new File(filename).renameTo(new File(newname));
+	}
+	
 	/**
 	 * List the contents of the directory
 	 * @param dir

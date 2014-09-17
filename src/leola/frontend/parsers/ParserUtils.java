@@ -30,7 +30,7 @@ public class ParserUtils {
 
     // Set of additive operators.
     private static final EnumSet<LeolaTokenType> PARAM_OPS =
-        EnumSet.of(LeolaTokenType.COMMA, LeolaTokenType.IDENTIFIER); // do to allow expr
+        EnumSet.of(LeolaTokenType.COMMA, LeolaTokenType.VAR_ARGS, LeolaTokenType.IDENTIFIER); // do to allow expr
 
 
     /**
@@ -136,7 +136,7 @@ public class ParserUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String[] parseParameterListings(Parser parser, Token next) throws Exception {
+	public static ParameterList parseParameterListings(Parser parser, Token next) throws Exception {
 		LeolaTokenType type = next.getType();
 
 		/* If the is no left brace, fail */
@@ -147,29 +147,53 @@ public class ParserUtils {
 		next = parser.nextToken(); // consume the (
 		type = next.getType();
 
-		List<String> parameters = new ArrayList<String>();
+		ParameterList parameters = new ParameterList();
 
 		boolean needsComma = false;
+		boolean isVarargs = false;
+		boolean isIdentifier = false;
+		
 		while(PARAM_OPS.contains(type)) {
 			if ( type.equals(LeolaTokenType.IDENTIFIER)) {
 				String paramName = next.getText();
-				parameters.add(paramName);
+				parameters.addParameter(paramName);
 
 				next = parser.nextToken();
 				type = next.getType();
 
 				needsComma = true;
+				isIdentifier = true;
+			}
+			else if( type.equals(LeolaTokenType.VAR_ARGS)) {
+				if(!isIdentifier) {
+					parser.getExceptionHandler().errorToken(next, parser, LeolaErrorCode.INVALID_VAR_ARGS_START);	
+				}
+				
+				next = parser.nextToken();
+				type = next.getType();
+
+				parameters.setVarargs(true);
+				
+				isIdentifier = false;
+				needsComma = false;
+				isVarargs = true;
 			}
 			else if ( type.equals(LeolaTokenType.COMMA)) {
 				next = parser.nextToken();
 				type = next.getType();
 
 				needsComma = false;
+				isIdentifier = false;
 			}
+			
+			
 
 			Token currentToken = parser.currentToken();
 			if ( currentToken.getType().equals(LeolaTokenType.RIGHT_PAREN)) {
 				needsComma = false;
+			}
+			else if(isVarargs) {
+				parser.getExceptionHandler().errorToken(next, parser, LeolaErrorCode.INVALID_VAR_ARGS);
 			}
 
 			if ( ! PARAM_OPS.contains(type) && needsComma ) {
@@ -184,7 +208,7 @@ public class ParserUtils {
 		next = parser.nextToken(); // eat the )
 
 
-		return parameters.toArray(new String[0]);
+		return parameters;
 	}
 
 	/**

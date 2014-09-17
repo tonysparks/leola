@@ -40,7 +40,7 @@ public class LeolaSpecialSymbolToken extends LeolaToken
         switch (currentChar) {
 
             // Single-character special symbols.
-            case ',':  case ';':  case '(':  case ')': case '.':
+            case ',':  case ';':  case '(':  case ')': 
             case '[':  case ']':  case '{':  case '}': case ':':
             case '~':
             // case '^':
@@ -49,6 +49,25 @@ public class LeolaSpecialSymbolToken extends LeolaToken
                 break;
             }
 
+            // . or ...
+            case '.': {
+            	currentChar = nextChar();
+            	 if (currentChar == '.') {
+                     text += currentChar;
+                     currentChar = nextChar();  // consume '.'
+                     
+                     if(currentChar == '.') {
+                     	text += currentChar;
+                     	nextChar();
+                     }
+                     else {
+                    	 type = ERROR;
+                         value = INVALID_CHARACTER;
+                     }
+                 }
+            	 break;
+            }
+            
             // + or +=
             case '+' : {
             	currentChar = nextChar();

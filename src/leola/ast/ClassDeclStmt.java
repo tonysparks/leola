@@ -6,6 +6,7 @@
 package leola.ast;
 
 import leola.frontend.EvalException;
+import leola.frontend.parsers.ParameterList;
 
 /**
  * Class Declaration
@@ -23,7 +24,7 @@ public class ClassDeclStmt extends Stmt {
 	/**
 	 * Class parameters
 	 */
-	private String[] classParameters;
+	private ParameterList classParameters;
 
 	/**
 	 * Parent Class name
@@ -54,7 +55,7 @@ public class ClassDeclStmt extends Stmt {
 	 * @param constructorExprs
 	 */
 	public ClassDeclStmt(String className
-					  , String[] classParams
+					  , ParameterList classParams
 					  , Stmt classBodyStmt
 					  , String parentClassName
 					  , Expr[] parentClassParams
@@ -113,7 +114,7 @@ public class ClassDeclStmt extends Stmt {
 	/**
 	 * @return the classParameters
 	 */
-	public String[] getClassParameters() {
+	public ParameterList getClassParameters() {
 		return classParameters;
 	}
 

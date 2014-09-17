@@ -111,11 +111,15 @@ public class Asm {
 	
 	private int currentLineNumber;
 	private int numArgs;
+	private boolean isVarargs;
+	
 	/**
 	 */
 	public Asm(Symbols symbols) {
 		this.symbols = symbols;
 		this.uselocal = false;
+		this.isVarargs = false;
+		
 		this.currentLineNumber = -1;
 		this.lexicalScopes = new Stack<Integer>();
 		this.debugSymbols = new DebugSymbols();
@@ -760,28 +764,30 @@ public class Asm {
 		this.inner.push(asm);
 	}
 	
-	public void gen(int numberOfParameters) {
+	public void gen(int numberOfParameters, boolean isVarargs) {
 		instrx(GEN, getBytecodeIndex());		
 		incrementMaxstackSize(numberOfParameters);
 		
 		Asm asm = new Asm(this.symbols);
 		asm.setDebug(this.isDebug());
 		
-		asm.numArgs = numberOfParameters;					
+		asm.numArgs = numberOfParameters;
+		asm.isVarargs = isVarargs;
 		asm.start(ScopeType.LOCAL_SCOPE);
 				
 		peek().asms.add(asm);
 		this.inner.push(asm);
 	}
 	
-	public void def(int numberOfParameters) {
+	public void def(int numberOfParameters, boolean isVarargs) {
 		instrx(DEF, getBytecodeIndex());		
 		incrementMaxstackSize(numberOfParameters);
 		
 		Asm asm = new Asm(this.symbols);
 		asm.setDebug(this.isDebug());
 		
-		asm.numArgs = numberOfParameters;					
+		asm.numArgs = numberOfParameters;	
+		asm.isVarargs = isVarargs;
 		asm.start(ScopeType.LOCAL_SCOPE);
 				
 		peek().asms.add(asm);
@@ -943,7 +949,8 @@ public class Asm {
 		bytecode.inner = new Bytecode[bytecode.numInners];
 				
 		bytecode.numArgs = this.numArgs;
-		
+		bytecode.isVarargs = this.isVarargs;
+				
 		if(this.localScope.hasOuters()) {
 			Outers outers = this.localScope.getOuters();
 			bytecode.numOuters = outers.getNumberOfOuters();

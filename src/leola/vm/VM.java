@@ -121,6 +121,7 @@ public class VM {
 
 
 	/**
+	 * @param runtime the {@link Leola} runtime
 	 */
 	public VM(Leola runtime) {
 		this.runtime = runtime;
@@ -142,7 +143,7 @@ public class VM {
 	 * @return
 	 * @throws LeolaRuntimeException
 	 */
-	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code) throws LeolaRuntimeException {
+	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code) throws LeolaRuntimeException {		
 		return execute(env, callee, code, (LeoObject[])null);
 	}
 
@@ -158,7 +159,8 @@ public class VM {
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject[] args) throws LeolaRuntimeException {
 //		LeoObject[] stack = new LeoObject[code.maxstacksize];
 		final int base = top;
-
+		prepareStack(code);
+		
 		if ( args != null ) {
 			System.arraycopy(args, 0, stack, base, args.length);
 		}
@@ -179,8 +181,10 @@ public class VM {
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1) throws LeolaRuntimeException {
 //		LeoObject[] stack = new LeoObject[code.maxstacksize];
 		final int base = top;
-		stack[base + 0] = arg1;
-
+		prepareStack(code);
+		
+		stack[base + 0] = arg1;		
+		
 		LeoObject result = executeStackframe(env, code, stack, callee, base );
 		return result;
 	}
@@ -198,7 +202,8 @@ public class VM {
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1, LeoObject arg2) throws LeolaRuntimeException {
 		//LeoObject[] stack = new LeoObject[code.maxstacksize];
 		final int base = top;
-
+		prepareStack(code);
+		
 		stack[base + 0] = arg1;
 		stack[base + 1] = arg2;
 
@@ -220,7 +225,8 @@ public class VM {
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1, LeoObject arg2, LeoObject arg3) throws LeolaRuntimeException {
 		//LeoObject[] stack = new LeoObject[code.maxstacksize];
 		final int base = top;
-
+		prepareStack(code);
+		
 		stack[base + 0] = arg1;
 		stack[base + 1] = arg2;
 		stack[base + 2] = arg3;
@@ -244,7 +250,8 @@ public class VM {
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4) throws LeolaRuntimeException {
 		//LeoObject[] stack = new LeoObject[code.maxstacksize];
 		final int base = top;
-
+		prepareStack(code);
+		
 		stack[base + 0] = arg1;
 		stack[base + 1] = arg2;
 		stack[base + 2] = arg3;
@@ -271,7 +278,8 @@ public class VM {
 
 		//LeoObject[] stack = new LeoObject[code.maxstacksize];
 		final int base = top;
-
+		prepareStack(code);		
+		
 		stack[base + 0] = arg1;
 		stack[base + 1] = arg2;
 		stack[base + 2] = arg3;
@@ -280,6 +288,19 @@ public class VM {
 
 		LeoObject result = executeStackframe(env, code, stack, callee, base );
 		return result;
+	}
+	
+	/**
+	 * Prepares the stack by assigning NULL to all of the bytecode's
+	 * arguments.
+	 * 
+	 * @param code
+	 */
+	private void prepareStack(Bytecode code) {
+		final int base = top;
+		for(int i = 0; i < code.numArgs; i++) {
+			stack[base + i] = LeoNull.LEONULL;
+		}
 	}
 
 

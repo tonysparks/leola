@@ -449,7 +449,14 @@ public class Assembler {
 		});
 		opcodes.put("DEF", new Opcode() {			
 			public void invoke(Asm asm, String...  args) {
-				asm.def(Integer.parseInt(args[0]));
+				/* second parameter is to denote var args */
+				asm.def(Integer.parseInt(args[0]), args.length > 1);
+			}
+		});
+		opcodes.put("GEN", new Opcode() {			
+			public void invoke(Asm asm, String...  args) {
+				/* second parameter is to denote var args */
+				asm.gen(Integer.parseInt(args[0]), args.length > 1);
 			}
 		});
 		opcodes.put("IS_A", new Opcode() {			

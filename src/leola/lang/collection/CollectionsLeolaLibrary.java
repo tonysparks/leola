@@ -112,52 +112,55 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 	 */
 	public final LeoObject foreach(LeoObject array, LeoObject function) throws Exception {
 		LeoObject r = LeoNull.LEONULL;
-		switch(array.getType()) {
-			case ARRAY: {
-				LeoArray a = array.as();
-				List<LeoObject> list = a.getArray();
-				int size = list.size();
-		
-
-				for(int i = 0; i < size; i++) {
-					LeoObject result = this.runtime.execute(function, list.get(i));	
-					if ( LeoObject.isTrue(result) ) {
-						r = result;
-						break;
+		if(array != null) {
+			switch(array.getType()) {
+				case ARRAY: {
+					LeoArray a = array.as();
+					List<LeoObject> list = a.getArray();
+					int size = list.size();
+			
+	
+					for(int i = 0; i < size; i++) {
+						LeoObject result = this.runtime.execute(function, list.get(i));	
+						if ( LeoObject.isTrue(result) ) {
+							r = result;
+							break;
+						}
 					}
+					
+					break;
 				}
-				
-				break;
-			}
-			case MAP: {
-				LeoMap map = array.as();
-
-				for(Map.Entry<LeoObject, LeoObject> entry : map.getMap().entrySet()) {
-					LeoObject result = this.runtime.execute(function, entry.getKey(), entry.getValue() );	
-					if ( LeoObject.isTrue(result) ) {
-						r = result;
-						break;
+				case MAP: {
+					LeoMap map = array.as();
+	
+					for(Map.Entry<LeoObject, LeoObject> entry : map.getMap().entrySet()) {
+						LeoObject result = this.runtime.execute(function, entry.getKey(), entry.getValue() );	
+						if ( LeoObject.isTrue(result) ) {
+							r = result;
+							break;
+						}
 					}
+					
+					break;
 				}
-				
-				break;
-			}
-			case STRING: {
-				LeoString str = array.as();
-				int size = str.length();				
-				
-				for(int i = 0; i < size; i++) {
-					LeoObject result = this.runtime.execute(function, str.charAt(i) );	
-					if ( LeoObject.isTrue(result) ) {
-						r = result;
-						break;
+				case STRING: {
+					LeoString str = array.as();
+					int size = str.length();				
+					
+					for(int i = 0; i < size; i++) {
+						LeoObject result = this.runtime.execute(function, str.charAt(i) );	
+						if ( LeoObject.isTrue(result) ) {
+							r = result;
+							break;
+						}
 					}
+					
+					break;
 				}
-				
-				break;
+				default: {					
+				}
 			}
 		}
-		
 		return r;
 	}
 
@@ -240,7 +243,9 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 				
 				result = r;
 				break;
-			}			
+			}		
+			default: {				
+			}
 		}
 		
 		return result;
@@ -312,6 +317,8 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 				
 				break;
 			}
+			default: {				
+			}
 		}		
 		
 		return result;
@@ -364,6 +371,8 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 				
 				break;
 			}
+			default: {				
+			}
 		}		
 		
 		return result;
@@ -399,6 +408,8 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 					}
 				}												
 				break;
+			}
+			default: {				
 			}
 		}		
 		

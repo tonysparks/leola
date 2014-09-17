@@ -32,7 +32,7 @@ public class FuncDefExprParser extends ExprParser {
 		Token next = this.nextToken(); // eat the DEF token					
 		
 		/* parse the parameter listings */		
-		String[] parameters = ParserUtils.parseParameterListings(this, next);
+		ParameterList parameters = ParserUtils.parseParameterListings(this, next);
 		
 		/* now parse the body */
 		StmtParser parser = new StmtParser(this);

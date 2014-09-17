@@ -58,7 +58,7 @@ public class ClassDefStmtParser extends StmtParser {
 		type = token.getType();
 				
 		/* parse the parameter listings */
-		String[] classParams = ParserUtils.parseParameterListings(this, token);
+		ParameterList classParams = ParserUtils.parseParameterListings(this, token);
 		
 		String parentClassName = null;
 		Expr[] parentClassParams = null;

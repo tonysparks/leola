@@ -45,6 +45,8 @@ public class Bytecode {
 	public int numArgs;
 	public int numInners;
 	
+	public boolean isVarargs;
+		
 	public int maxstacksize;
 	
 	public Bytecode[] inner;	
@@ -66,6 +68,13 @@ public class Bytecode {
 		this.instr = instr;
 		this.pc = pc;
 		this.len = len;		
+	}
+	
+	/**
+	 * @return the index in which to start the variable arguments
+	 */
+	public int getVarargIndex() {
+		return this.numArgs - 1;
 	}
 	
 	/**
@@ -107,6 +116,7 @@ public class Bytecode {
 		
 		clone.maxstacksize = this.maxstacksize;
 		clone.numArgs = this.numArgs;
+		clone.isVarargs = this.isVarargs;		
 		clone.numConstants = this.numConstants;
 		clone.numInners = this.numInners;
 		clone.numLocals = this.numLocals;
@@ -280,7 +290,8 @@ public class Bytecode {
 			out.writeInt(0);
 		}
 		
-		out.writeInt(this.numArgs);						
+		out.writeInt(this.numArgs);
+		out.writeBoolean(this.isVarargs);		
 		out.writeInt(this.numOuters);
 		out.writeInt(this.numLocals);
 		
@@ -355,7 +366,8 @@ public class Bytecode {
 			result.constants[i] = obj;
 		}
 		
-		result.numArgs = in.readInt();
+		result.numArgs = in.readInt();		
+		result.isVarargs = in.readBoolean();
 		result.numOuters = in.readInt();				
 		result.numLocals = in.readInt();		
 		result.debug = in.readByte();

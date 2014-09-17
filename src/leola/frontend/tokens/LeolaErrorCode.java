@@ -31,6 +31,8 @@ public enum LeolaErrorCode
     INVALID_TARGET("Invalid assignment target"),
     INVALID_TYPE("Invalid type"),
     INVALID_VAR_PARM("Invalid VAR parameter"),
+    INVALID_VAR_ARGS_START("Invalid variable argument; must have variable name"),
+    INVALID_VAR_ARGS("Invalid variable argument; must be last argument"),
     MIN_GT_MAX("Min limit greater than max limit"),
     MISSING_ARROW("Missing ->"),
     MISSING_BEGIN("Missing BEGIN"),

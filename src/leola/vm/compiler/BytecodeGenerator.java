@@ -63,6 +63,7 @@ import leola.ast.VarExpr;
 import leola.ast.WhileStmt;
 import leola.ast.YieldStmt;
 import leola.frontend.EvalException;
+import leola.frontend.parsers.ParameterList;
 import leola.vm.Leola;
 import leola.vm.asm.Asm;
 import leola.vm.asm.Bytecode;
@@ -667,13 +668,14 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 			}
 		}
 		
-		String[] params = s.getClassParameters();
+		// TODO - Determine how this will take advantage of varargs
+		ParameterList params = s.getClassParameters();
 		if ( params != null ) {
-			for(String ref:params) {				
+			for(String ref:params.getParameters()) {				
 				asm.storeAndloadconst(ref);
 			}
 		}							
-		asm.storeAndloadconst(params!=null?params.length:0);
+		asm.storeAndloadconst(params!=null?params.size():0);
 		
 		/*
 		 * NOTE: this places Constants in the parameters and
@@ -880,12 +882,12 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	public void visit(GenDefExpr s) throws EvalException {
 		asm.line(s.getLineNumber());
 		
-		String parameters[] = s.getParameters();
-		asm.gen(parameters.length);
+		ParameterList parameters = s.getParameters();
+		asm.gen(parameters.size(), parameters.isVarargs());
 		{
 			asm.line(s.getLineNumber());
 						
-			for(String name : parameters) {
+			for(String name : parameters.getParameters()) {
 				asm.addLocal(name);
 			}
 			
@@ -901,12 +903,12 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	public void visit(FuncDefExpr s) throws EvalException {
 		asm.line(s.getLineNumber());
 		
-		String parameters[] = s.getParameters();
-		asm.def(parameters.length);
+		ParameterList parameters = s.getParameters();
+		asm.def(parameters.size(), parameters.isVarargs());
 		{
 			asm.line(s.getLineNumber());
 						
-			for(String name : parameters) {
+			for(String name : parameters.getParameters()) {
 				asm.addLocal(name);
 			}
 			

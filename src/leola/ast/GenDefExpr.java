@@ -6,6 +6,7 @@
 package leola.ast;
 
 import leola.frontend.EvalException;
+import leola.frontend.parsers.ParameterList;
 
 /**
  * @author Tony
@@ -21,7 +22,7 @@ public class GenDefExpr extends Expr {
 	/**
 	 * Parameters
 	 */
-	private String[] parameters;
+	private ParameterList parameters;
 
 
 
@@ -29,7 +30,7 @@ public class GenDefExpr extends Expr {
 	 * @param body
 	 * @param parameters
 	 */
-	public GenDefExpr(Stmt body, String ... parameters) {
+	public GenDefExpr(Stmt body, ParameterList parameters) {
 		this.body = becomeParentOf(body);
 		this.parameters = parameters;		
 	}
@@ -54,7 +55,7 @@ public class GenDefExpr extends Expr {
 	/**
 	 * @return the parameters
 	 */
-	public String[] getParameters() {
+	public ParameterList getParameters() {
 		return parameters;
 	}
 
