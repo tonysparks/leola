@@ -140,6 +140,18 @@ println(text) // prints A red truck
 println(color is String) // prints true
 
 
+/* define a function with variable amount of arguments */
+var sum = def(elements ...) {
+  result = 0
+  
+  /* elements is an array */
+  foreach(elements, def(e) result += e)
+  return result
+}
+
+var total = sum(1,53,2)
+println(total) // 56
+
 ````
 
 Generators
