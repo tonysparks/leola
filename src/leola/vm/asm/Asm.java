@@ -5,6 +5,7 @@
 */
 package leola.vm.asm;
 
+import static leola.vm.Opcodes.END_BLOCK;
 import static leola.vm.Opcodes.ADD;
 import static leola.vm.Opcodes.AND;
 import static leola.vm.Opcodes.BNOT;
@@ -14,6 +15,8 @@ import static leola.vm.Opcodes.CLASS_DEF;
 import static leola.vm.Opcodes.DEF;
 import static leola.vm.Opcodes.DIV;
 import static leola.vm.Opcodes.DUP;
+import static leola.vm.Opcodes.END_FINALLY;
+import static leola.vm.Opcodes.END_ON;
 import static leola.vm.Opcodes.EQ;
 import static leola.vm.Opcodes.GEN;
 import static leola.vm.Opcodes.GET;
@@ -22,6 +25,8 @@ import static leola.vm.Opcodes.GET_NAMESPACE;
 import static leola.vm.Opcodes.GT;
 import static leola.vm.Opcodes.GTE;
 import static leola.vm.Opcodes.IF;
+import static leola.vm.Opcodes.INIT_FINALLY;
+import static leola.vm.Opcodes.INIT_ON;
 import static leola.vm.Opcodes.INVOKE;
 import static leola.vm.Opcodes.IS_A;
 import static leola.vm.Opcodes.JMP;
@@ -113,6 +118,8 @@ public class Asm {
 	private int numArgs;
 	private boolean isVarargs;
 	
+	private Stack<Integer> blockSize;
+	
 	/**
 	 */
 	public Asm(Symbols symbols) {
@@ -122,6 +129,7 @@ public class Asm {
 		
 		this.currentLineNumber = -1;
 		this.lexicalScopes = new Stack<Integer>();
+		this.blockSize = new Stack<Integer>();
 		this.debugSymbols = new DebugSymbols();
 		
 		this.setDebug(false);
@@ -832,6 +840,42 @@ public class Asm {
 		instr(THROW);
 		incrementMaxstackSize();
 	}
+	
+	public void initfinally() {
+		this.blockSize.add(getInstructionSize());
+		// this will be populated with the correct offset
+		instrx(INIT_FINALLY, 0); 
+		
+	}
+	public void initon() {
+		this.blockSize.add(getInstructionSize());
+		// this will be populated with the correct offset
+		instrx(INIT_ON, 0); 		
+	}
+	
+	public void endfinally() {				
+//		int startPC = this.blockSize.pop();
+//		getInstructions().set(startPC, SET_ARGx(INIT_FINALLY, getInstructionSize()));
+//		instr(END_FINALLY);
+		instr(END_FINALLY);
+	}
+	public void markendfinally() {
+		int startPC = this.blockSize.pop();
+		getInstructions().set(startPC, SET_ARGx(INIT_FINALLY, getInstructionSize()));
+		instr(END_BLOCK);
+	}
+	
+	public void endon() {			
+		int startPC = this.blockSize.pop();
+		getInstructions().set(startPC, SET_ARGx(INIT_ON, getInstructionSize()));
+		instr(END_ON);
+	}
+	
+	public void endblock() {
+		instr(END_BLOCK);
+	}
+	
+	
 		
 	/* arithmetic operators */
 	public void add() {

@@ -408,6 +408,26 @@ public class Opcodes {
 				op = "LINE";
 				break;
 			}
+			case INIT_FINALLY: {
+				op = "INIT_FINALLY";
+				break;
+			}
+			case INIT_ON: {
+				op = "INIT_ON";
+				break;
+			}
+			case END_ON: {
+				op = "END_ON";
+				break;
+			}
+			case END_FINALLY: {
+				op = "END_FINALLY";
+				break;
+			}
+			case END_BLOCK: {
+				op = "END_BLOCK";
+				break;
+			}
 			default: {
 				throw new LeolaRuntimeException("Unknown Opcode: " + opcode);
 			}
@@ -501,8 +521,15 @@ public class Opcodes {
 		LT = 60,
 		LTE = 61,
 		
+		/* Exception handling */
+		INIT_FINALLY = 62,
+		INIT_ON = 63,
+		END_ON = 64,
+		END_FINALLY = 65,
+		END_BLOCK = 66,
+		
 		/* debug */
-		LINE = 62
+		LINE = 67
 		;
 	
 	
@@ -579,7 +606,12 @@ public class Opcodes {
 		opcodes.put("LT", LT);
 		opcodes.put("LTE", LTE);
 		opcodes.put("LINE", LINE);
-		
+	
+		opcodes.put("INIT_FINALLY", INIT_FINALLY);
+		opcodes.put("INIT_ON", INIT_ON);
+		opcodes.put("END_ON", END_ON);
+		opcodes.put("END_FINALLY", END_FINALLY);
+		opcodes.put("END_BLOCK", END_BLOCK);
 	}
 
 }

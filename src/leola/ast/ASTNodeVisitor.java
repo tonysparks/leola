@@ -43,6 +43,7 @@ public interface ASTNodeVisitor {
 	void visit(NamespaceAccessExpr s) throws EvalException;
 	
 	void visit(OnExpr s) throws EvalException;
+	void visit(OnStmt s) throws EvalException;
 	
 	void visit(RealExpr s) throws EvalException;
 	void visit(IntegerExpr s) throws EvalException;
@@ -66,6 +67,7 @@ public interface ASTNodeVisitor {
 	void visit(StringExpr s) throws EvalException;
 	void visit(SwitchStmt s) throws EvalException;
 	
+	void visit(TryStmt s) throws EvalException;
 	void visit(ThrowStmt s) throws EvalException;
 	void visit(UnaryExpr s) throws EvalException;
 	

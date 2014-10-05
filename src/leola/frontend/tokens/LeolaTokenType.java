@@ -10,20 +10,18 @@ import leola.frontend.ParseException;
 import leola.frontend.TokenType;
 
 /**
- * <h1>PascalTokenType</h1>
+ * Leola token types.
+ * 
+ * @author Tony
  *
- * <p>Pascal token types.</p>
- *
- * <p>Copyright (c) 2009 by Ronald Mak</p>
- * <p>For instructional purposes only.  No warranties.</p>
  */
 public enum LeolaTokenType implements TokenType
 {
     // Reserved words.    
     SWITCH, 
-    CASE, WHEN, RETURN, ELSE, NAMESPACE, 
-    DEF, GEN, YIELD, IF, NULL, VAR, WHILE, IS, ON,
-    NEW, TRUE, FALSE, BREAK, CONTINUE, THROW,
+    CASE, WHEN, RETURN, ELSE, NAMESPACE, DEF, GEN, 
+    YIELD, IF, NULL, VAR, WHILE, IS, ON,
+    NEW, TRUE, FALSE, BREAK, CONTINUE, THROW, TRY, FINALLY,
     CLASS,
     // end Reserved words
 

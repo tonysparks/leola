@@ -47,6 +47,8 @@ import leola.ast.NamespaceStmt;
 import leola.ast.NewExpr;
 import leola.ast.NullExpr;
 import leola.ast.OnExpr;
+import leola.ast.OnStmt;
+import leola.ast.TryStmt;
 import leola.ast.OnExpr.OnClause;
 import leola.ast.OwnableExpr;
 import leola.ast.ProgramStmt;
@@ -1253,6 +1255,92 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.TryStmt)
+	 */
+	@Override
+	public void visit(TryStmt s) throws EvalException {
+		asm.line(s.getLineNumber());
+		
+		boolean hasOn = s.getOnStmt() != null;
+		boolean hasFinally = s.getFinallyStmt() != null;
+		
+		if(hasFinally) {
+			asm.initfinally();
+		}
+				
+		if(hasOn) {
+			asm.initon();
+		}
+						
+		s.getStmt().visit(this);
+		
+		String finallyLabel = null;
+		if(hasFinally) {			
+			finallyLabel = asm.jmp();
+		}
+						
+		if(hasOn) {
+			asm.endon();
+			s.getOnStmt().visit(this);
+		}
+						
+		if(hasFinally) {
+			asm.label(finallyLabel);
+			
+
+			/* we need to popoff the on
+			 * if we have successfully executed
+			 * the try statement.
+			 */
+			if(hasOn) {
+				asm.endblock();
+			}
+			
+			asm.markendfinally();
+//			asm.endfinally();			
+			s.getFinallyStmt().visit(this);
+			asm.endfinally();	
+		}
+		
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.OnStmt)
+	 */
+	@Override
+	public void visit(OnStmt s) throws EvalException {
+		asm.line(s.getLineNumber());
+				
+		String endOn = asm.nextLabelName();
+		String nextOnLabel = null;
+				
+		List<OnClause> onClauses = s.getOnClauses();				
+		for(OnClause clause : onClauses) {			
+			asm.dup();									
+			asm.storeAndloadconst(clause.getType());
+			asm.mov();
+			asm.isa();			
+						
+			nextOnLabel = asm.ifeq();						
+			Stmt stmt = clause.getStmt();
+			asm.dup();
+			int index = asm.addLocal(clause.getIdentifier());
+			asm.storelocal(index);
+			
+			stmt.visit(this);
+			
+			if( stmt instanceof Expr) {
+				asm.oppop(); /* remove any pushed items */
+			}
+			
+			asm.jmp(endOn);		
+			asm.label(nextOnLabel);
+		}
+				
+		asm.label(endOn);		
+	}
+	
 	/* (non-Javadoc)
 	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.UnaryExpr)
 	 */

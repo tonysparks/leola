@@ -60,7 +60,7 @@ public enum LeolaErrorCode
     MISSING_TO_DOWNTO("Missing TO or DOWNTO"),
     MISSING_UNTIL("Missing UNTIL"),
     MISSING_VARIABLE("Missing variable"),
-    MISSING_CATCH_OR_FINALLY("Missing a 'catch' or 'finally' block"),
+    MISSING_ON_OR_FINALLY("Missing an 'on' or 'finally' block"),
     NOT_CONSTANT_IDENTIFIER("Not a constant identifier"),
     NOT_RECORD_VARIABLE("Not a record variable"),
     NOT_TYPE_IDENTIFIER("Not a type identifier"),

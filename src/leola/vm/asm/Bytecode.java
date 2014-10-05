@@ -50,8 +50,7 @@ public class Bytecode {
 	public int maxstacksize;
 	
 	public Bytecode[] inner;	
-	
-	
+		
 	/**
 	 * @param instructions
 	 */

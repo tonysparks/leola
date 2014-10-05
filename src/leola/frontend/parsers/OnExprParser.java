@@ -5,18 +5,14 @@
 */
 package leola.frontend.parsers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import leola.ast.ASTNode;
 import leola.ast.Expr;
 import leola.ast.OnExpr;
 import leola.ast.OnExpr.OnClause;
-import leola.ast.Stmt;
 import leola.frontend.LeolaParser;
 import leola.frontend.Token;
-import leola.frontend.tokens.LeolaErrorCode;
-import leola.frontend.tokens.LeolaTokenType;
 
 
 
@@ -40,7 +36,8 @@ public class OnExprParser extends ExprParser {
 
 
     /**
-     * Parse an assignment statement.
+     * Parse the ON Expression.
+     * 
      * @param token the initial token.
      * @return the root node of the generated parse tree.
      * @throws Exception if an error occurred.
@@ -49,31 +46,13 @@ public class OnExprParser extends ExprParser {
     public ASTNode parse(Token token)
         throws Exception
     {		
-		List<OnClause> clauses = new ArrayList<OnExpr.OnClause>(2);					
-		do {
-			token = nextToken(); // eat the ON token
-			if(! token.getType().equals(LeolaTokenType.IDENTIFIER)) {
-				getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_IDENTIFIER);
-			}
-	    	String className = token.getText();
-	    	
-	    	token = nextToken(); // eat the classname token
-			if(! token.getType().equals(LeolaTokenType.IDENTIFIER)) {
-				getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_IDENTIFIER);
-			}
-			
-	    	String identifier = token.getText();
-	    	Stmt stmt = (Stmt)(new StmtParser(this)).parse(nextToken());
-	    	
-	    	clauses.add(new OnClause(className, identifier, stmt));
-	    	token = currentToken();
-		} while (token.getType().equals(LeolaTokenType.ON));
+		List<OnClause> clauses = OnStmtParser.parseOnClause(this, token);
 		
-        // Create the IS node.
-    	OnExpr isExpr = new OnExpr(expr, clauses );
-        setLineNumber(isExpr, currentToken());
+        // Create the ON node.
+    	OnExpr onExpr = new OnExpr(expr, clauses );
+        setLineNumber(onExpr, currentToken());
 
-        return isExpr;
+        return onExpr;
     }
 
 }

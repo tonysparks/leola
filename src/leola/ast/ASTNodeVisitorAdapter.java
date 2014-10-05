@@ -265,6 +265,18 @@ public class ASTNodeVisitorAdapter implements ASTNodeVisitor {
 	 */
 	@Override
 	public void visit(ThrowStmt s) throws EvalException {}
+	
+	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.TryStmt)
+	 */
+	@Override
+	public void visit(TryStmt s) throws EvalException {}
+	
+	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.OnStmt)
+	 */
+	@Override
+	public void visit(OnStmt s) throws EvalException {}
 
 	/* (non-Javadoc)
 	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.UnaryExpr)

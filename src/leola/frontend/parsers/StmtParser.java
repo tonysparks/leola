@@ -23,6 +23,7 @@ import static leola.frontend.tokens.LeolaTokenType.THROW;
 import static leola.frontend.tokens.LeolaTokenType.VAR;
 import static leola.frontend.tokens.LeolaTokenType.WHILE;
 import static leola.frontend.tokens.LeolaTokenType.YIELD;
+import static leola.frontend.tokens.LeolaTokenType.TRY;
 
 import java.util.EnumSet;
 
@@ -47,7 +48,7 @@ public class StmtParser extends LeolaParser {
     // Synchronization set for starting a statement.
     protected static final EnumSet<LeolaTokenType> STMT_START_SET =
         EnumSet.of(IF, VAR, WHILE, LEFT_BRACE, SWITCH, YIELD,
-        		   RETURN, BREAK, CONTINUE, IDENTIFIER, SEMICOLON, CLASS, CASE, NAMESPACE, THROW);
+        		   RETURN, BREAK, CONTINUE, IDENTIFIER, SEMICOLON, CLASS, CASE, NAMESPACE, THROW, TRY);
 
     // Synchronization set for following a statement.
     protected static final EnumSet<LeolaTokenType> STMT_FOLLOW_SET =
@@ -145,6 +146,11 @@ public class StmtParser extends LeolaParser {
         	}
         	case THROW: {
         		ThrowStmtParser parser = new ThrowStmtParser(this);
+        		statementNode = parser.parse(token);
+        		break;
+        	}
+        	case TRY: {
+        		TryStmtParser parser = new TryStmtParser(this);
         		statementNode = parser.parse(token);
         		break;
         	}
