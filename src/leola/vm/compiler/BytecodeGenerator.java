@@ -1275,43 +1275,53 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 						
 		s.getStmt().visit(this);
 		
+		/* if the VM has made it this
+		 * far, go ahead and pop off
+		 * the ON block (if there is
+		 * one)
+		 */
+		if(hasOn) {
+			asm.endblock();
+		}
+		
 		String finallyLabel = null;
 		String endLabel = null;
 		
+		/*
+		 * If we have a finally block, 
+		 * jump to that, otherwise jump
+		 * over the ON clauses
+		 */
 		if(hasFinally) {			
 			finallyLabel = asm.jmp();
 		}
 		else {
 			endLabel = asm.jmp();
 		}
-						
+					
+		
 		if(hasOn) {
-			asm.endon();
+			asm.markendon();
 			s.getOnStmt().visit(this);
+			asm.endon();
 		}
 						
 		if(hasFinally) {
 			asm.label(finallyLabel);
 			
-
-			/* we need to popoff the on
-			 * if we have successfully executed
-			 * the try statement.
-			 */
-			if(hasOn) {
-				asm.endblock();
-			}
-			
-			asm.markendfinally();
-//			asm.endfinally();			
+			asm.markendfinally();			
 			s.getFinallyStmt().visit(this);
 			asm.endfinally();	
 		}
 		else {
-			asm.label(endLabel);
-			if(hasOn) {
-				asm.endblock();
-			}						
+			
+			/* 
+			 * There is no finally block and the 
+			 * VM made it without an Error being
+			 * thrown, so this lets us skip the
+			 * ON block
+			 */
+			asm.label(endLabel);					
 		}
 		
 	}

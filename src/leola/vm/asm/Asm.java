@@ -854,9 +854,6 @@ public class Asm {
 	}
 	
 	public void endfinally() {				
-//		int startPC = this.blockSize.pop();
-//		getInstructions().set(startPC, SET_ARGx(INIT_FINALLY, getInstructionSize()));
-//		instr(END_FINALLY);
 		instr(END_FINALLY);
 	}
 	public void markendfinally() {
@@ -865,9 +862,13 @@ public class Asm {
 		instr(END_BLOCK);
 	}
 	
-	public void endon() {			
+	public void markendon() {
 		int startPC = this.blockSize.pop();
 		getInstructions().set(startPC, SET_ARGx(INIT_ON, getInstructionSize()));
+		instr(END_BLOCK);
+	}
+	
+	public void endon() {			
 		instr(END_ON);
 	}
 	

@@ -918,21 +918,21 @@ public class VM {
 							continue;
 						}
 						case END_ON: {
-							blockStack.pop();
+							/*
+							 * Clear out the Error
+							 */
+							result = LeoNull.LEONULL;							
 							continue;
 						}
 						case END_FINALLY: {
-							//blockStack.pop();
 							
-							// TODO - rethrow Exception in Finally block
-//							LeoObject error = stack[top-1];
-//							if(error.isError()) {
-//								pc = len;
-//							}
+							/* if the result is an 
+							 * error, we need to bubble up the 
+							 * error
+							 */
 							if(result.isError()) {
 								pc = len;
-							}
-							
+							}							
 							continue;
 						}
 						case END_BLOCK: {
