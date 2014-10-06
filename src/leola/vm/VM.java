@@ -1100,11 +1100,21 @@ public class VM {
 					}
 				}
 			}
-			catch(LeolaRuntimeException e) {
-				runtimeError(lineNumber, e);
-			}
-			catch(Exception e) {						
-				error(lineNumber, e.toString());
+			catch(Throwable e) {						
+
+				/**
+				 * Return the error
+				 */
+				if(result.isError()) {
+					LeoError error = result.as();
+					error.addStack(new LeoError(e.toString(), lineNumber));
+				}
+				else {
+					result = new LeoError(e.toString(), lineNumber);
+				}
+				
+				stack[top++] = result;
+				pc = len; 		/* exit out of this function */
 			}
 			finally {
 				
@@ -1157,14 +1167,23 @@ public class VM {
 		throw new LeolaRuntimeException(errorMsg);
 	}
 
-	private void runtimeError(int lineNumber, LeolaRuntimeException error) {
-		if ( lineNumber > -1) {
-			throw new LeolaRuntimeException("Error on line: " + lineNumber + "\n\t>>>" + error.getMessage());
-		}
-
-		throw new LeolaRuntimeException("\n\t>>>" + error.getMessage());
-	}
-
+	/**
+	 * Close over the outer variables for closures.
+	 * 
+	 * @param outers
+	 * @param calleeouters
+	 * @param openouters
+	 * @param stack
+	 * @param numOuters
+	 * @param base
+	 * @param pc
+	 * @param code
+	 * @param scope
+	 * @param lineNumber
+	 * @param top
+	 * @param topStack
+	 * @return
+	 */
 	private boolean outers(Outer[] outers, Outer[] calleeouters, Outer[] openouters, LeoObject[] stack, int numOuters, int base, int pc, Bytecode code, Scope scope, int lineNumber, int top, int topStack) {
 		boolean closeOuters = false;
 		for(int j = 0; j < numOuters; j++) {
