@@ -658,6 +658,7 @@ public class VM {
 							else {
 								result = c; 	/* throw this error */
 								pc = len; 		/* exit out of this function */
+								stack[top++] = c;
 								LeoError error = c.as();
 								if(error.getLineNumber() < 1) {
 									error.setLineNumber(lineNumber);
