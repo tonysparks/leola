@@ -1276,8 +1276,13 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		s.getStmt().visit(this);
 		
 		String finallyLabel = null;
+		String endLabel = null;
+		
 		if(hasFinally) {			
 			finallyLabel = asm.jmp();
+		}
+		else {
+			endLabel = asm.jmp();
 		}
 						
 		if(hasOn) {
@@ -1301,6 +1306,12 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 //			asm.endfinally();			
 			s.getFinallyStmt().visit(this);
 			asm.endfinally();	
+		}
+		else {
+			asm.label(endLabel);
+			if(hasOn) {
+				asm.endblock();
+			}						
 		}
 		
 	}
