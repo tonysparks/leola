@@ -327,6 +327,7 @@ public class VM {
 //		}
 
 		LeoObject result = LeoNull.LEONULL;
+		LeoObject errorThrown = LeoNull.LEONULL;
 
 		final int[] instr = code.instr;
 		final int len = code.len;
@@ -358,7 +359,8 @@ public class VM {
 
 		boolean closeOuters = false;
 		boolean yield = false;
-
+		boolean isReturnedSafely = true;
+		
 		Scope scope = null;
 		LeoScopedObject scopedObj = null;
 		if ( env instanceof LeoScopedObject) {
@@ -472,6 +474,8 @@ public class VM {
 							continue;
 						}
 						case RET:	{
+							isReturnedSafely = true; /* do not clear out result in an ON block */
+							
 							pc = len;  /* Break out of the bytecode */
 							if ( top>topStack) {
 								result = stack[--top];
@@ -480,6 +484,7 @@ public class VM {
 						}
 						case YIELD: {
 							yield = true; /* lets not expire the generator */
+							isReturnedSafely = true; /* do not clear out result in an ON block */
 							
 							/* copy what was stored on the stack, back to the
 							 * generators local copy
@@ -652,10 +657,11 @@ public class VM {
 							/* if this has an ON block afterwards, it catches the
 							 * exception (if there is one)
 							 */
-							if( !(c instanceof LeoError) || ARG2(i) > 0 ) {
+							if( !c.isError() || ARG2(i) > 0 ) {
 								stack[top++] = c;
 							}
 							else {
+								errorThrown = c;
 								result = c; 	/* throw this error */
 								pc = len; 		/* exit out of this function */
 								stack[top++] = c;
@@ -860,10 +866,13 @@ public class VM {
 							continue;
 						}
 						case THROW: {
-							LeoObject str = stack[--top];
-							result = new LeoError(str);
+							/* we are not safely returning */
+							isReturnedSafely = false; 
+							
+							LeoObject str = stack[--top];							
+							errorThrown = buildStackTrace(errorThrown, str, lineNumber);
 	
-							stack[top++] = result;
+							stack[top++] = errorThrown;
 							
 							pc = len; /* exit out of this function */
 							continue;
@@ -918,10 +927,18 @@ public class VM {
 							continue;
 						}
 						case END_ON: {
-							/*
-							 * Clear out the Error
+							/* if we are safely exiting out of 
+							 * a function, go ahead and do so.
 							 */
-							result = LeoNull.LEONULL;							
+							if(isReturnedSafely) {
+								pc = len;
+							}
+							else {
+								/* Otherwise we have caught an exception
+								 * and dealt with it, so lets clear it
+								 */								
+								errorThrown = LeoNull.LEONULL;								
+							}
 							continue;
 						}
 						case END_FINALLY: {
@@ -930,7 +947,7 @@ public class VM {
 							 * error, we need to bubble up the 
 							 * error
 							 */
-							if(result.isError()) {
+							if(isReturnedSafely || errorThrown.isError()) {
 								pc = len;
 							}							
 							continue;
@@ -1102,18 +1119,15 @@ public class VM {
 			}
 			catch(Throwable e) {						
 
+				/* clear out result in an ON block */
+				isReturnedSafely = false; 
+				
 				/**
 				 * Return the error
 				 */
-				if(result.isError()) {
-					LeoError error = result.as();
-					error.addStack(new LeoError(e.toString(), lineNumber));
-				}
-				else {
-					result = new LeoError(e.toString(), lineNumber);
-				}
+				errorThrown = buildStackTrace(errorThrown, e, lineNumber);								
 				
-				stack[top++] = result;
+				stack[top++] = errorThrown;
 				pc = len; 		/* exit out of this function */
 			}
 			finally {
@@ -1147,9 +1161,31 @@ public class VM {
 			}
 		} while(!blockStack.isEmpty());
 
-		return result;
+		return isReturnedSafely ? 
+				 result : errorThrown;
 	}
 
+	/**
+	 * Builds the stack trace
+	 * 
+	 * @param errorThrown
+	 * @param message
+	 * @return
+	 */
+	private LeoObject buildStackTrace(LeoObject errorThrown, Object message, int lineNumber) {
+		
+		LeoError error = new LeoError(message.toString(), lineNumber);
+		if(errorThrown.isError()) {
+			LeoError parentError = errorThrown.as();
+			parentError.addStack(error);
+		}
+		else {
+			errorThrown = error;
+		}
+		
+		return errorThrown;
+	}
+	
 	/**
 	 * Handles an error in the execution.
 	 *
