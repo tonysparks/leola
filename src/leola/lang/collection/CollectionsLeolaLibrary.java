@@ -157,6 +157,22 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 					
 					break;
 				}
+				case GENERATOR: {
+					while(true) {
+						LeoObject generatorResult = this.runtime.execute(array);
+						if(generatorResult == LeoNull.LEONULL) {
+							break;
+						}
+						
+						LeoObject result = this.runtime.execute(function, generatorResult);
+						if ( LeoObject.isTrue(result) ) {
+							r = result;
+							break;
+						}
+					}
+					
+					break;
+				}
 				default: {					
 				}
 			}
@@ -317,6 +333,22 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 				
 				break;
 			}
+			case GENERATOR: {
+				
+				result = new LeoArray();
+				while(true) {
+					LeoObject generatorResult = this.runtime.execute(list);
+					if(generatorResult == LeoNull.LEONULL) {
+						break;
+					}
+					
+					if( LeoObject.isTrue(this.runtime.execute(function, generatorResult))) {
+						result.$add(generatorResult);
+					}
+				}
+				
+				break;
+			}
 			default: {				
 			}
 		}		
@@ -368,6 +400,20 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 				}
 				
 				result = r;
+				
+				break;
+			}
+			case GENERATOR: {
+				
+				result = new LeoArray();
+				while(true) {
+					LeoObject generatorResult = this.runtime.execute(list);
+					if(generatorResult == LeoNull.LEONULL) {
+						break;
+					}
+					
+					result.$add(this.runtime.execute(function, generatorResult));					
+				}
 				
 				break;
 			}
