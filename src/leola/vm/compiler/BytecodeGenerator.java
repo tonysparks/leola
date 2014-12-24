@@ -42,6 +42,7 @@ import leola.ast.IsExpr;
 import leola.ast.LongExpr;
 import leola.ast.MapDeclExpr;
 import leola.ast.MemberAccessExpr;
+import leola.ast.NamedParameterExpr;
 import leola.ast.NamespaceAccessExpr;
 import leola.ast.NamespaceStmt;
 import leola.ast.NewExpr;
@@ -605,13 +606,34 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	@Override
 	public void visit(ChainedFuncInvocationExpr s) throws EvalException {
 		asm.line(s.getLineNumber());
-		
+
 		int nargs = 0;
 		Expr[] params = s.getParameters();
 		if ( params != null ) {
-			for(Expr param : params) {
-				param.visit(this);
-			}
+            boolean hasNamedParameters = false;
+            /* check to see if there are any NamedParameters,
+             * if so, we need to add some additional instructions
+             * that effect performance
+             */
+            for(Expr param : params) {
+                if(param instanceof NamedParameterExpr) {
+                    hasNamedParameters = true;
+                    break;
+                }
+            }
+            
+            
+            for(Expr param : params) {
+                param.visit(this);
+                
+                /* mark the end of the parameter,
+                 * so that we can properly index
+                 * the named parameters
+                 */
+                if(hasNamedParameters) {
+                    asm.paramend();
+                }
+            }
 			
 			nargs = params.length;
 		}
@@ -898,6 +920,21 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		asm.end();		
 	}
 	
+	
+	
+	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.NamedParameterStmt)
+	 */
+	@Override
+	public void visit(NamedParameterExpr s) throws EvalException {
+	    // TODO	    
+	    int index = asm.getConstants().store(s.getParameterName());
+	    
+	    asm.loadname(index);
+	    s.getValueExpr().visit(this);
+	    
+	}
+	
 	/* (non-Javadoc)
 	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.FuncDefExpr)
 	 */
@@ -929,8 +966,30 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		int nargs = 0;
 		Expr[] params = s.getParameters();
 		if ( params != null ) {
+		    
+		    boolean hasNamedParameters = false;
+		    /* check to see if there are any NamedParameters,
+		     * if so, we need to add some additional instructions
+		     * that effect performance
+		     */
+		    for(Expr param : params) {
+		        if(param instanceof NamedParameterExpr) {
+		            hasNamedParameters = true;
+		            break;
+		        }
+		    }
+		    
+		    
 			for(Expr param : params) {
 				param.visit(this);
+				
+				/* mark the end of the parameter,
+				 * so that we can properly index
+				 * the named parameters
+				 */
+				if(hasNamedParameters) {
+				    asm.paramend();
+				}
 			}
 			
 			nargs = params.length;
@@ -1026,16 +1085,47 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	@Override
 	public void visit(NewExpr s) throws EvalException {
 		asm.line(s.getLineNumber());
-			
-		Expr[] exprs = s.getParameters();
-		for(Expr expr : s.getParameters()) {
-			expr.visit(this);
+		// TODO
+//		Expr[] exprs = s.getParameters();
+//		for(Expr expr : s.getParameters()) {
+//			expr.visit(this);						
+//		}
+		
+		int nargs = 0;
+		Expr[] params = s.getParameters();
+		if(params != null) {
+            boolean hasNamedParameters = false;
+            /* check to see if there are any NamedParameters,
+             * if so, we need to add some additional instructions
+             * that effect performance
+             */
+            for(Expr param : params) {
+                if(param instanceof NamedParameterExpr) {
+                    hasNamedParameters = true;
+                    break;
+                }
+            }
+            
+            
+            for(Expr param : params) {
+                param.visit(this);
+                
+                /* mark the end of the parameter,
+                 * so that we can properly index
+                 * the named parameters
+                 */
+                if(hasNamedParameters) {
+                    asm.paramend();
+                }
+            }
+            
+            nargs = params.length;
 		}
 		
 		String className = s.getClassName();		
 		asm.storeAndloadconst(className);
 		
-		asm.newobj(exprs!=null?exprs.length:0);
+		asm.newobj(nargs);
 	}
 
 	/* (non-Javadoc)

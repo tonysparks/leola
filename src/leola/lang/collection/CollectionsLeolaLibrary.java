@@ -14,6 +14,7 @@ import leola.vm.lib.LeolaIgnore;
 import leola.vm.lib.LeolaLibrary;
 import leola.vm.lib.LeolaMethod;
 import leola.vm.types.LeoArray;
+import leola.vm.types.LeoGenerator;
 import leola.vm.types.LeoInteger;
 import leola.vm.types.LeoMap;
 import leola.vm.types.LeoNamespace;
@@ -156,6 +157,23 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 					}
 					
 					break;
+				}
+				case GENERATOR: {
+				    LeoGenerator gen = array.as();
+				    while(true) {
+				        LeoObject genResult = this.runtime.execute(gen);
+				        if(genResult== LeoNull.LEONULL) {
+				            break;
+				        }
+				        
+				        LeoObject result = this.runtime.execute(function, genResult);
+				        if ( LeoObject.isTrue(result) ) {
+                            r = result;
+                            break;
+                        }
+				    }
+				    
+				    break;
 				}
 				default: {					
 				}

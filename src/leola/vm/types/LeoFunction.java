@@ -116,7 +116,7 @@ public class LeoFunction extends LeoOuterObject {
 	 */
 	@Override
 	public LeoObject call(VM vm, LeoObject arg1) {
-		if(this.bytecode.isVarargs) {
+		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {
 				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1));
 			}
@@ -134,7 +134,7 @@ public class LeoFunction extends LeoOuterObject {
 	 */
 	@Override
 	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2) {
-		if(this.bytecode.isVarargs) {
+		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {				
 				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1, arg2));
 				case 1: return vm.execute(env, this, this.bytecode, arg1, LeoArray.toLeoArray(arg2));				
@@ -154,7 +154,7 @@ public class LeoFunction extends LeoOuterObject {
 	 */
 	@Override
 	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2, LeoObject arg3) {
-		if(this.bytecode.isVarargs) {
+		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {				
 				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1, arg2, arg3));
 				case 1: return vm.execute(env, this, this.bytecode, arg1, LeoArray.toLeoArray(arg2, arg3));
@@ -176,7 +176,7 @@ public class LeoFunction extends LeoOuterObject {
 	 */
 	@Override
 	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4) {
-		if(this.bytecode.isVarargs) {
+		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {				
 				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1, arg2, arg3, arg4));
 				case 1: return vm.execute(env, this, this.bytecode, arg1, LeoArray.toLeoArray(arg2, arg3, arg4));
@@ -200,7 +200,7 @@ public class LeoFunction extends LeoOuterObject {
 	 */
 	@Override
 	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4, LeoObject arg5) {
-		if(this.bytecode.isVarargs) {
+		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {				
 				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1, arg2, arg3, arg4, arg5));
 				case 1: return vm.execute(env, this, this.bytecode, arg1, LeoArray.toLeoArray(arg2, arg3, arg4, arg5));
@@ -221,7 +221,7 @@ public class LeoFunction extends LeoOuterObject {
 	 */
 	@Override
 	public LeoObject call(VM vm, LeoObject[] args) {
-		if(this.bytecode.isVarargs) {
+		if(this.bytecode.hasVarargs()) {
 			int index = this.bytecode.getVarargIndex();
 			LeoArray varargs =  LeoArray.toLeoArray( Arrays.copyOfRange(args, index, args.length) );
 			LeoObject[] newArgs = new LeoObject[index+1];

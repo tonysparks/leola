@@ -37,7 +37,7 @@ public class LeoNativeFunction extends LeoObject {
 	private Method method;
 
 	private List<Method> overloads;
-		
+			
 	/**
 	 * @param clss
 	 * @param instance

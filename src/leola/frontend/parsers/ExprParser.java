@@ -14,6 +14,7 @@ import static leola.frontend.tokens.LeolaTokenType.BIT_SHIFT_RIGHT;
 import static leola.frontend.tokens.LeolaTokenType.DEF;
 import static leola.frontend.tokens.LeolaTokenType.DOT;
 import static leola.frontend.tokens.LeolaTokenType.D_EQUALS;
+import static leola.frontend.tokens.LeolaTokenType.GEN;
 import static leola.frontend.tokens.LeolaTokenType.GREATER_EQUALS;
 import static leola.frontend.tokens.LeolaTokenType.GREATER_THAN;
 import static leola.frontend.tokens.LeolaTokenType.IDENTIFIER;
@@ -36,7 +37,6 @@ import static leola.frontend.tokens.LeolaTokenType.RIGHT_BRACKET;
 import static leola.frontend.tokens.LeolaTokenType.RIGHT_PAREN;
 import static leola.frontend.tokens.LeolaTokenType.SLASH;
 import static leola.frontend.tokens.LeolaTokenType.STAR;
-import static leola.frontend.tokens.LeolaTokenType.GEN;
 import static leola.frontend.tokens.LeolaTokenType.STRING;
 
 import java.util.EnumSet;
@@ -573,6 +573,11 @@ public class ExprParser extends StmtParser {
     		AssignmentExprParser parser = new AssignmentExprParser(this);
     		result = parser.parse(token);
     		break;
+    	}
+    	case ARROW: {
+    	    NamedParameterExprParser parser = new NamedParameterExprParser(this);
+    	    result = parser.parse(token);
+    	    break;
     	}
     	case PLUS_EQ:
     	case MINUS_EQ:

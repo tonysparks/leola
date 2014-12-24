@@ -303,5 +303,10 @@ public class ASTNodeVisitorAdapter implements ASTNodeVisitor {
 	@Override
 	public void visit(WhileStmt s) throws EvalException {}
 
+	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.NamedParameterStmt)
+	 */
+	@Override
+	public void visit(NamedParameterExpr s) throws EvalException {}
 }
 

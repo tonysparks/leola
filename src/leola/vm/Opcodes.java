@@ -160,6 +160,14 @@ public class Opcodes {
 				op = "LOAD_OUTER";				
 				break;
 			}
+            case LOAD_NAME: {
+                op = "LOAD_NAME";              
+                break;
+            }
+            case PARAM_END: {
+                op = "PARAM_END";              
+                break;
+            }               
 			case xLOAD_OUTER: {
 				op = "xLOAD_OUTER";
 				break;
@@ -457,7 +465,10 @@ public class Opcodes {
 		
 		LOAD_NULL = 12,
 		LOAD_TRUE = 13,
-		LOAD_FALSE = 14,		
+		LOAD_FALSE = 14,	
+		
+		LOAD_NAME = 69, // TODO
+		PARAM_END = 70, // TODO
 						
 		STORE_LOCAL = 15,
 		STORE_OUTER = 16,		
@@ -539,11 +550,13 @@ public class Opcodes {
 		opcodes.put("LOAD_CONST", LOAD_CONST);
 		opcodes.put("LOAD_LOCAL", LOAD_LOCAL);
 		opcodes.put("LOAD_OUTER", LOAD_OUTER);
+		opcodes.put("LOAD_NAME", LOAD_NAME);
 		opcodes.put("xLOAD_OUTER", xLOAD_OUTER);
 		opcodes.put("xLOAD_LOCAL", xLOAD_LOCAL);		
 		opcodes.put("LOAD_NULL", LOAD_NULL);
 		opcodes.put("LOAD_TRUE", LOAD_TRUE);
 		opcodes.put("LOAD_FALSE", LOAD_FALSE);
+		opcodes.put("PARAM_END", PARAM_END);
 		
 		opcodes.put("STORE_LOCAL", STORE_LOCAL);
 		opcodes.put("STORE_OUTER", STORE_OUTER);

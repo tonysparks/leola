@@ -29,6 +29,13 @@ public class Bytecode {
 	public static final int MAGIC_NUMBER = 0x1E01A;
 	public static final int VERSION = 1;
 	
+	public static final int FL_DEBUG       = (1<<0);
+	public static final int FL_BLOCKS      = (1<<1);
+	public static final int FL_VARARGS     = (1<<2);
+	
+	
+	public int flags;
+	
 	public final int[] instr;
 	public       int pc;
 	public final int len;
@@ -36,17 +43,16 @@ public class Bytecode {
 	public LeoObject[] constants;
 	public int numConstants;
 		
-	public DebugSymbols debugSymbols;
-	public byte debug;
+	public DebugSymbols debugSymbols;		
 	
 	public int numLocals;		
 	public int numOuters;
 	
+	public String[] paramNames;
+	
 	public int numArgs;
 	public int numInners;
-	
-	public boolean isVarargs;
-		
+			
 	public int maxstacksize;
 	
 	public Bytecode[] inner;	
@@ -68,6 +74,49 @@ public class Bytecode {
 		this.pc = pc;
 		this.len = len;		
 	}
+	
+	/**
+	 * denotes that this byte code contains variable arguments
+	 */
+	public void setVarargs() {
+	    this.flags |= FL_VARARGS;
+	}
+	
+	/**
+     * denotes that this byte code contains debug information
+     */
+    public void setDebug() {
+        this.flags |= FL_DEBUG;
+    }
+    
+    /**
+     * denotes that this byte code contains exception blocks
+     */
+    public void setBlocks() {
+        this.flags |= FL_BLOCKS;
+    }
+	
+	/**
+	 * @return true if this contains variable arguments
+	 */
+	public boolean hasVarargs() {
+	    return (this.flags & FL_VARARGS) != 0;
+	}
+	
+	
+	/**
+	 * @return true if this contains debug information
+	 */
+	public boolean hasDebug() {
+        return (this.flags & FL_DEBUG) != 0;
+    }
+	
+	/**
+	 * @return true if this contains exception blocks
+	 */
+	public boolean hasBlocks() {
+        return (this.flags & FL_BLOCKS) != 0;
+    }
 	
 	/**
 	 * @return the index in which to start the variable arguments
@@ -105,8 +154,8 @@ public class Bytecode {
 	 */
 	public Bytecode clone() {
 		Bytecode clone = new Bytecode(instr);
-		clone.constants = this.constants;
-		clone.debug = this.debug;
+		clone.flags = this.flags;
+		clone.constants = this.constants;		
 		clone.debugSymbols = this.debugSymbols;
 		clone.inner = new Bytecode[this.numInners];
 		for(int i = 0; i<this.numInners;i++) {
@@ -114,12 +163,12 @@ public class Bytecode {
 		}
 		
 		clone.maxstacksize = this.maxstacksize;
-		clone.numArgs = this.numArgs;
-		clone.isVarargs = this.isVarargs;		
+		clone.numArgs = this.numArgs;			
 		clone.numConstants = this.numConstants;
 		clone.numInners = this.numInners;
 		clone.numLocals = this.numLocals;
 		clone.numOuters = this.numOuters;
+		clone.paramNames = this.paramNames;
 				
 		return clone;
 	}
@@ -289,14 +338,19 @@ public class Bytecode {
 			out.writeInt(0);
 		}
 		
-		out.writeInt(this.numArgs);
-		out.writeBoolean(this.isVarargs);		
+		out.writeInt(this.flags);
+		out.writeInt(this.numArgs);			
 		out.writeInt(this.numOuters);
 		out.writeInt(this.numLocals);
 		
-		/* write out the var names if this is a class */
-		out.writeByte(this.debug);
-		if(this.debug>0) {
+		for(int i = 0; i < this.numArgs; i++) {
+		    byte[] b = this.paramNames[i].getBytes();
+            out.write(b.length);
+		    out.write(b);
+		}
+		
+		/* write out the var names if this is a class */		
+		if( (this.flags & FL_DEBUG) != 0) {
 			this.debugSymbols.write(out);
 		}
 		
@@ -365,12 +419,20 @@ public class Bytecode {
 			result.constants[i] = obj;
 		}
 		
-		result.numArgs = in.readInt();		
-		result.isVarargs = in.readBoolean();
+		result.flags = in.readInt();
+		result.numArgs = in.readInt();				
 		result.numOuters = in.readInt();				
-		result.numLocals = in.readInt();		
-		result.debug = in.readByte();
-		if( result.debug > 0 ) {
+		result.numLocals = in.readInt();	
+		
+		result.paramNames = new String[result.numArgs];
+		for(int i = 0; i < result.numArgs; i++) {
+            int length = in.readInt();
+            byte[] b = new byte[length];
+            in.readFully(b);
+            result.paramNames[i] = new String(b);
+        }
+				
+		if( (result.flags & FL_DEBUG) != 0 ) {
 			result.debugSymbols = DebugSymbols.read(in);
 		}		
 				

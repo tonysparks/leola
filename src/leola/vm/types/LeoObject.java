@@ -624,7 +624,7 @@ public abstract class LeoObject {
 	public Object getValue(Class<?> narrowType) {
 		return this;
 	}
-
+	
 	/**
 	 * @return a deep copy clone of this object
 	 */

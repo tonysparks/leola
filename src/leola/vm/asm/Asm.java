@@ -5,7 +5,6 @@
 */
 package leola.vm.asm;
 
-import static leola.vm.Opcodes.END_BLOCK;
 import static leola.vm.Opcodes.ADD;
 import static leola.vm.Opcodes.AND;
 import static leola.vm.Opcodes.BNOT;
@@ -15,11 +14,13 @@ import static leola.vm.Opcodes.CLASS_DEF;
 import static leola.vm.Opcodes.DEF;
 import static leola.vm.Opcodes.DIV;
 import static leola.vm.Opcodes.DUP;
+import static leola.vm.Opcodes.END_BLOCK;
 import static leola.vm.Opcodes.END_FINALLY;
 import static leola.vm.Opcodes.END_ON;
 import static leola.vm.Opcodes.EQ;
 import static leola.vm.Opcodes.GEN;
 import static leola.vm.Opcodes.GET;
+import static leola.vm.Opcodes.PARAM_END;
 import static leola.vm.Opcodes.GET_GLOBAL;
 import static leola.vm.Opcodes.GET_NAMESPACE;
 import static leola.vm.Opcodes.GT;
@@ -38,6 +39,7 @@ import static leola.vm.Opcodes.LOAD_LOCAL;
 import static leola.vm.Opcodes.LOAD_NULL;
 import static leola.vm.Opcodes.LOAD_OUTER;
 import static leola.vm.Opcodes.LOAD_TRUE;
+import static leola.vm.Opcodes.LOAD_NAME;
 import static leola.vm.Opcodes.LOR;
 import static leola.vm.Opcodes.LT;
 import static leola.vm.Opcodes.LTE;
@@ -119,6 +121,7 @@ public class Asm {
 	private boolean isVarargs;
 	
 	private Stack<Integer> blockSize;
+	private boolean hasBlocks;
 	
 	/**
 	 */
@@ -580,6 +583,17 @@ public class Asm {
 		incrementMaxstackSize();
 	}
 	
+	public void loadname(int index) {
+	    instrx(LOAD_NAME, index);
+        incrementMaxstackSize();
+	}
+	
+	public void paramend() {
+        instr(PARAM_END);
+        incrementMaxstackSize();
+    }
+	
+	
 	public void storelocal(int index) {		
 		instrx(STORE_LOCAL, index);
 		decrementMaxstackSize();
@@ -842,12 +856,14 @@ public class Asm {
 	}
 	
 	public void initfinally() {
+	    this.hasBlocks = true;
 		this.blockSize.add(getInstructionSize());
 		// this will be populated with the correct offset
 		instrx(INIT_FINALLY, 0); 
 		
 	}
 	public void initon() {
+	    this.hasBlocks = true;
 		this.blockSize.add(getInstructionSize());
 		// this will be populated with the correct offset
 		instrx(INIT_ON, 0); 		
@@ -994,21 +1010,35 @@ public class Asm {
 		bytecode.inner = new Bytecode[bytecode.numInners];
 				
 		bytecode.numArgs = this.numArgs;
-		bytecode.isVarargs = this.isVarargs;
-				
+		if(this.isVarargs) {
+		    bytecode.setVarargs();
+		}
+		
+		if(this.hasBlocks) {
+		    bytecode.setBlocks();
+		}				
+		
 		if(this.localScope.hasOuters()) {
 			Outers outers = this.localScope.getOuters();
 			bytecode.numOuters = outers.getNumberOfOuters();
 		}
 		
+		
+		bytecode.paramNames = new String[this.numArgs];
 		if(this.localScope.hasLocals()) {
 			Locals locals = this.localScope.getLocals();
 			bytecode.numLocals = locals.getNumberOfLocals();
+			
+			if(bytecode.numArgs > 0) {
+	            for(int i = 0; i < bytecode.numArgs; i++) {
+	                bytecode.paramNames[i] = locals.getReference(i);
+	            }
+	        }
 		}
 		
 		/* we only care about this for classes */
-		bytecode.debug =  (byte) (this.isDebug() ? 1 : 0);
-		if ( bytecode.debug > 0 ) {
+		if ( isDebug() ) {
+		    bytecode.setDebug();
 			bytecode.debugSymbols = this.debugSymbols;
 		}
 										

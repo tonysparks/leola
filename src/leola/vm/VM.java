@@ -17,6 +17,7 @@ import static leola.vm.Opcodes.CLASS_DEF;
 import static leola.vm.Opcodes.DEF;
 import static leola.vm.Opcodes.DIV;
 import static leola.vm.Opcodes.DUP;
+import static leola.vm.Opcodes.END_BLOCK;
 import static leola.vm.Opcodes.END_FINALLY;
 import static leola.vm.Opcodes.END_ON;
 import static leola.vm.Opcodes.EQ;
@@ -37,6 +38,7 @@ import static leola.vm.Opcodes.LINE;
 import static leola.vm.Opcodes.LOAD_CONST;
 import static leola.vm.Opcodes.LOAD_FALSE;
 import static leola.vm.Opcodes.LOAD_LOCAL;
+import static leola.vm.Opcodes.LOAD_NAME;
 import static leola.vm.Opcodes.LOAD_NULL;
 import static leola.vm.Opcodes.LOAD_OUTER;
 import static leola.vm.Opcodes.LOAD_TRUE;
@@ -56,6 +58,7 @@ import static leola.vm.Opcodes.NEW_NAMESPACE;
 import static leola.vm.Opcodes.NOT;
 import static leola.vm.Opcodes.OPPOP;
 import static leola.vm.Opcodes.OR;
+import static leola.vm.Opcodes.PARAM_END;
 import static leola.vm.Opcodes.POP;
 import static leola.vm.Opcodes.REQ;
 import static leola.vm.Opcodes.RET;
@@ -72,8 +75,9 @@ import static leola.vm.Opcodes.XOR;
 import static leola.vm.Opcodes.YIELD;
 import static leola.vm.Opcodes.xLOAD_LOCAL;
 import static leola.vm.Opcodes.xLOAD_OUTER;
-import static leola.vm.Opcodes.END_BLOCK;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import leola.vm.asm.Bytecode;
@@ -127,7 +131,6 @@ public class VM {
 	private Outer[] openouters;
 	private int top;
 
-//	private int[] blockStack;
 	
 	/**
 	 * @param runtime the {@link Leola} runtime
@@ -340,6 +343,11 @@ public class VM {
 		final Outer[] calleeouters;
 		final LeoObject[] genLocals;
 		
+		
+		/* if there is some object calling this function
+		 * this means there might be outer scoped variables
+		 * that we can access within this byte code
+		 */
 		if(callee != null) {
 			calleeouters = callee.getOuters();
 			genLocals = callee.getLocals();
@@ -362,13 +370,19 @@ public class VM {
 		boolean isReturnedSafely = true;
 		
 		Scope scope = null;
+		
+		/* check and see if this is a scoped object,
+		 * if so use the scope
+		 */
 		LeoScopedObject scopedObj = null;
 		if ( env instanceof LeoScopedObject) {
 			scopedObj = (LeoScopedObject)env;
 			scope = scopedObj.getScope();
 		}
 
-
+		/* use the global scope if this object doesn't contain
+		 * any scope
+		 */
 		if(scope==null) {
 			LeoNamespace global = runtime.getGlobalNamespace();
 
@@ -376,8 +390,20 @@ public class VM {
 			scopedObj=global;
 		}
 		
-
-		Stack<Integer> blockStack = new Stack<Integer>();
+		
+		/* named parameters 
+		 */
+		List<String> params = new ArrayList<String>();
+		int paramIndex = 0;
+		
+		
+		/* exception handling, keeps track of the catch program 
+		 * counter */
+		Stack<Integer> blockStack = null;
+		if(code.hasBlocks()) {
+		    blockStack = new Stack<Integer>();
+		}
+		
 		
 		final int topStack = base + code.numLocals;
 		top = topStack;
@@ -434,6 +460,22 @@ public class VM {
 						case LOAD_FALSE: {
 							stack[top++] = LeoBoolean.LEOFALSE;
 							continue;
+						}
+						case LOAD_NAME: {
+						    int iname = ARGx(i);
+						    
+						    // TODO: optimize
+						    LeoObject name = constants[iname];
+						    params.add(paramIndex, name.toString());						    						    			   
+						    continue;
+						}
+						case PARAM_END: {
+						    // TODO: implement
+						    paramIndex++;
+						    if(params.size() < paramIndex) {
+						        params.add(null);
+						    }
+						    break;
 						}
 						case STORE_LOCAL: {
 							int iname = ARGx(i);
@@ -603,6 +645,16 @@ public class VM {
 							int nargs = ARG1(i);
 							LeoObject fun = stack[--top];
 	
+							// TODO: optimize
+							if(!params.isEmpty() && !fun.isNativeFunction() ) {
+							    resolveNamedParameters(params, stack, fun, nargs);
+							    
+
+						        /* ready this for any other method calls */
+							    params.clear();
+							    paramIndex = 0;
+							}                            
+							
 							LeoObject c = null;
 	
 							switch(nargs) {
@@ -689,7 +741,17 @@ public class VM {
 									args[j] = stack[--top];
 								}
 							}
-	
+							
+							// TODO: Allow named parameters for class instantiation
+//                           if(!params.isEmpty() && !fun.isNativeFunction() ) {
+//                                resolveNamedParameters(params, stack, fun, nargs);
+//                                
+//
+//                                /* ready this for any other method calls */
+//                                params.clear();
+//                                paramIndex = 0;
+//                            }
+							
 							LeoObject instance = null;
 	
 							ClassDefinitions defs = symbols.lookupClassDefinitions(className);
@@ -751,9 +813,11 @@ public class VM {
 									ns.setOuters(new Outer[namespacecode.numOuters]);
 								}
 							}
-	
-							closeOuters = outers(ns.getOuters(), calleeouters, openouters, stack, namespacecode.numOuters, base, pc, code, scope, lineNumber, top, topStack)
-											|| closeOuters;
+							
+							Outer[] outers = ns.getOuters();
+							if (outers(outers, calleeouters, openouters, stack, namespacecode.numOuters, base, pc, code, lineNumber)) {
+							    closeOuters = true;
+							}
 							pc += namespacecode.numOuters;
 	
 							this.runtime.execute(ns, namespacecode);
@@ -767,8 +831,9 @@ public class VM {
 							LeoGenerator fun = new LeoGenerator(scopedObj, bytecode.clone());
 	
 							Outer[] outers = fun.getOuters();
-							closeOuters = outers(outers, calleeouters, openouters, stack, bytecode.numOuters, base, pc, code, scope, lineNumber, top, topStack)
-											|| closeOuters;
+							if (outers(outers, calleeouters, openouters, stack, bytecode.numOuters, base, pc, code, lineNumber)) {
+                                closeOuters = true;
+                            }
 							pc += bytecode.numOuters;
 	
 							stack[top++] = fun;
@@ -779,9 +844,10 @@ public class VM {
 							Bytecode bytecode = inner[innerIndex];
 							LeoFunction fun = new LeoFunction(scopedObj, bytecode);
 	
-							Outer[] outers = fun.getOuters();
-							closeOuters = outers(outers, calleeouters, openouters, stack, bytecode.numOuters, base, pc, code, scope, lineNumber, top, topStack)
-											|| closeOuters;
+							Outer[] outers = fun.getOuters();							
+							if (outers(outers, calleeouters, openouters, stack, bytecode.numOuters, base, pc, code, lineNumber)) {
+                                closeOuters = true;
+                            }
 							pc += bytecode.numOuters;
 	
 							stack[top++] = fun;
@@ -844,8 +910,10 @@ public class VM {
 							ClassDefinitions defs = scope.getClassDefinitions();
 							defs.storeClass(className, classDefinition);
 	
-							closeOuters = outers(classDefinition.getOuters(), calleeouters, openouters, stack, body.numOuters, base, pc, code, scope, lineNumber, top, topStack)
-											|| closeOuters;
+							Outer[] outers = classDefinition.getOuters();
+							if( outers(outers, calleeouters, openouters, stack, body.numOuters, base, pc, code, lineNumber)) {
+                                closeOuters = true;
+                            }
 							pc += body.numOuters;
 							continue;
 						}
@@ -1132,13 +1200,13 @@ public class VM {
 			}
 			finally {
 				
-				if(!blockStack.isEmpty()) {
+				if(blockStack != null && !blockStack.isEmpty()) {
 					pc = blockStack.peek();
 				}
 				else {
 				
 					/* close the outers for this function call */
-					//if ( closeOuters /*|| true*/ ) {
+					if ( closeOuters /*|| true*/ ) {
 						for(int j=base;j<openouters.length && j<base+code.maxstacksize;j++) {
 							if(openouters[j]!=null) {
 								openouters[j].close();
@@ -1147,7 +1215,7 @@ public class VM {
 		
 							stack[j] = null;
 						}
-					//}
+					}
 		
 					top = base;
 					
@@ -1159,7 +1227,7 @@ public class VM {
 					}		
 				}
 			}
-		} while(!blockStack.isEmpty());
+		} while(blockStack != null && !blockStack.isEmpty());
 
 		return isReturnedSafely ? 
 				 result : errorThrown;
@@ -1203,6 +1271,83 @@ public class VM {
 		throw new LeolaRuntimeException(errorMsg);
 	}
 
+	
+	/**
+	 * Resolve the named parameters
+	 * 
+	 * @param params
+	 * @param fun
+	 * @param nargs
+	 */
+	private void resolveNamedParameters(List<String> params, LeoObject[] stack, LeoObject fun, int nargs) {	    
+        /* assume this is a function */
+        LeoFunction f = fun.as();
+        Bytecode bc = f.getBytecode();
+        
+        
+        /* store stack arguments in a temporary location */
+        int tmpTop = top;
+        LeoObject[] tmp = stack;//new LeoObject[nargs];
+        for(int stackIndex = 0; stackIndex < nargs; stackIndex++) {
+            tmp[tmpTop + stackIndex] = stack[top - stackIndex - 1];
+        }
+        
+                                                
+        /* iterate through the parameter names and adjust the stack
+         * so that the names match the position the function expects them
+         */
+        for(int stackIndex = 0; stackIndex < params.size(); stackIndex++) {
+            String paramName = params.get(stackIndex);
+            if(paramName != null) {             
+                int paramIndex = 0;
+                for(; paramIndex < bc.numArgs; paramIndex++) {
+                    if(bc.paramNames[paramIndex].equals(paramName)) {
+                        break;
+                    }
+                }
+                
+                stack[top - (nargs - paramIndex)] = tmp[tmpTop + (nargs - stackIndex - 1)];
+            }
+        }                                                                                           
+                
+	}
+	
+	/**
+     * Resolve the named parameters
+     * 
+     * @param params
+     * @param stack
+     * @param paramNames
+     * @param nargs
+     */
+    private void resolveClassNamedParameters(List<String> params, LeoObject[] stack, String[] paramNames, int nargs) {                   
+        /* store stack arguments in a temporary location */
+        int tmpTop = top;
+        LeoObject[] tmp = stack;//new LeoObject[nargs];
+        for(int stackIndex = 0; stackIndex < nargs; stackIndex++) {
+            tmp[tmpTop + stackIndex] = stack[top - stackIndex - 1];
+        }
+        
+                                                
+        /* iterate through the parameter names and adjust the stack
+         * so that the names match the position the function expects them
+         */
+        for(int stackIndex = 0; stackIndex < params.size(); stackIndex++) {
+            String paramName = params.get(stackIndex);
+            if(paramName != null) {             
+                int paramIndex = 0;
+                for(; paramIndex < paramNames.length; paramIndex++) {
+                    if(paramNames[paramIndex].equals(paramName)) {
+                        break;
+                    }
+                }
+                
+                stack[top - (nargs - paramIndex)] = tmp[tmpTop + (nargs - stackIndex - 1)];
+            }
+        }                                                                                           
+                
+    }
+	
 	/**
 	 * Close over the outer variables for closures.
 	 * 
@@ -1214,13 +1359,16 @@ public class VM {
 	 * @param base
 	 * @param pc
 	 * @param code
-	 * @param scope
 	 * @param lineNumber
-	 * @param top
-	 * @param topStack
 	 * @return
 	 */
-	private boolean outers(Outer[] outers, Outer[] calleeouters, Outer[] openouters, LeoObject[] stack, int numOuters, int base, int pc, Bytecode code, Scope scope, int lineNumber, int top, int topStack) {
+	private boolean outers(Outer[] outers, Outer[] calleeouters, Outer[] openouters, LeoObject[] stack, 
+	                    int numOuters, 
+	                    int base, 
+	                    int pc, 
+	                    Bytecode code, 	                     
+	                    int lineNumber) {
+	    
 		boolean closeOuters = false;
 		for(int j = 0; j < numOuters; j++) {
 			int i = code.instr[pc++];
