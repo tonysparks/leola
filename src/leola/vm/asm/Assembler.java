@@ -320,6 +320,16 @@ public class Assembler {
 				asm.loadouter(Integer.parseInt(args[0]));
 			}
 		});
+		opcodes.put("LOAD_NAME", new Opcode() {            
+            public void invoke(Asm asm, String...  args) {
+                asm.loadname(Integer.parseInt(args[0]));
+            }
+        });
+		opcodes.put("PARAM_END", new Opcode() {            
+            public void invoke(Asm asm, String...  args) {
+                asm.paramend();
+            }
+        });
 		opcodes.put("xLOAD_OUTER", new Opcode() {			
 			public void invoke(Asm asm, String...  args) {
 				//asm.def(numberOfParameters)
@@ -459,6 +469,12 @@ public class Assembler {
 				asm.gen(Integer.parseInt(args[0]), args.length > 1);
 			}
 		});
+		
+        opcodes.put("YIELD", new Opcode() {          
+            public void invoke(Asm asm, String...  args) {
+                asm.yield();
+            }
+        });		
 		opcodes.put("IS_A", new Opcode() {			
 			public void invoke(Asm asm, String...  args) {
 				asm.isa();
@@ -650,7 +666,31 @@ public class Assembler {
 				asm.line(Integer.parseInt(args[0]));
 			}
 		});
-
+        opcodes.put("INIT_FINALLY", new Opcode() {          
+            public void invoke(Asm asm, String...  args) {
+                asm.initfinally();
+            }
+        });		
+        opcodes.put("INIT_ON", new Opcode() {          
+            public void invoke(Asm asm, String...  args) {
+                asm.initon();
+            }
+        });
+        opcodes.put("END_ON", new Opcode() {          
+            public void invoke(Asm asm, String...  args) {
+                asm.endon();
+            }
+        });        
+        opcodes.put("END_FINALLY", new Opcode() {          
+            public void invoke(Asm asm, String...  args) {
+                asm.endfinally();
+            }
+        });        
+        opcodes.put("END_BLOCK", new Opcode() {          
+            public void invoke(Asm asm, String...  args) {
+                asm.endblock();
+            }
+        });        
 	}
 }
 

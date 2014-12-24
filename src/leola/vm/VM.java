@@ -470,7 +470,6 @@ public class VM {
 						    continue;
 						}
 						case PARAM_END: {
-						    // TODO: implement
 						    paramIndex++;
 						    if(params.size() < paramIndex) {
 						        params.add(null);

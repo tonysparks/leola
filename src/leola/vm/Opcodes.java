@@ -467,80 +467,80 @@ public class Opcodes {
 		LOAD_TRUE = 13,
 		LOAD_FALSE = 14,	
 		
-		LOAD_NAME = 69, // TODO
-		PARAM_END = 70, // TODO
+		LOAD_NAME = 15, // 
+		PARAM_END = 16, // 
 						
-		STORE_LOCAL = 15,
-		STORE_OUTER = 16,		
+		STORE_LOCAL = 17,
+		STORE_OUTER = 18,		
 		
 		/* pseudo bytecodes */
-		xLOAD_OUTER = 17,
-		xLOAD_LOCAL = 18,		
+		xLOAD_OUTER = 19,
+		xLOAD_LOCAL = 20,		
 		
-		JMP = 19,
-		NEW = 20,
-		IF = 21,
-		NEW_ARRAY = 22,
-		NEW_MAP = 23,		
-		DEF = 24,
-		GEN = 25,
-		IS_A = 26,
-		BREAK = 27,
-		CONTINUE = 28,
-		YIELD = 29,
-		CLASS_DEF = 30,
+		JMP = 21,
+		NEW = 22,
+		IF = 23,
+		NEW_ARRAY = 24,
+		NEW_MAP = 25,		
+		DEF = 26,
+		GEN = 27,
+		IS_A = 28,
+		BREAK = 29,
+		CONTINUE = 30,
+		YIELD = 31,
+		CLASS_DEF = 32,
 		
-		INVOKE = 31,
-		NEW_NAMESPACE = 32,
-		TAIL_CALL = 33,		
+		INVOKE = 33,
+		NEW_NAMESPACE = 34,
+		TAIL_CALL = 35,		
 		
 		/* member access */
-		GET = 34,
-		SET = 35,
+		GET = 36,
+		SET = 37,
 		
-		GET_GLOBAL = 36,
-		SET_GLOBAL = 37,
+		GET_GLOBAL = 38,
+		SET_GLOBAL = 39,
 		
-		GET_NAMESPACE = 38,
+		GET_NAMESPACE = 40,
 		
-		THROW = 39,
+		THROW = 41,
 						
 		/* arithmetic operators */
-		ADD = 40,
-		SUB = 41,
-		MUL = 42,
-		DIV = 43,
-		MOD = 44,
-		NEG = 45,
+		ADD = 42,
+		SUB = 43,
+		MUL = 44,
+		DIV = 45,
+		MOD = 46,
+		NEG = 47,
 	
-		BSL = 46,
-		BSR = 47,
-		BNOT = 48,
-		XOR = 49,
-		LOR = 50,
-		LAND = 51,
+		BSL = 48,
+		BSR = 49,
+		BNOT = 50,
+		XOR = 51,
+		LOR = 52,
+		LAND = 53,
 		
-		OR = 52,
-		AND = 53,
-		NOT = 54,
+		OR = 54,
+		AND = 55,
+		NOT = 56,
 		
-		REQ = 55,
-		EQ = 56,
-		NEQ = 57,
-		GT = 58,
-		GTE = 59,
-		LT = 60,
-		LTE = 61,
+		REQ = 57,
+		EQ = 58,
+		NEQ = 59,
+		GT = 60,
+		GTE = 61,
+		LT = 62,
+		LTE = 63,
 		
 		/* Exception handling */
-		INIT_FINALLY = 62,
-		INIT_ON = 63,
-		END_ON = 64,
-		END_FINALLY = 65,
-		END_BLOCK = 66,
+		INIT_FINALLY = 64,
+		INIT_ON = 65,
+		END_ON = 66,
+		END_FINALLY = 67,
+		END_BLOCK = 68,
 		
 		/* debug */
-		LINE = 67
+		LINE = 69
 		;
 	
 	
@@ -549,13 +549,14 @@ public class Opcodes {
 		/* Store operations */
 		opcodes.put("LOAD_CONST", LOAD_CONST);
 		opcodes.put("LOAD_LOCAL", LOAD_LOCAL);
-		opcodes.put("LOAD_OUTER", LOAD_OUTER);
-		opcodes.put("LOAD_NAME", LOAD_NAME);
+		opcodes.put("LOAD_OUTER", LOAD_OUTER);		
 		opcodes.put("xLOAD_OUTER", xLOAD_OUTER);
 		opcodes.put("xLOAD_LOCAL", xLOAD_LOCAL);		
 		opcodes.put("LOAD_NULL", LOAD_NULL);
 		opcodes.put("LOAD_TRUE", LOAD_TRUE);
 		opcodes.put("LOAD_FALSE", LOAD_FALSE);
+		
+		opcodes.put("LOAD_NAME", LOAD_NAME);
 		opcodes.put("PARAM_END", PARAM_END);
 		
 		opcodes.put("STORE_LOCAL", STORE_LOCAL);
