@@ -393,7 +393,7 @@ public class VM {
 		
 		/* named parameters 
 		 */
-		List<String> params = new ArrayList<String>();
+		List<LeoObject> params = new ArrayList<LeoObject>();
 		int paramIndex = 0;
 		
 		
@@ -466,7 +466,7 @@ public class VM {
 						    
 						    // TODO: optimize
 						    LeoObject name = constants[iname];
-						    params.add(paramIndex, name.toString());						    						    			   
+						    params.add(paramIndex, name);						    						    			   
 						    continue;
 						}
 						case PARAM_END: {
@@ -647,7 +647,7 @@ public class VM {
 	
 							// TODO: optimize
 							if(!params.isEmpty() && !fun.isNativeFunction() ) {
-							    resolveNamedParameters(params, stack, fun, nargs);
+							    resolveNamedParameters(params, stack, top, fun, nargs);
 							    
 
 						        /* ready this for any other method calls */
@@ -742,16 +742,6 @@ public class VM {
 								}
 							}
 							
-							// TODO: Allow named parameters for class instantiation
-//                           if(!params.isEmpty() && !fun.isNativeFunction() ) {
-//                                resolveNamedParameters(params, stack, fun, nargs);
-//                                
-//
-//                                /* ready this for any other method calls */
-//                                params.clear();
-//                                paramIndex = 0;
-//                            }
-							
 							LeoObject instance = null;
 	
 							ClassDefinitions defs = symbols.lookupClassDefinitions(className);
@@ -765,7 +755,21 @@ public class VM {
 								}
 							}
 							else {
-								instance = defs.newInstance(runtime, LeoString.valueOf(symbols.getClassName(className.toString())), args);
+							    LeoString resolvedClassName = LeoString.valueOf(symbols.getClassName(className.toString()));
+                                ClassDefinition definition = defs.getDefinition(resolvedClassName);
+							    
+							    if(!params.isEmpty() ) {
+				                       
+		                            // TODO: Allow named parameters for class instantiation
+	                                resolveNamedParameters(params, args, nargs, definition.getParams(), nargs);
+	                                
+	
+	                                /* ready this for any other method calls */
+	                                params.clear();
+	                                paramIndex = 0;
+	                            }						    
+							    
+								instance = defs.newInstance(runtime, definition, args);
 							}
 	
 							stack[top++] = instance;
@@ -1279,40 +1283,15 @@ public class VM {
 	 * @param fun
 	 * @param nargs
 	 */
-	private void resolveNamedParameters(List<String> params, LeoObject[] stack, LeoObject fun, int nargs) {	    
+	private void resolveNamedParameters(List<LeoObject> params, LeoObject[] args, int argTop, LeoObject fun, int nargs) {	    
         /* assume this is a function */
         LeoFunction f = fun.as();
         Bytecode bc = f.getBytecode();
         
-        
-        /* store stack arguments in a temporary location */
-        int tmpTop = top;
-        LeoObject[] tmp = stack;//new LeoObject[nargs];
-        for(int stackIndex = 0; stackIndex < nargs; stackIndex++) {
-            tmp[tmpTop + stackIndex] = stack[top - stackIndex - 1];
-        }
-        
-                                                
-        /* iterate through the parameter names and adjust the stack
-         * so that the names match the position the function expects them
-         */
-        for(int stackIndex = 0; stackIndex < params.size(); stackIndex++) {
-            String paramName = params.get(stackIndex);
-            if(paramName != null) {             
-                int paramIndex = 0;
-                for(; paramIndex < bc.numArgs; paramIndex++) {
-                    if(bc.paramNames[paramIndex].equals(paramName)) {
-                        break;
-                    }
-                }
-                
-                stack[top - (nargs - paramIndex)] = tmp[tmpTop + (nargs - stackIndex - 1)];
-            }
-        }                                                                                           
-                
+        resolveNamedParameters(params, args, argTop, bc.paramNames, nargs);                                                                                                         
 	}
-	
-	/**
+    
+    /**
      * Resolve the named parameters
      * 
      * @param params
@@ -1320,12 +1299,12 @@ public class VM {
      * @param paramNames
      * @param nargs
      */
-    private void resolveClassNamedParameters(List<String> params, LeoObject[] stack, String[] paramNames, int nargs) {                   
+    private void resolveNamedParameters(List<LeoObject> params, LeoObject[] args, int topArgs, LeoString[] paramNames, int nargs) {                   
         /* store stack arguments in a temporary location */
         int tmpTop = top;
         LeoObject[] tmp = stack;//new LeoObject[nargs];
         for(int stackIndex = 0; stackIndex < nargs; stackIndex++) {
-            tmp[tmpTop + stackIndex] = stack[top - stackIndex - 1];
+            tmp[tmpTop + stackIndex] = args[topArgs - stackIndex - 1];
         }
         
                                                 
@@ -1333,19 +1312,18 @@ public class VM {
          * so that the names match the position the function expects them
          */
         for(int stackIndex = 0; stackIndex < params.size(); stackIndex++) {
-            String paramName = params.get(stackIndex);
+            LeoObject paramName = params.get(stackIndex);
             if(paramName != null) {             
                 int paramIndex = 0;
                 for(; paramIndex < paramNames.length; paramIndex++) {
-                    if(paramNames[paramIndex].equals(paramName)) {
+                    if(paramNames[paramIndex].$eq(paramName)) {
                         break;
                     }
                 }
                 
-                stack[top - (nargs - paramIndex)] = tmp[tmpTop + (nargs - stackIndex - 1)];
+                args[topArgs - (nargs - paramIndex)] = tmp[tmpTop + (nargs - stackIndex - 1)];
             }
-        }                                                                                           
-                
+        }                                                                                                          
     }
 	
 	/**

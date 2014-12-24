@@ -20,7 +20,6 @@ import static leola.vm.Opcodes.END_ON;
 import static leola.vm.Opcodes.EQ;
 import static leola.vm.Opcodes.GEN;
 import static leola.vm.Opcodes.GET;
-import static leola.vm.Opcodes.PARAM_END;
 import static leola.vm.Opcodes.GET_GLOBAL;
 import static leola.vm.Opcodes.GET_NAMESPACE;
 import static leola.vm.Opcodes.GT;
@@ -36,10 +35,10 @@ import static leola.vm.Opcodes.LINE;
 import static leola.vm.Opcodes.LOAD_CONST;
 import static leola.vm.Opcodes.LOAD_FALSE;
 import static leola.vm.Opcodes.LOAD_LOCAL;
+import static leola.vm.Opcodes.LOAD_NAME;
 import static leola.vm.Opcodes.LOAD_NULL;
 import static leola.vm.Opcodes.LOAD_OUTER;
 import static leola.vm.Opcodes.LOAD_TRUE;
-import static leola.vm.Opcodes.LOAD_NAME;
 import static leola.vm.Opcodes.LOR;
 import static leola.vm.Opcodes.LT;
 import static leola.vm.Opcodes.LTE;
@@ -57,6 +56,7 @@ import static leola.vm.Opcodes.NOT;
 import static leola.vm.Opcodes.OPCODE;
 import static leola.vm.Opcodes.OPPOP;
 import static leola.vm.Opcodes.OR;
+import static leola.vm.Opcodes.PARAM_END;
 import static leola.vm.Opcodes.POP;
 import static leola.vm.Opcodes.REQ;
 import static leola.vm.Opcodes.RET;
@@ -1024,14 +1024,14 @@ public class Asm {
 		}
 		
 		
-		bytecode.paramNames = new String[this.numArgs];
+		bytecode.paramNames = new LeoString[this.numArgs];
 		if(this.localScope.hasLocals()) {
 			Locals locals = this.localScope.getLocals();
 			bytecode.numLocals = locals.getNumberOfLocals();
 			
 			if(bytecode.numArgs > 0) {
 	            for(int i = 0; i < bytecode.numArgs; i++) {
-	                bytecode.paramNames[i] = locals.getReference(i);
+	                bytecode.paramNames[i] = LeoString.valueOf(locals.getReference(i));
 	            }
 	        }
 		}

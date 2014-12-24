@@ -139,6 +139,8 @@ public class ProxyActor extends Actor {
 					msg = cd.newInstance(runtime, className.toLeoString(), params);										
 					break;
 				}
+				default:
+	                throw new LeolaRuntimeException("Unsupported type!");
 			}
 			
 			return msg;
@@ -192,7 +194,9 @@ public class ProxyActor extends Actor {
 							out.writeInt(0);
 						}									
 						break;
-					}				
+					}		
+					default:
+		                throw new LeolaRuntimeException("Unsupported type!");
 				}
 												
 				this.network.send(ostream.getBytes(), 0, ostream.size());

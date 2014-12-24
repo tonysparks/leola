@@ -127,20 +127,29 @@ public class IOLeolaLibrary implements LeolaLibrary {
 		}
 		
 		FileInputStream istream = new FileInputStream(src);
-		FileOutputStream ostream = new FileOutputStream(dst);
-		
-		FileChannel dstChannel = ostream.getChannel();
-		FileChannel srcChannel = istream.getChannel();
 		try {
-			long totalBytesTransferred = 0;
-			long totalNeededForTransfer = srcChannel.size();
-			while( totalBytesTransferred < totalNeededForTransfer ) {
-				totalBytesTransferred += srcChannel.transferTo(totalBytesTransferred, totalNeededForTransfer-totalBytesTransferred, dstChannel);
-			}
+    		FileOutputStream ostream = new FileOutputStream(dst);
+    		try {
+        		FileChannel dstChannel = ostream.getChannel();
+        		FileChannel srcChannel = istream.getChannel();
+        		try {
+        			long totalBytesTransferred = 0;
+        			long totalNeededForTransfer = srcChannel.size();
+        			while( totalBytesTransferred < totalNeededForTransfer ) {
+        				totalBytesTransferred += srcChannel.transferTo(totalBytesTransferred, totalNeededForTransfer-totalBytesTransferred, dstChannel);
+        			}
+        		}
+        		finally {
+        			try { srcChannel.close(); } catch(Exception e) {}
+        			try { dstChannel.close(); } catch(Exception e) {}
+        		}
+    		}
+    		finally {
+    		    ostream.close();
+    		}
 		}
 		finally {
-			try { srcChannel.close(); } catch(Exception e) {}
-			try { dstChannel.close(); } catch(Exception e) {}
+		    istream.close();
 		}
 	}
 	

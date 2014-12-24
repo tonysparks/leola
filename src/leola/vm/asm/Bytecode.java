@@ -16,6 +16,7 @@ import leola.vm.types.LeoClass;
 import leola.vm.types.LeoFunction;
 import leola.vm.types.LeoNamespace;
 import leola.vm.types.LeoObject;
+import leola.vm.types.LeoString;
 
 
 /**
@@ -48,7 +49,7 @@ public class Bytecode {
 	public int numLocals;		
 	public int numOuters;
 	
-	public String[] paramNames;
+	public LeoString[] paramNames;
 	
 	public int numArgs;
 	public int numInners;
@@ -344,7 +345,7 @@ public class Bytecode {
 		out.writeInt(this.numLocals);
 		
 		for(int i = 0; i < this.numArgs; i++) {
-		    byte[] b = this.paramNames[i].getBytes();
+		    byte[] b = this.paramNames[i].getString().getBytes();
             out.write(b.length);
 		    out.write(b);
 		}
@@ -424,12 +425,12 @@ public class Bytecode {
 		result.numOuters = in.readInt();				
 		result.numLocals = in.readInt();	
 		
-		result.paramNames = new String[result.numArgs];
+		result.paramNames = new LeoString[result.numArgs];
 		for(int i = 0; i < result.numArgs; i++) {
             int length = in.readInt();
             byte[] b = new byte[length];
             in.readFully(b);
-            result.paramNames[i] = new String(b);
+            result.paramNames[i] = LeoString.valueOf(new String(b));
         }
 				
 		if( (result.flags & FL_DEBUG) != 0 ) {

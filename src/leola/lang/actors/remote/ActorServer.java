@@ -18,6 +18,7 @@ import leola.network.ClientNetwork;
 import leola.network.ServerNetwork;
 import leola.network.tcp.SocketServerNetwork;
 import leola.vm.Leola;
+import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.types.LeoArray;
 import leola.vm.types.LeoClass;
 import leola.vm.types.LeoNativeClass;
@@ -137,6 +138,8 @@ public class ActorServer extends Actor {
 				sObj.addProperty(LeoString.valueOf("clients"), clients());
 				break;
 			}
+            default:
+                throw new LeolaRuntimeException("Unsupported type!");                
 		}
 	}
 
