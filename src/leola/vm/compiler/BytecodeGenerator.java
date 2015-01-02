@@ -803,7 +803,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		String name = s.getName();		
 		asm.storeAndloadconst(name);
 		
-		asm.newnamespace();
+		asm.namespacedef();
 		{			
 			s.getStmt().visit(this);
 		}
@@ -907,7 +907,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		asm.line(s.getLineNumber());
 		
 		ParameterList parameters = s.getParameters();
-		asm.gen(parameters.size(), parameters.isVarargs());
+		asm.gendef(parameters.size(), parameters.isVarargs());
 		{
 			asm.line(s.getLineNumber());
 						
@@ -943,7 +943,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		asm.line(s.getLineNumber());
 		
 		ParameterList parameters = s.getParameters();
-		asm.def(parameters.size(), parameters.isVarargs());
+		asm.funcdef(parameters.size(), parameters.isVarargs());
 		{
 			asm.line(s.getLineNumber());
 						

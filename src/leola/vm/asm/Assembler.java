@@ -437,12 +437,12 @@ public class Assembler {
 			}
 		});
 		
-		opcodes.put("NEW_NAMESPACE", new Opcode() {			
+		opcodes.put("NAMESPACE_DEF", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
-				asm.newnamespace();
+				asm.namespacedef();
 			}
 		});
-		opcodes.put("NEW", new Opcode() {			
+		opcodes.put("NEW_OBJ", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
 				asm.newobj(Integer.parseInt(args[0]));
 			}
@@ -457,16 +457,16 @@ public class Assembler {
 				asm.newmap(Integer.parseInt(args[0]));
 			}
 		});
-		opcodes.put("DEF", new Opcode() {			
+		opcodes.put("FUNC_DEF", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
 				/* second parameter is to denote var args */
-				asm.def(Integer.parseInt(args[0]), args.length > 1);
+				asm.funcdef(Integer.parseInt(args[0]), args.length > 1);
 			}
 		});
-		opcodes.put("GEN", new Opcode() {			
+		opcodes.put("GEN_DEF", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
 				/* second parameter is to denote var args */
-				asm.gen(Integer.parseInt(args[0]), args.length > 1);
+				asm.gendef(Integer.parseInt(args[0]), args.length > 1);
 			}
 		});
 		
@@ -480,7 +480,7 @@ public class Assembler {
 				asm.isa();
 			}
 		});
-		opcodes.put("IF", new Opcode() {			
+		opcodes.put("IFEQ", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
 				String label = args[0];
 				try {

@@ -11,20 +11,20 @@ import static leola.vm.Opcodes.BNOT;
 import static leola.vm.Opcodes.BSL;
 import static leola.vm.Opcodes.BSR;
 import static leola.vm.Opcodes.CLASS_DEF;
-import static leola.vm.Opcodes.DEF;
+import static leola.vm.Opcodes.FUNC_DEF;
 import static leola.vm.Opcodes.DIV;
 import static leola.vm.Opcodes.DUP;
 import static leola.vm.Opcodes.END_BLOCK;
 import static leola.vm.Opcodes.END_FINALLY;
 import static leola.vm.Opcodes.END_ON;
 import static leola.vm.Opcodes.EQ;
-import static leola.vm.Opcodes.GEN;
+import static leola.vm.Opcodes.GEN_DEF;
 import static leola.vm.Opcodes.GET;
 import static leola.vm.Opcodes.GET_GLOBAL;
 import static leola.vm.Opcodes.GET_NAMESPACE;
 import static leola.vm.Opcodes.GT;
 import static leola.vm.Opcodes.GTE;
-import static leola.vm.Opcodes.IF;
+import static leola.vm.Opcodes.IFEQ;
 import static leola.vm.Opcodes.INIT_FINALLY;
 import static leola.vm.Opcodes.INIT_ON;
 import static leola.vm.Opcodes.INVOKE;
@@ -48,10 +48,10 @@ import static leola.vm.Opcodes.MOVN;
 import static leola.vm.Opcodes.MUL;
 import static leola.vm.Opcodes.NEG;
 import static leola.vm.Opcodes.NEQ;
-import static leola.vm.Opcodes.NEW;
+import static leola.vm.Opcodes.NEW_OBJ;
 import static leola.vm.Opcodes.NEW_ARRAY;
 import static leola.vm.Opcodes.NEW_MAP;
-import static leola.vm.Opcodes.NEW_NAMESPACE;
+import static leola.vm.Opcodes.NAMESPACE_DEF;
 import static leola.vm.Opcodes.NOT;
 import static leola.vm.Opcodes.OPCODE;
 import static leola.vm.Opcodes.OPPOP;
@@ -64,6 +64,7 @@ import static leola.vm.Opcodes.SET;
 import static leola.vm.Opcodes.SET_ARG1;
 import static leola.vm.Opcodes.SET_ARG2;
 import static leola.vm.Opcodes.SET_ARGx;
+import static leola.vm.Opcodes.SET_ARGsx;
 import static leola.vm.Opcodes.SET_GLOBAL;
 import static leola.vm.Opcodes.SHIFT;
 import static leola.vm.Opcodes.STORE_LOCAL;
@@ -279,16 +280,7 @@ public class AsmEmitter {
 	 * Reconciles the labels
 	 */
 	private void reconcileLabels() {
-       for(Label label : getLabels().labels()) {
-            for(long l : label.getDeltas()) {
-                int instrIndex = (int)(l >> 32);
-                int opcode = (int)((l << 32) >> 32);
-                int delta = label.getLabelInstructionIndex() - instrIndex - 1;
-                int instr = SET_ARGx(opcode,  delta);   
-                
-                getInstructions().set(instrIndex, instr);
-            }
-        }
+	    getLabels().reconcileLabels(peek());	    
 	}
 	
 	/**
@@ -533,7 +525,7 @@ public class AsmEmitter {
 	 * @return the labels
 	 */
 	public Labels getLabels() {
-		return this.inner.peek().labels;
+		return peek().labels;
 	}
 	
 	/**
@@ -592,11 +584,21 @@ public class AsmEmitter {
 	 * Outputs an instruction with 1 (x) argument
 	 * 
 	 * @param opcode
-	 * @param arg1 (x size argument -- see {@link Opcodes}).
+	 * @param argx (x size argument -- see {@link Opcodes}).
 	 */
-	private void instrx(int opcode, int arg1) {
-		instr(SET_ARGx(opcode, arg1));
+	private void instrx(int opcode, int argx) {
+		instr(SET_ARGx(opcode, argx));
 	}
+	
+	/**
+     * Outputs an instruction with 1 (x-signed) argument
+     * 
+     * @param opcode
+     * @param argsx (x signed size argument -- see {@link Opcodes}).
+     */
+    private void instrsx(int opcode, int argsx) {
+        instr(SET_ARGsx(opcode, argsx));
+    }
 	
 	/**
 	 * Outputs an instruction with 1 argument
@@ -822,7 +824,7 @@ public class AsmEmitter {
 	}
 	
 	public void jmp(int offset) {
-		instrx(JMP, offset);
+		instrsx(JMP, offset);
 	}
 	
 	public void brk(String label) {
@@ -834,7 +836,7 @@ public class AsmEmitter {
 	}
 	
 	public void newobj(int nargs) {
-		instrx(NEW, nargs);
+		instrx(NEW_OBJ, nargs);
 		incrementMaxstackSize(nargs);
 	}
 	
@@ -847,17 +849,6 @@ public class AsmEmitter {
 		incrementMaxstackSize(initialSize);
 	}
 		
-	public void newnamespace() {
-		instrx(NEW_NAMESPACE, getBytecodeIndex());
-		incrementMaxstackSize();
-		
-		AsmEmitter asm = new AsmEmitter(this.symbols);
-		asm.setDebug(this.isDebug());
-		asm.start(ScopeType.OBJECT_SCOPE);		
-				
-		peek().asms.add(asm);
-		this.inner.push(asm);
-	}
 	
 	public void get() {
 		instr(GET);
@@ -897,6 +888,18 @@ public class AsmEmitter {
 		decrementMaxstackSize();
 	}
 	
+   public void namespacedef() {
+        instrx(NAMESPACE_DEF, getBytecodeIndex());
+        incrementMaxstackSize();
+        
+        AsmEmitter asm = new AsmEmitter(this.symbols);
+        asm.setDebug(this.isDebug());
+        asm.start(ScopeType.OBJECT_SCOPE);      
+                
+        peek().asms.add(asm);
+        this.inner.push(asm);
+    }
+	
 	public void classdef(int numberOfInterfaces) {
 		instrx(CLASS_DEF, numberOfInterfaces);
 		incrementMaxstackSize(numberOfInterfaces);		
@@ -909,8 +912,8 @@ public class AsmEmitter {
 		this.inner.push(asm);
 	}
 	
-	public void gen(int numberOfParameters, boolean isVarargs) {
-		instrx(GEN, getBytecodeIndex());		
+	public void gendef(int numberOfParameters, boolean isVarargs) {
+		instrx(GEN_DEF, getBytecodeIndex());		
 		incrementMaxstackSize(numberOfParameters);
 		
 		AsmEmitter asm = new AsmEmitter(this.symbols);
@@ -924,8 +927,8 @@ public class AsmEmitter {
 		this.inner.push(asm);
 	}
 	
-	public void def(int numberOfParameters, boolean isVarargs) {
-		instrx(DEF, getBytecodeIndex());		
+	public void funcdef(int numberOfParameters, boolean isVarargs) {
+		instrx(FUNC_DEF, getBytecodeIndex());		
 		incrementMaxstackSize(numberOfParameters);
 		
 		AsmEmitter asm = new AsmEmitter(this.symbols);
@@ -949,11 +952,11 @@ public class AsmEmitter {
 	}
 	
 	public void ifeq(String label) {
-		markLabel(IF, label);
+		markLabel(IFEQ, label);
 		decrementMaxstackSize();
 	}
 	public void ifeq(int offset) {
-		instrx(IF, offset);
+		instrsx(IFEQ, offset);
 		decrementMaxstackSize();
 	}
 	

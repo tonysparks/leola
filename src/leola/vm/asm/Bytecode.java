@@ -253,7 +253,7 @@ public class Bytecode {
 					}
 					break;
 				}
-				case Opcodes.DEF: {
+				case Opcodes.FUNC_DEF: {
 					//String arg1 = Integer.toString(Opcodes.ARGx(code));
 					//String arg2 = Integer.toString(Opcodes.ARG2(code));										
 					int inner = Opcodes.ARGx(code);

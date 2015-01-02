@@ -5,6 +5,8 @@
 */
 package leola.vm.asm;
 
+import static leola.vm.Opcodes.SET_ARGsx;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -106,5 +108,24 @@ public class Labels {
     public String nextLabelName() {
         String labelName = ":" + this.labelIndex++;
         return labelName;
+    }
+    
+    
+    /**
+     * Reconciles the labels
+     * 
+     * @param asm the current scoped {@link AsmEmitter}
+     */
+    public void reconcileLabels(AsmEmitter asm) {
+        for(Label label : labels()) {            
+            for(long l : label.getDeltas()) {
+                int instrIndex = (int)(l >> 32);
+                int opcode = (int)((l << 32) >> 32);
+                int delta = label.getLabelInstructionIndex() - instrIndex - 1;
+                int instr = SET_ARGsx(opcode,  delta);   
+                
+                asm.getInstructions().set(instrIndex, instr);
+            }
+        }
     }
 }

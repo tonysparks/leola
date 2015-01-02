@@ -10,24 +10,25 @@ import static leola.vm.Opcodes.AND;
 import static leola.vm.Opcodes.ARG1;
 import static leola.vm.Opcodes.ARG2;
 import static leola.vm.Opcodes.ARGx;
+import static leola.vm.Opcodes.ARGsx;
 import static leola.vm.Opcodes.BNOT;
 import static leola.vm.Opcodes.BSL;
 import static leola.vm.Opcodes.BSR;
 import static leola.vm.Opcodes.CLASS_DEF;
-import static leola.vm.Opcodes.DEF;
+import static leola.vm.Opcodes.FUNC_DEF;
 import static leola.vm.Opcodes.DIV;
 import static leola.vm.Opcodes.DUP;
 import static leola.vm.Opcodes.END_BLOCK;
 import static leola.vm.Opcodes.END_FINALLY;
 import static leola.vm.Opcodes.END_ON;
 import static leola.vm.Opcodes.EQ;
-import static leola.vm.Opcodes.GEN;
+import static leola.vm.Opcodes.GEN_DEF;
 import static leola.vm.Opcodes.GET;
 import static leola.vm.Opcodes.GET_GLOBAL;
 import static leola.vm.Opcodes.GET_NAMESPACE;
 import static leola.vm.Opcodes.GT;
 import static leola.vm.Opcodes.GTE;
-import static leola.vm.Opcodes.IF;
+import static leola.vm.Opcodes.IFEQ;
 import static leola.vm.Opcodes.INIT_FINALLY;
 import static leola.vm.Opcodes.INIT_ON;
 import static leola.vm.Opcodes.INVOKE;
@@ -51,10 +52,10 @@ import static leola.vm.Opcodes.MOVN;
 import static leola.vm.Opcodes.MUL;
 import static leola.vm.Opcodes.NEG;
 import static leola.vm.Opcodes.NEQ;
-import static leola.vm.Opcodes.NEW;
+import static leola.vm.Opcodes.NEW_OBJ;
 import static leola.vm.Opcodes.NEW_ARRAY;
 import static leola.vm.Opcodes.NEW_MAP;
-import static leola.vm.Opcodes.NEW_NAMESPACE;
+import static leola.vm.Opcodes.NAMESPACE_DEF;
 import static leola.vm.Opcodes.NOT;
 import static leola.vm.Opcodes.OPPOP;
 import static leola.vm.Opcodes.OR;
@@ -469,13 +470,13 @@ public class VM {
 						case LOAD_NAME: {
 						    int iname = ARGx(i);
 						    
-						    // TODO: optimize
 						    LeoObject name = constants[iname];
 						    params.add(paramIndex, name);						    						    			   
 						    continue;
 						}
 						case PARAM_END: {
 						    paramIndex++;
+						    
 						    if(params.size() < paramIndex) {
 						        params.add(null);
 						    }
@@ -573,7 +574,7 @@ public class VM {
 							continue;
 						}
 						case JMP:	{
-							int pos = ARGx(i);
+							int pos = ARGsx(i);
 							pc += pos;
 							continue;
 						}
@@ -649,7 +650,7 @@ public class VM {
 							int nargs = ARG1(i);
 							LeoObject fun = stack[--top];
 	
-							// TODO: optimize
+							/* determine if there are named parameters to resolve */
 							if(paramIndex > 0 && !fun.isNativeFunction() ) {
 							    resolveNamedParameters(params, stack, top, fun, nargs);
 							    
@@ -733,7 +734,7 @@ public class VM {
 	
 							continue;
 						}
-						case NEW:	{
+						case NEW_OBJ:	{
 	
 							LeoObject className = stack[--top];
 	
@@ -762,9 +763,7 @@ public class VM {
 							    LeoString resolvedClassName = LeoString.valueOf(symbols.getClassName(className.toString()));
                                 ClassDefinition definition = defs.getDefinition(resolvedClassName);
 							    
-							    if(paramIndex > 0) {
-				                       
-		                            // TODO: Allow named parameters for class instantiation
+							    if(paramIndex > 0) {				                       
 	                                resolveNamedParameters(params, args, nargs, definition.getParams(), nargs);
 	                                
 	
@@ -805,7 +804,7 @@ public class VM {
 							stack[top++] = map;
 							continue;
 						}
-						case NEW_NAMESPACE: {
+						case NAMESPACE_DEF: {
 							int innerIndex = ARGx(i);
 							Bytecode namespacecode = inner[innerIndex];
 	
@@ -833,7 +832,7 @@ public class VM {
 							stack[top++] = ns;
 							continue;
 						}
-						case GEN: {
+						case GEN_DEF: {
 							int innerIndex = ARGx(i);
 							Bytecode bytecode = inner[innerIndex];
 							LeoGenerator fun = new LeoGenerator(scopedObj, bytecode.clone());
@@ -847,7 +846,7 @@ public class VM {
 							stack[top++] = fun;
 							continue;
 						}
-						case DEF: {
+						case FUNC_DEF: {
 							int innerIndex = ARGx(i);
 							Bytecode bytecode = inner[innerIndex];
 							LeoFunction fun = new LeoFunction(scopedObj, bytecode);
@@ -933,10 +932,10 @@ public class VM {
 	
 							continue;
 						}
-						case IF:	{
+						case IFEQ:	{
 							LeoObject cond = stack[--top];
 							if ( ! LeoObject.isTrue(cond) ) {
-								int pos = ARGx(i);
+								int pos = ARGsx(i);
 								pc += pos;
 							}
 							continue;
@@ -1371,10 +1370,6 @@ public class VM {
 					closeOuters = true;
 					break;
 				}
-//				case xLOAD_SCOPE: {
-//					outers[j] = new Outer(scope.getScopedValues(), index);
-//					break;
-//				}
 				default: {
 					error(lineNumber, "Invalid Opcode for Outer: " + opCode);
 				}
