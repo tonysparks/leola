@@ -68,7 +68,7 @@ import leola.ast.YieldStmt;
 import leola.frontend.EvalException;
 import leola.frontend.parsers.ParameterList;
 import leola.vm.Leola;
-import leola.vm.asm.Asm;
+import leola.vm.asm.AsmEmitter;
 import leola.vm.asm.Bytecode;
 import leola.vm.asm.Constants;
 import leola.vm.asm.Pair;
@@ -88,7 +88,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	/**
 	 * The assembler
 	 */
-	private Asm asm;
+	private AsmEmitter asm;
 		
 	private Stack<String> breakLabelStack;
 	private Stack<String> continueLabelStack;
@@ -109,7 +109,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	public BytecodeGenerator(Leola runtime, Symbols symbols) {
 		//this.runtime = runtime;
 		
-		this.asm = new Asm(symbols);
+		this.asm = new AsmEmitter(symbols);
 		this.asm.setDebug(runtime.getArgs().isDebugMode());
 			
 		this.breakLabelStack = new Stack<String>();
@@ -120,7 +120,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	/**
 	 * @return the asm
 	 */
-	public Asm getAsm() {
+	public AsmEmitter getAsm() {
 		return asm;
 	}
 
@@ -1493,7 +1493,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		 * about this
 		 */
 		int index = -1;
-		if(asm.useLocals()) {				
+		if(asm.usesLocals()) {				
 			index = asm.addLocal(ref);							
 		}
 		
@@ -1518,7 +1518,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		
 		// asm.dup(); Seems to be causing a stack leak, I'm not sure why this
 		// was here, Variable declaration isn't an 'Expression'
-		if(asm.useLocals()) {									
+		if(asm.usesLocals()) {									
 			asm.storelocal(index);	
 		}
 		else {

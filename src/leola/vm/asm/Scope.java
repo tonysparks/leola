@@ -135,7 +135,7 @@ public class Scope {
 	/**
 	 * Clears the compiler data
 	 * TODO: Attempt to remove this compiler data into either
-	 * the {@link Asm} class or another {@link Symbols} stack element
+	 * the {@link AsmEmitter} class or another {@link Symbols} stack element
 	 */
 	public void compiled() {
 		this.constants = null;

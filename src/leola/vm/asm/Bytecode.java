@@ -33,6 +33,7 @@ public class Bytecode {
 	public static final int FL_DEBUG       = (1<<0);
 	public static final int FL_BLOCKS      = (1<<1);
 	public static final int FL_VARARGS     = (1<<2);
+	public static final int FL_PARAMS_IDX  = (1<<3);
 	
 	
 	public int flags;
@@ -96,6 +97,14 @@ public class Bytecode {
     public void setBlocks() {
         this.flags |= FL_BLOCKS;
     }
+    
+    /**
+     * denotes that the bytecode uses parameter indexing for
+     * named parameters
+     */
+    public void setParamIndexes() {
+        this.flags |= FL_PARAMS_IDX;
+    }
 	
 	/**
 	 * @return true if this contains variable arguments
@@ -118,6 +127,13 @@ public class Bytecode {
 	public boolean hasBlocks() {
         return (this.flags & FL_BLOCKS) != 0;
     }
+	
+	/** 
+	 * @return true if this contains parameter index instructions
+	 */
+	public boolean hasParamIndexes() {
+	    return (this.flags & FL_PARAMS_IDX) != 0;
+	}
 	
 	/**
 	 * @return the index in which to start the variable arguments

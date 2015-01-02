@@ -393,8 +393,13 @@ public class VM {
 		
 		/* named parameters 
 		 */
-		List<LeoObject> params = new ArrayList<LeoObject>();
+		List<LeoObject> params = null;
 		int paramIndex = 0;
+		
+		if(code.hasParamIndexes()) {
+		    params = new ArrayList<LeoObject>();
+		}
+		
 		
 		
 		/* exception handling, keeps track of the catch program 
@@ -645,7 +650,7 @@ public class VM {
 							LeoObject fun = stack[--top];
 	
 							// TODO: optimize
-							if(!params.isEmpty() && !fun.isNativeFunction() ) {
+							if(paramIndex > 0 && !fun.isNativeFunction() ) {
 							    resolveNamedParameters(params, stack, top, fun, nargs);
 							    
 
@@ -757,7 +762,7 @@ public class VM {
 							    LeoString resolvedClassName = LeoString.valueOf(symbols.getClassName(className.toString()));
                                 ClassDefinition definition = defs.getDefinition(resolvedClassName);
 							    
-							    if(!params.isEmpty() ) {
+							    if(paramIndex > 0) {
 				                       
 		                            // TODO: Allow named parameters for class instantiation
 	                                resolveNamedParameters(params, args, nargs, definition.getParams(), nargs);
