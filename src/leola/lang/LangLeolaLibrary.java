@@ -321,7 +321,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 
 	/**
 	 * 
-	 * @author chq-tonys
+	 * @author Tony
 	 *
 	 */
 	public static class Scheduler {

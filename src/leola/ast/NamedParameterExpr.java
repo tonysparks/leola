@@ -1,10 +1,8 @@
 /*
- * (c)2014 Expeditors International of Washington, Inc.
- * Business confidential and proprietary.  This information may not be reproduced 
- * in any form without advance written consent of an authorized officer of the 
- * copyright holder.
- *
- */
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
+*/
 package leola.ast;
 
 import leola.frontend.EvalException;
@@ -12,7 +10,7 @@ import leola.frontend.EvalException;
 /**
  * Named Parameter Expression
  * 
- * @author chq-tonys
+ * @author Tony
  *
  */
 public class NamedParameterExpr extends Expr {

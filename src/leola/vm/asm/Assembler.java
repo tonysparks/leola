@@ -24,7 +24,7 @@ import leola.vm.types.LeoString;
 /**
  * Leola Bytecode Assembler, basically just a reader for the assemble which is directly translated to the {@link AsmEmitter} methods.  
  * 
- * @author chq-tonys
+ * @author Tony
  *
  */
 public class Assembler {

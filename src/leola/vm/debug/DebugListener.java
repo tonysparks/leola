@@ -8,7 +8,7 @@ package leola.vm.debug;
 /**
  * Listens for debug lines
  * 
- * @author chq-tonys
+ * @author Tony
  *
  */
 public interface DebugListener {

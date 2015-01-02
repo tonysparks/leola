@@ -20,7 +20,7 @@ public class OnExpr extends Expr {
 	/**
 	 * Clauses to the {@link OnExpr}
 	 * 
-	 * @author chq-tonys
+	 * @author Tony
 	 *
 	 */
 	public static class OnClause {
