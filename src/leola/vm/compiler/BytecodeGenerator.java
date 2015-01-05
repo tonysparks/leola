@@ -747,6 +747,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		ASTNode parent = s.getParentNode();
 		boolean newLexicalScope =  ((parent instanceof ClassDeclStmt) ||
 									(parent instanceof NamespaceStmt) ||
+									(parent instanceof GenDefExpr) ||
 									(parent instanceof FuncDefExpr) );
 									
 		if(!newLexicalScope) {
