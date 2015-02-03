@@ -200,7 +200,6 @@ public abstract class LeoObject {
 	 * @param leoTypes
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
     public boolean isOfType(Class<? extends LeoObject> ... leoTypes) {
 		for(Class<?> c: leoTypes) {
 			if ( this.getClass().equals(c)) {
