@@ -85,6 +85,8 @@ public class Actor {
 
 				break;
 			}
+			default:
+                throw new LeolaRuntimeException("Unsupported type!");
 		}
 	}
 
@@ -258,6 +260,8 @@ public class Actor {
 					invoke(functor, msg);
 					break;
 				}
+				default:
+	                throw new LeolaRuntimeException("Unsupported type!");
 			}
 		}
 	}

@@ -14,7 +14,7 @@ import java.util.Stack;
 /**
  * {@link DebugSymbols} contains information regarding local variables within a particular scope.
  * 
- * @author chq-tonys
+ * @author Tony
  *
  */
 public class DebugSymbols {

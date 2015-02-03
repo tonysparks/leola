@@ -10,23 +10,25 @@ import static leola.vm.Opcodes.AND;
 import static leola.vm.Opcodes.ARG1;
 import static leola.vm.Opcodes.ARG2;
 import static leola.vm.Opcodes.ARGx;
+import static leola.vm.Opcodes.ARGsx;
 import static leola.vm.Opcodes.BNOT;
 import static leola.vm.Opcodes.BSL;
 import static leola.vm.Opcodes.BSR;
 import static leola.vm.Opcodes.CLASS_DEF;
-import static leola.vm.Opcodes.DEF;
+import static leola.vm.Opcodes.FUNC_DEF;
 import static leola.vm.Opcodes.DIV;
 import static leola.vm.Opcodes.DUP;
+import static leola.vm.Opcodes.END_BLOCK;
 import static leola.vm.Opcodes.END_FINALLY;
 import static leola.vm.Opcodes.END_ON;
 import static leola.vm.Opcodes.EQ;
-import static leola.vm.Opcodes.GEN;
+import static leola.vm.Opcodes.GEN_DEF;
 import static leola.vm.Opcodes.GET;
 import static leola.vm.Opcodes.GET_GLOBAL;
 import static leola.vm.Opcodes.GET_NAMESPACE;
 import static leola.vm.Opcodes.GT;
 import static leola.vm.Opcodes.GTE;
-import static leola.vm.Opcodes.IF;
+import static leola.vm.Opcodes.IFEQ;
 import static leola.vm.Opcodes.INIT_FINALLY;
 import static leola.vm.Opcodes.INIT_ON;
 import static leola.vm.Opcodes.INVOKE;
@@ -37,6 +39,7 @@ import static leola.vm.Opcodes.LINE;
 import static leola.vm.Opcodes.LOAD_CONST;
 import static leola.vm.Opcodes.LOAD_FALSE;
 import static leola.vm.Opcodes.LOAD_LOCAL;
+import static leola.vm.Opcodes.LOAD_NAME;
 import static leola.vm.Opcodes.LOAD_NULL;
 import static leola.vm.Opcodes.LOAD_OUTER;
 import static leola.vm.Opcodes.LOAD_TRUE;
@@ -49,13 +52,14 @@ import static leola.vm.Opcodes.MOVN;
 import static leola.vm.Opcodes.MUL;
 import static leola.vm.Opcodes.NEG;
 import static leola.vm.Opcodes.NEQ;
-import static leola.vm.Opcodes.NEW;
+import static leola.vm.Opcodes.NEW_OBJ;
 import static leola.vm.Opcodes.NEW_ARRAY;
 import static leola.vm.Opcodes.NEW_MAP;
-import static leola.vm.Opcodes.NEW_NAMESPACE;
+import static leola.vm.Opcodes.NAMESPACE_DEF;
 import static leola.vm.Opcodes.NOT;
 import static leola.vm.Opcodes.OPPOP;
 import static leola.vm.Opcodes.OR;
+import static leola.vm.Opcodes.PARAM_END;
 import static leola.vm.Opcodes.POP;
 import static leola.vm.Opcodes.REQ;
 import static leola.vm.Opcodes.RET;
@@ -72,8 +76,9 @@ import static leola.vm.Opcodes.XOR;
 import static leola.vm.Opcodes.YIELD;
 import static leola.vm.Opcodes.xLOAD_LOCAL;
 import static leola.vm.Opcodes.xLOAD_OUTER;
-import static leola.vm.Opcodes.END_BLOCK;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import leola.vm.asm.Bytecode;
@@ -127,7 +132,6 @@ public class VM {
 	private Outer[] openouters;
 	private int top;
 
-//	private int[] blockStack;
 	
 	/**
 	 * @param runtime the {@link Leola} runtime
@@ -340,6 +344,11 @@ public class VM {
 		final Outer[] calleeouters;
 		final LeoObject[] genLocals;
 		
+		
+		/* if there is some object calling this function
+		 * this means there might be outer scoped variables
+		 * that we can access within this byte code
+		 */
 		if(callee != null) {
 			calleeouters = callee.getOuters();
 			genLocals = callee.getLocals();
@@ -362,13 +371,19 @@ public class VM {
 		boolean isReturnedSafely = true;
 		
 		Scope scope = null;
+		
+		/* check and see if this is a scoped object,
+		 * if so use the scope
+		 */
 		LeoScopedObject scopedObj = null;
 		if ( env instanceof LeoScopedObject) {
 			scopedObj = (LeoScopedObject)env;
 			scope = scopedObj.getScope();
 		}
 
-
+		/* use the global scope if this object doesn't contain
+		 * any scope
+		 */
 		if(scope==null) {
 			LeoNamespace global = runtime.getGlobalNamespace();
 
@@ -376,8 +391,25 @@ public class VM {
 			scopedObj=global;
 		}
 		
-
-		Stack<Integer> blockStack = new Stack<Integer>();
+		
+		/* named parameters 
+		 */
+		List<LeoObject> params = null;
+		int paramIndex = 0;
+		
+		if(code.hasParamIndexes()) {
+		    params = new ArrayList<LeoObject>();
+		}
+		
+		
+		
+		/* exception handling, keeps track of the catch program 
+		 * counter */
+		Stack<Integer> blockStack = null;
+		if(code.hasBlocks()) {
+		    blockStack = new Stack<Integer>();
+		}
+		
 		
 		final int topStack = base + code.numLocals;
 		top = topStack;
@@ -434,6 +466,21 @@ public class VM {
 						case LOAD_FALSE: {
 							stack[top++] = LeoBoolean.LEOFALSE;
 							continue;
+						}
+						case LOAD_NAME: {
+						    int iname = ARGx(i);
+						    
+						    LeoObject name = constants[iname];
+						    params.add(paramIndex, name);						    						    			   
+						    continue;
+						}
+						case PARAM_END: {
+						    paramIndex++;
+						    
+						    if(params.size() < paramIndex) {
+						        params.add(null);
+						    }
+						    break;
 						}
 						case STORE_LOCAL: {
 							int iname = ARGx(i);
@@ -527,7 +574,7 @@ public class VM {
 							continue;
 						}
 						case JMP:	{
-							int pos = ARGx(i);
+							int pos = ARGsx(i);
 							pc += pos;
 							continue;
 						}
@@ -603,6 +650,16 @@ public class VM {
 							int nargs = ARG1(i);
 							LeoObject fun = stack[--top];
 	
+							/* determine if there are named parameters to resolve */
+							if(paramIndex > 0 && !fun.isNativeFunction() ) {
+							    resolveNamedParameters(params, stack, top, fun, nargs);
+							    
+
+						        /* ready this for any other method calls */
+							    params.clear();
+							    paramIndex = 0;
+							}                            
+							
 							LeoObject c = null;
 	
 							switch(nargs) {
@@ -677,7 +734,7 @@ public class VM {
 	
 							continue;
 						}
-						case NEW:	{
+						case NEW_OBJ:	{
 	
 							LeoObject className = stack[--top];
 	
@@ -689,7 +746,7 @@ public class VM {
 									args[j] = stack[--top];
 								}
 							}
-	
+							
 							LeoObject instance = null;
 	
 							ClassDefinitions defs = symbols.lookupClassDefinitions(className);
@@ -703,7 +760,19 @@ public class VM {
 								}
 							}
 							else {
-								instance = defs.newInstance(runtime, LeoString.valueOf(symbols.getClassName(className.toString())), args);
+							    LeoString resolvedClassName = LeoString.valueOf(symbols.getClassName(className.toString()));
+                                ClassDefinition definition = defs.getDefinition(resolvedClassName);
+							    
+							    if(paramIndex > 0) {				                       
+	                                resolveNamedParameters(params, args, nargs, definition.getParams(), nargs);
+	                                
+	
+	                                /* ready this for any other method calls */
+	                                params.clear();
+	                                paramIndex = 0;
+	                            }						    
+							    
+								instance = defs.newInstance(runtime, definition, args);
 							}
 	
 							stack[top++] = instance;
@@ -735,7 +804,7 @@ public class VM {
 							stack[top++] = map;
 							continue;
 						}
-						case NEW_NAMESPACE: {
+						case NAMESPACE_DEF: {
 							int innerIndex = ARGx(i);
 							Bytecode namespacecode = inner[innerIndex];
 	
@@ -751,9 +820,11 @@ public class VM {
 									ns.setOuters(new Outer[namespacecode.numOuters]);
 								}
 							}
-	
-							closeOuters = outers(ns.getOuters(), calleeouters, openouters, stack, namespacecode.numOuters, base, pc, code, scope, lineNumber, top, topStack)
-											|| closeOuters;
+							
+							Outer[] outers = ns.getOuters();
+							if (outers(outers, calleeouters, openouters, stack, namespacecode.numOuters, base, pc, code, lineNumber)) {
+							    closeOuters = true;
+							}
 							pc += namespacecode.numOuters;
 	
 							this.runtime.execute(ns, namespacecode);
@@ -761,27 +832,29 @@ public class VM {
 							stack[top++] = ns;
 							continue;
 						}
-						case GEN: {
+						case GEN_DEF: {
 							int innerIndex = ARGx(i);
 							Bytecode bytecode = inner[innerIndex];
 							LeoGenerator fun = new LeoGenerator(scopedObj, bytecode.clone());
 	
 							Outer[] outers = fun.getOuters();
-							closeOuters = outers(outers, calleeouters, openouters, stack, bytecode.numOuters, base, pc, code, scope, lineNumber, top, topStack)
-											|| closeOuters;
+							if (outers(outers, calleeouters, openouters, stack, bytecode.numOuters, base, pc, code, lineNumber)) {
+                                closeOuters = true;
+                            }
 							pc += bytecode.numOuters;
 	
 							stack[top++] = fun;
 							continue;
 						}
-						case DEF: {
+						case FUNC_DEF: {
 							int innerIndex = ARGx(i);
 							Bytecode bytecode = inner[innerIndex];
 							LeoFunction fun = new LeoFunction(scopedObj, bytecode);
 	
-							Outer[] outers = fun.getOuters();
-							closeOuters = outers(outers, calleeouters, openouters, stack, bytecode.numOuters, base, pc, code, scope, lineNumber, top, topStack)
-											|| closeOuters;
+							Outer[] outers = fun.getOuters();							
+							if (outers(outers, calleeouters, openouters, stack, bytecode.numOuters, base, pc, code, lineNumber)) {
+                                closeOuters = true;
+                            }
 							pc += bytecode.numOuters;
 	
 							stack[top++] = fun;
@@ -844,8 +917,10 @@ public class VM {
 							ClassDefinitions defs = scope.getClassDefinitions();
 							defs.storeClass(className, classDefinition);
 	
-							closeOuters = outers(classDefinition.getOuters(), calleeouters, openouters, stack, body.numOuters, base, pc, code, scope, lineNumber, top, topStack)
-											|| closeOuters;
+							Outer[] outers = classDefinition.getOuters();
+							if( outers(outers, calleeouters, openouters, stack, body.numOuters, base, pc, code, lineNumber)) {
+                                closeOuters = true;
+                            }
 							pc += body.numOuters;
 							continue;
 						}
@@ -857,10 +932,10 @@ public class VM {
 	
 							continue;
 						}
-						case IF:	{
+						case IFEQ:	{
 							LeoObject cond = stack[--top];
 							if ( ! LeoObject.isTrue(cond) ) {
-								int pos = ARGx(i);
+								int pos = ARGsx(i);
 								pc += pos;
 							}
 							continue;
@@ -1132,13 +1207,13 @@ public class VM {
 			}
 			finally {
 				
-				if(!blockStack.isEmpty()) {
+				if(blockStack != null && !blockStack.isEmpty()) {
 					pc = blockStack.peek();
 				}
 				else {
 				
 					/* close the outers for this function call */
-					//if ( closeOuters /*|| true*/ ) {
+					if ( closeOuters /*|| true*/ ) {
 						for(int j=base;j<openouters.length && j<base+code.maxstacksize;j++) {
 							if(openouters[j]!=null) {
 								openouters[j].close();
@@ -1147,7 +1222,7 @@ public class VM {
 		
 							stack[j] = null;
 						}
-					//}
+					}
 		
 					top = base;
 					
@@ -1159,7 +1234,7 @@ public class VM {
 					}		
 				}
 			}
-		} while(!blockStack.isEmpty());
+		} while(blockStack != null && !blockStack.isEmpty());
 
 		return isReturnedSafely ? 
 				 result : errorThrown;
@@ -1203,6 +1278,57 @@ public class VM {
 		throw new LeolaRuntimeException(errorMsg);
 	}
 
+	
+	/**
+	 * Resolve the named parameters
+	 * 
+	 * @param params
+	 * @param fun
+	 * @param nargs
+	 */
+	private void resolveNamedParameters(List<LeoObject> params, LeoObject[] args, int argTop, LeoObject fun, int nargs) {	    
+        /* assume this is a function */
+        LeoFunction f = fun.as();
+        Bytecode bc = f.getBytecode();
+        
+        resolveNamedParameters(params, args, argTop, bc.paramNames, nargs);                                                                                                         
+	}
+    
+    /**
+     * Resolve the named parameters
+     * 
+     * @param params
+     * @param stack
+     * @param paramNames
+     * @param nargs
+     */
+    private void resolveNamedParameters(List<LeoObject> params, LeoObject[] args, int topArgs, LeoString[] paramNames, int nargs) {                   
+        /* store stack arguments in a temporary location */
+        int tmpTop = top;
+        LeoObject[] tmp = stack;//new LeoObject[nargs];
+        for(int stackIndex = 0; stackIndex < nargs; stackIndex++) {
+            tmp[tmpTop + stackIndex] = args[topArgs - stackIndex - 1];
+        }
+        
+                                                
+        /* iterate through the parameter names and adjust the stack
+         * so that the names match the position the function expects them
+         */
+        for(int stackIndex = 0; stackIndex < params.size(); stackIndex++) {
+            LeoObject paramName = params.get(stackIndex);
+            if(paramName != null) {             
+                int paramIndex = 0;
+                for(; paramIndex < paramNames.length; paramIndex++) {
+                    if(paramNames[paramIndex].$eq(paramName)) {
+                        break;
+                    }
+                }
+                
+                args[topArgs - (nargs - paramIndex)] = tmp[tmpTop + (nargs - stackIndex - 1)];
+            }
+        }                                                                                                          
+    }
+	
 	/**
 	 * Close over the outer variables for closures.
 	 * 
@@ -1214,13 +1340,16 @@ public class VM {
 	 * @param base
 	 * @param pc
 	 * @param code
-	 * @param scope
 	 * @param lineNumber
-	 * @param top
-	 * @param topStack
 	 * @return
 	 */
-	private boolean outers(Outer[] outers, Outer[] calleeouters, Outer[] openouters, LeoObject[] stack, int numOuters, int base, int pc, Bytecode code, Scope scope, int lineNumber, int top, int topStack) {
+	private boolean outers(Outer[] outers, Outer[] calleeouters, Outer[] openouters, LeoObject[] stack, 
+	                    int numOuters, 
+	                    int base, 
+	                    int pc, 
+	                    Bytecode code, 	                     
+	                    int lineNumber) {
+	    
 		boolean closeOuters = false;
 		for(int j = 0; j < numOuters; j++) {
 			int i = code.instr[pc++];
@@ -1241,10 +1370,6 @@ public class VM {
 					closeOuters = true;
 					break;
 				}
-//				case xLOAD_SCOPE: {
-//					outers[j] = new Outer(scope.getScopedValues(), index);
-//					break;
-//				}
 				default: {
 					error(lineNumber, "Invalid Opcode for Outer: " + opCode);
 				}

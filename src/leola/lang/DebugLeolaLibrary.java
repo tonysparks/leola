@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import leola.vm.Leola;
 import leola.vm.asm.Assembler;
 import leola.vm.asm.Bytecode;
+import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaIgnore;
 import leola.vm.lib.LeolaLibrary;
 import leola.vm.types.LeoClass;
@@ -52,6 +53,7 @@ public class DebugLeolaLibrary implements LeolaLibrary {
 	public final Bytecode getbytecode(LeoObject f) throws Exception {
 		Bytecode result = null;
 		switch(f.getType()) {
+		    case GENERATOR:
 			case FUNCTION: {
 				LeoFunction fun = f.as();
 				result = fun.getBytecode();
@@ -61,7 +63,9 @@ public class DebugLeolaLibrary implements LeolaLibrary {
 				LeoClass cls = f.as();
 				result = cls.getConstructor();
 				break;
-			}			
+			}
+			default:
+                throw new LeolaRuntimeException("Unsupported type!");
 		}
 		return result;
 	}

@@ -15,7 +15,7 @@ import leola.vm.asm.Symbols;
 /**
  * An Error object
  * 
- * @author chq-tonys
+ * @author Tony
  *
  */
 public class LeoError extends LeoObject {

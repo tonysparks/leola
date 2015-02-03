@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 /**
  * Used for aliasing method names
  * 
- * @author chq-tonys
+ * @author Tony
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

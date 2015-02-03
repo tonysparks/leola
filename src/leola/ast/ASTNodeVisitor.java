@@ -60,7 +60,8 @@ public interface ASTNodeVisitor {
 	void visit(IfStmt s) throws EvalException;
 	
 	void visit(MemberAccessExpr s) throws EvalException;
-	void visit(NewExpr s) throws EvalException;
+	void visit(NamedParameterExpr s) throws EvalException;
+	void visit(NewExpr s) throws EvalException;	
 	void visit(NullExpr s) throws EvalException;
 	void visit(ReturnStmt s) throws EvalException;
 	void visit(YieldStmt s) throws EvalException;

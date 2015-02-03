@@ -18,114 +18,135 @@ import leola.vm.exceptions.LeolaRuntimeException;
  */
 public class Opcodes {
 
-	// instruction
-	// 0x002211FF
-	// FF = opcode
-	// 11 = arg1
-	// 22 = arg2
-	// 10 = 1 for negative arg1 argument
-	// 01 = 1 for negative arg2 argument
-	
-	public static final int OP_SIZE = 8;
-	public static final int ARG1_SIZE = 8;		// number of bits
-	public static final int ARG2_SIZE = 8;		// number of bits
-	public static final int ARGx_SIZE = ARG1_SIZE + ARG2_SIZE;
-	public static final int OP_POS = 0;
-	public static final int ARG1_POS = OP_POS + OP_SIZE;
-	public static final int ARG2_POS = ARG1_POS + ARG1_SIZE;
-	public static final int ARGx_POS = ARG1_POS;
-	
-	public static final int MAX_OP   = ( (1<<OP_SIZE) - 1);
-	public static final int MAX_ARG1 = ( (1<<ARG1_SIZE) - 1);
-	public static final int MAX_ARG2 = ( (1<<ARG2_SIZE) - 1);
-	public static final int MAX_ARGx = ( (1<<ARGx_SIZE) - 1);
-	
-	public static final int OP_MASK   = ((1<<OP_SIZE)-1)<<OP_POS; 
-	public static final int ARG1_MASK = ((1<<ARG1_SIZE)-1)<<ARG1_POS;
-	public static final int ARG2_MASK = ((1<<ARG2_SIZE)-1)<<ARG2_POS;
-	public static final int ARGx_MASK = ((1<<ARGx_SIZE)-1)<<ARGx_POS;
-	
-	public static final int NOT_OP_MASK   = ~OP_MASK;
-	public static final int NOT_ARG1_MASK = ~ARG1_MASK;
-	public static final int NOT_ARG2_MASK = ~ARG2_MASK;
-	public static final int NOT_ARGx_MASK = ~ARGx_MASK;
-	
-	public static final int NEG_ARG1_MASK = 0x10000000;
-	public static final int NEG_ARG2_MASK = 0x01000000;
-	public static final int NEG_ARGx_MASK = 0x10000000;
-	
-	/**
-	 * Strips the opcode out of the supplied integer
-	 * @param code
-	 * @return
-	 */
-	public static int OPCODE(int code) {
-//		return (code >> OP_POS) & MAX_OP;
-		return code & MAX_OP;
-	}
-	
-	/**
-	 * Returns the first argument
-	 * @param code
-	 * @return
-	 */
-	public static int ARG1(int code) {
-		return (((code & NEG_ARG1_MASK) != 0) ? ((code >> ARG1_POS) & MAX_ARG1) - 256 :  
-					((code >> ARG1_POS) & MAX_ARG1));
-	}
+    // instruction for ARG1 ARG2
+    // 0x222111FF
+    
+    // instruction for ARGx
+    // 0xXXXXXXFF
+    
+    // instruction for ARGsx (signed)
+    // 0x7XXXXXFF
+    
+    // instruction
+    // 0x002211FF
+    // FF = opcode
+    // 11 = arg1
+    // 22 = arg2
+    // X = part of ARG(s)x
+    // 7 = 0111 last bit for signed value
+    
+    public static final int OP_SIZE = 8;
+    public static final int ARG1_SIZE = 12;     // number of bits
+    public static final int ARG2_SIZE = 12;     // number of bits
+    public static final int ARGx_SIZE = ARG1_SIZE + ARG2_SIZE;
+    public static final int ARGsx_SIZE = ARG1_SIZE + ARG2_SIZE-1;
+    public static final int OP_POS = 0;
+    public static final int ARG1_POS = OP_POS + OP_SIZE;
+    public static final int ARG2_POS = ARG1_POS + ARG1_SIZE;
+    public static final int ARGx_POS = ARG1_POS;
+    
+    public static final int MAX_OP   = ( (1<<OP_SIZE) - 1);
+    public static final int MAX_ARG1 = ( (1<<ARG1_SIZE) - 1);
+    public static final int MAX_ARG2 = ( (1<<ARG2_SIZE) - 1);
+    public static final int MAX_ARGx = ( (1<<ARGx_SIZE) - 1);
+    public static final int MAX_ARGsx = (MAX_ARGx>>1);
+    
+    public static final int OP_MASK   = ((1<<OP_SIZE)-1)<<OP_POS; 
+    public static final int ARG1_MASK = ((1<<ARG1_SIZE)-1)<<ARG1_POS;
+    public static final int ARG2_MASK = ((1<<ARG2_SIZE)-1)<<ARG2_POS;
+    public static final int ARGx_MASK = ((1<<ARGx_SIZE)-1)<<ARGx_POS;
+    
+    public static final int NOT_OP_MASK   = ~OP_MASK;
+    public static final int NOT_ARG1_MASK = ~ARG1_MASK;
+    public static final int NOT_ARG2_MASK = ~ARG2_MASK;
+    public static final int NOT_ARGx_MASK = ~ARGx_MASK;
+    
+    
+    /**
+     * Strips the opinstr out of the supplied integer
+     * @param instr
+     * @return
+     */
+    public static int OPCODE(int instr) {
+//      return (instr >> OP_POS) & MAX_OP;
+        return instr & MAX_OP;
+    }
+    
+    /**
+     * Returns the first argument
+     * @param instr
+     * @return arg1 one value
+     */
+    public static int ARG1(int instr) {
+        return (instr >>>  ARG1_POS) & MAX_ARG1;
+    }
 
-	/**
-	 * Returns the second argument
-	 * @param code
-	 * @return
-	 */
-	public static int ARG2(int code) {
-		return (((code & NEG_ARG2_MASK) != 0) ? ((code >> ARG2_POS) & MAX_ARG2) - 256 :  
-			((code >> ARG2_POS) & MAX_ARG2));		
-	}
-	
-	public static int ARGx(int code) {
-		return ((code >> ARGx_POS) & MAX_ARGx) | (0xffff0000 * ((code & NEG_ARGx_MASK) >> 28));
-	}
-	
-	
-	public static int SET_ARGx(int code, int arg1) {
-		return (arg1 < 0) ? ( (NEG_ARGx_MASK | (code & NOT_ARGx_MASK)) | ( arg1 << ARGx_POS & ARGx_MASK)) 
-							: (code & NOT_ARGx_MASK) | ( arg1 << ARGx_POS & ARGx_MASK);
-	}
-	
-	public static int SET_ARG1(int code, int arg1) {
-		return (arg1 < 0) ? ( (NEG_ARG1_MASK | (code & NOT_ARG1_MASK)) | ( arg1 << ARG1_POS & ARG1_MASK)) 
-							: (code & NOT_ARG1_MASK) | ( arg1 << ARG1_POS & ARG1_MASK);
-	}
-	
-	public static int SET_ARG2(int code, int arg2) {
-		return (arg2 < 0) ? ((NEG_ARG2_MASK | (code & NOT_ARG2_MASK)) | ( arg2 << ARG2_POS & ARG2_MASK))
-							: (code & NOT_ARG2_MASK) | ( arg2 << ARG2_POS & ARG2_MASK);
-	}
-	public static void main(String args[]) {
-		//0x1000dd1e
-		int opcode =JMP; //(0x1000dd00 & ~OP_MASK);// & ~NEG_ARGx_MASK;
-//		i = SET_ARG1(i, 0x00);
-//		i |= SET_ARG2(i, 1);
-		
-		int v= -1256;
-		
-		int x = SET_ARGx(opcode, v);
-		int o = SET_ARG1(opcode, v);
-		int t = SET_ARG2(opcode, v);
-		
-		int code = x;
-		int xx =  ((code >> ARGx_POS) & MAX_ARGx) | (0xffff0000 * ((code & NEG_ARGx_MASK) >> 28)); 			
-		
-		System.out.println("0x"+Integer.toHexString(x) + " \tDec: " + x);
-		System.out.println("X  0x" +Integer.toHexString(ARGx(x)) + " \tDec: " + ARGx(x));
-		System.out.println("XX 0x" +Integer.toHexString(xx) + " \tDec: " + xx);
-		System.out.println("1  0x" +Integer.toHexString(ARG1(o)) + " \tDec: " + ARG1(o));
-		System.out.println("2  0x" +Integer.toHexString(ARG2(t)) + " \tDec: " + ARG2(t));
-		
-		
-	}
+    /**
+     * Returns the second argument
+     * @param instr
+     * @return arg2 value
+     */
+    public static int ARG2(int instr) {
+        return (instr >>> ARG2_POS) & MAX_ARG2;     
+    }
+    
+    /**
+     * Returns the x argument
+     * @param instr 
+     * @return the x argument
+     */
+    public static int ARGx(int instr) {
+        return ((instr >>> ARGx_POS) & MAX_ARGx);
+    }
+    
+    /**
+     * Returns the signed x argument
+     * @param instr
+     * @return the signed x argument
+     */
+    public static int ARGsx(int instr) {
+        return ((instr >> ARGx_POS) & MAX_ARGx) - MAX_ARGsx;
+    }
+    
+    /**
+     * Sets the signed x value on the instruction
+     * @param instr
+     * @param x
+     * @return the instruction with the set value
+     */
+    public static int SET_ARGsx(int instr, int sx) {
+        return (instr & (NOT_ARGx_MASK)) | (( (sx + MAX_ARGsx) << ARGx_POS) & ARGx_MASK);
+    }
+    
+    /**
+     * Sets the x value on the instruction
+     * @param instr
+     * @param x
+     * @return the instruction with the set value
+     */
+    public static int SET_ARGx(int instr, int argx) {
+        return (instr & (NOT_ARGx_MASK)) | (( argx << ARGx_POS) & ARGx_MASK);
+    }
+    
+    /**
+     * Sets the arg1 value on the instruction
+     * @param instr
+     * @param x
+     * @return the instruction with the set value
+     */
+    public static int SET_ARG1(int instr, int arg1) {
+        return (instr & NOT_ARG1_MASK) | (( arg1 << ARG1_POS) & ARG1_MASK);
+    }
+    
+    /**
+     * Sets the arg2 value on the instruction
+     * @param instr
+     * @param x
+     * @return the instruction with the set value
+     */
+    public static int SET_ARG2(int instr, int arg2) {
+        return (instr & NOT_ARG2_MASK) | (( arg2 << ARG2_POS) & ARG2_MASK);
+    }
 	
 		
 	/**
@@ -147,6 +168,37 @@ public class Opcodes {
 	public static String op2str(int opcode) {
 		String op = "";
 		switch(opcode) {
+            /* stack operators */
+            case SHIFT: {   
+                op = "SHIFT";
+                break;
+            }
+            case POP:   {
+                op = "POP";                 
+                break;
+            }  
+            case DUP: {
+                op = "DUP";
+                break;
+            }
+            case OPPOP: {
+                op = "OPPOP";                   
+                break;
+            }               
+            case MOV: {
+                op = "MOV";
+                break;
+            }
+            case MOVN: {
+                op = "MOVN";
+                break;
+            }
+            case SWAP: {
+                op = "SWAP";
+                break;
+            }		
+		
+		
 			/* Store operations */
 			case LOAD_CONST: {
 				op = "LOAD_CONST";
@@ -160,6 +212,37 @@ public class Opcodes {
 				op = "LOAD_OUTER";				
 				break;
 			}
+            case LOAD_NULL: {
+                op = "LOAD_NULL";
+                break;
+            }
+            case LOAD_TRUE: {
+                op = "LOAD_TRUE";
+                break;
+            }
+            case LOAD_FALSE: {
+                op = "LOAD_FALSE";
+                break;
+            }
+
+            case STORE_LOCAL: {
+                op = "STORE_LOCAL";
+                break;
+            }
+            case STORE_OUTER: {
+                op = "STORE_OUTER";
+                break;
+            }            
+            
+            case LOAD_NAME: {
+                op = "LOAD_NAME";              
+                break;
+            }
+            case PARAM_END: {
+                op = "PARAM_END";              
+                break;
+            } 
+            
 			case xLOAD_OUTER: {
 				op = "xLOAD_OUTER";
 				break;
@@ -168,67 +251,72 @@ public class Opcodes {
 				op = "xLOAD_LOCAL";
 				break;
 			}			
-			case LOAD_NULL: {
-				op = "LOAD_NULL";
-				break;
-			}
-			case LOAD_TRUE: {
-				op = "LOAD_TRUE";
-				break;
-			}
-			case LOAD_FALSE: {
-				op = "LOAD_FALSE";
-				break;
-			}
-			case STORE_LOCAL: {
-				op = "STORE_LOCAL";
-				break;
-			}
-			case STORE_OUTER: {
-				op = "STORE_OUTER";
-				break;
-			}
-
-		
-			/* stack operators */
-			case SHIFT:	{	
-				op = "SHIFT";
-				break;
-			}
-			case POP:	{
-				op = "POP";					
-				break;
-			}
-			case OPPOP:	{
-				op = "OPPOP";					
-				break;
-			}		
-			case DUP: {
-				op = "DUP";
-				break;
-			}
-			case RET:	{
-				op = "RET";
-				break;
-			}
-			case MOV: {
-				op = "MOV";
-				break;
-			}
-			case MOVN: {
-				op = "MOVN";
-				break;
-			}
-			case SWAP: {
-				op = "SWAP";
-				break;
-			}
 			
 			case JMP:	{
 				op = "JMP";				
 				break;
 			}
-			case INVOKE:	{		
+            case IFEQ:    {                   
+                op = "IFEQ";
+                break;
+            }			
+	        
+            case IS_A: {
+                op = "IS_A";
+                break;
+            }           
+
+
+            case NEW_ARRAY: {
+                op = "NEW_ARRAY";
+                break;
+            }
+            case NEW_MAP: {
+                op = "NEW_MAP";
+                break;
+            }     
+            case NEW_OBJ:   {
+                op = "NEW_OBJ";
+                break;
+            }
+
+            
+            case FUNC_DEF: {
+                op = "FUNC_DEF";
+                break;
+            }            
+            case GEN_DEF: {
+                op = "GEN_DEF";
+                break;
+            }	
+            case CLASS_DEF: {
+                op = "CLASS_DEF";
+                break;
+            }            
+            case NAMESPACE_DEF: {
+                op = "NAMESPACE_DEF";
+                break;
+            }            
+            
+
+            case BREAK: {
+                op = "BREAK";
+                break;
+            }
+            case CONTINUE: {
+                op = "CONTINUE";
+                break;
+            }
+            case YIELD: {
+                op = "YIELD";
+                break;
+            }           
+            case RET:   {
+                op = "RET";
+                break;
+            }            
+            
+            case INVOKE:	{		
 				op = "INVOKE";
 				break;
 			}
@@ -236,59 +324,7 @@ public class Opcodes {
 				op = "TAIL_CALL";
 				break;
 			}
-			
-			case NEW_NAMESPACE: {
-				op = "NEW_NAMESPACE";
-				break;
-			}
-			case NEW:	{
-				op = "NEW";
-				break;
-			}
-			case NEW_ARRAY:	{
-				op = "NEW_ARRAY";
-				break;
-			}
-			case NEW_MAP: {
-				op = "NEW_MAP";
-				break;
-			}			
-			case GEN: {
-				op = "GEN";
-				break;
-			}
-			case DEF: {
-				op = "DEF";
-				break;
-			}
-			case IS_A: {
-				op = "IS_A";
-				break;
-			}			
-			case IF:	{					
-				op = "IF";
-				break;
-			}
-			case YIELD: {
-				op = "YIELD";
-				break;
-			}
-			case BREAK: {
-				op = "BREAK";
-				break;
-			}
-			case CONTINUE: {
-				op = "CONTINUE";
-				break;
-			}
-			case CLASS_DEF: {
-				op = "CLASS_DEF";
-				break;
-			}
-			case THROW: {
-				op = "THROW";
-				break;
-			}			
+		
 			/* object access */
 			case GET: {
 				op = "GET";
@@ -311,6 +347,31 @@ public class Opcodes {
 				op = "GET_NAMESPACE";
 				break;
 			}
+			
+            case INIT_FINALLY: {
+                op = "INIT_FINALLY";
+                break;
+            }
+            case INIT_ON: {
+                op = "INIT_ON";
+                break;
+            }
+            case END_ON: {
+                op = "END_ON";
+                break;
+            }
+            case END_FINALLY: {
+                op = "END_FINALLY";
+                break;
+            }
+            case END_BLOCK: {
+                op = "END_BLOCK";
+                break;
+            }            
+            case THROW: {
+                op = "THROW";
+                break;
+            }			
 			
 			
 			/* arithmetic operators */
@@ -404,30 +465,11 @@ public class Opcodes {
 				op = "LTE";
 				break;
 			}
+			
 			case LINE: {
 				op = "LINE";
 				break;
-			}
-			case INIT_FINALLY: {
-				op = "INIT_FINALLY";
-				break;
-			}
-			case INIT_ON: {
-				op = "INIT_ON";
-				break;
-			}
-			case END_ON: {
-				op = "END_ON";
-				break;
-			}
-			case END_FINALLY: {
-				op = "END_FINALLY";
-				break;
-			}
-			case END_BLOCK: {
-				op = "END_BLOCK";
-				break;
-			}
+			}   		
 			default: {
 				throw new LeolaRuntimeException("Unknown Opcode: " + opcode);
 			}
@@ -441,146 +483,180 @@ public class Opcodes {
 	 */
 	public static final int
 	
-		/* stack operators */
-		SHIFT  = 1,
-		POP = 2,
-		DUP = 3,
-		RET = 4,
-		OPPOP = 5,
-		MOV = 6,
-		MOVN = 7,
-		SWAP = 8,
+		/* stack operators */	
+		SHIFT  = 1,                   /* ARGx */
+		POP = 2,                      /*      */
+		DUP = 3,		              /*      */
+		OPPOP = 4,                    /*      */
+		MOV = 5,                      /*      */
+		MOVN = 6,                     /* ARGx */
+		SWAP = 7,                     /* ARGx */
 		
-		LOAD_CONST = 9,
-		LOAD_LOCAL = 10,
-		LOAD_OUTER = 11,
+		/* loading of values */
+		LOAD_CONST = 8,               /* ARGx */
+		LOAD_LOCAL = 9,               /* ARGx */
+		LOAD_OUTER = 10,              /* ARGx */
 		
-		LOAD_NULL = 12,
-		LOAD_TRUE = 13,
-		LOAD_FALSE = 14,		
+		LOAD_NULL = 11,               /*      */
+		LOAD_TRUE = 12,               /*      */
+		LOAD_FALSE = 13,	          /*      */
+		
+		/* named parameters */
+		LOAD_NAME = 14,               /* ARGx */
+		PARAM_END = 15,               /*      */
 						
-		STORE_LOCAL = 15,
-		STORE_OUTER = 16,		
+		/* storage of values */
+		STORE_LOCAL = 16,             /* ARGx */
+		STORE_OUTER = 17,		      /* ARGx */
 		
 		/* pseudo bytecodes */
-		xLOAD_OUTER = 17,
-		xLOAD_LOCAL = 18,		
+		xLOAD_OUTER = 18,             /* ARGx */
+		xLOAD_LOCAL = 19,		      /* ARGx */
+				
+		/* jump instructions */
+		JMP = 20,		              /* ARGsx */
+		IFEQ = 21,                      /* ARGsx */
 		
-		JMP = 19,
-		NEW = 20,
-		IF = 21,
-		NEW_ARRAY = 22,
-		NEW_MAP = 23,		
-		DEF = 24,
-		GEN = 25,
-		IS_A = 26,
-		BREAK = 27,
-		CONTINUE = 28,
-		YIELD = 29,
-		CLASS_DEF = 30,
+		IS_A = 22,                    /*      */
 		
-		INVOKE = 31,
-		NEW_NAMESPACE = 32,
-		TAIL_CALL = 33,		
+		/* value creation */
+		NEW_ARRAY = 23,               /* ARGx */
+		NEW_MAP = 24,                 /* ARGx */
+		NEW_OBJ = 25,                 /* ARGx */		
+		
+		/* type declarations */
+		FUNC_DEF = 26,                /* ARGx */
+		GEN_DEF = 27,                 /* ARGx */
+		CLASS_DEF = 28,               /* ARGx */
+		NAMESPACE_DEF = 29,           /* ARGx */
+				
+		/* statement branching */
+		BREAK = 30,                   /*      */
+		CONTINUE = 31,                /*      */
+		YIELD = 32,                   /*      */
+		RET = 33,                     /*      */
+				
+		/* method invocation */
+		INVOKE = 34,		          /* ARG1 ARG2 */  
+		TAIL_CALL = 35,		          /* ARG1 */
 		
 		/* member access */
-		GET = 34,
-		SET = 35,
+		GET = 36,                     /*      */
+		SET = 37,                     /*      */
 		
-		GET_GLOBAL = 36,
-		SET_GLOBAL = 37,
+		GET_GLOBAL = 38,              /* ARGx */
+		SET_GLOBAL = 39,              /* ARGx */
 		
-		GET_NAMESPACE = 38,
+		GET_NAMESPACE = 40,           /* ARGx */
 		
-		THROW = 39,
+        /* Exception handling */
+        INIT_FINALLY = 41,            /* ARGx */
+        INIT_ON = 42,                 /* ARGx */
+        END_ON = 43,                  /*      */
+        END_FINALLY = 44,             /*      */
+        END_BLOCK = 45,               /*      */
+		THROW = 46,                   /*      */
 						
 		/* arithmetic operators */
-		ADD = 40,
-		SUB = 41,
-		MUL = 42,
-		DIV = 43,
-		MOD = 44,
-		NEG = 45,
+		ADD = 47,                     /*      */
+		SUB = 48,                     /*      */
+		MUL = 49,                     /*      */
+		DIV = 50,                     /*      */
+		MOD = 51,                     /*      */
+		NEG = 52,                     /*      */
 	
-		BSL = 46,
-		BSR = 47,
-		BNOT = 48,
-		XOR = 49,
-		LOR = 50,
-		LAND = 51,
+		BSL = 53,                     /*      */
+		BSR = 54,                     /*      */
+		BNOT = 55,                    /*      */
+		XOR = 56,                     /*      */
+		LOR = 57,                     /*      */
+		LAND = 58,                    /*      */
 		
-		OR = 52,
-		AND = 53,
-		NOT = 54,
+		OR = 59,                      /*      */
+		AND = 60,                     /*      */
+		NOT = 61,                     /*      */
 		
-		REQ = 55,
-		EQ = 56,
-		NEQ = 57,
-		GT = 58,
-		GTE = 59,
-		LT = 60,
-		LTE = 61,
-		
-		/* Exception handling */
-		INIT_FINALLY = 62,
-		INIT_ON = 63,
-		END_ON = 64,
-		END_FINALLY = 65,
-		END_BLOCK = 66,
-		
+		REQ = 62,                     /*      */
+		EQ = 63,                      /*      */
+		NEQ = 64,                     /*      */
+		GT = 65,                      /*      */
+		GTE = 66,                     /*      */
+		LT = 67,                      /*      */
+		LTE = 68,                     /*      */
+				
 		/* debug */
-		LINE = 67
+		LINE = 69                     /* ARGx */
 		;
 	
 	
 	private static final Map<String, Integer> opcodes = new HashMap<String, Integer>();
-	static {
-		/* Store operations */
-		opcodes.put("LOAD_CONST", LOAD_CONST);
-		opcodes.put("LOAD_LOCAL", LOAD_LOCAL);
-		opcodes.put("LOAD_OUTER", LOAD_OUTER);
+	static {	    
+
+        /* stack operators */
+        opcodes.put("SHIFT", SHIFT);
+        opcodes.put("POP", POP);        
+        opcodes.put("DUP", DUP);
+        opcodes.put("OPPOP", OPPOP);        
+        opcodes.put("MOV", MOV);
+        opcodes.put("MOVN", MOVN);
+        opcodes.put("SWAP", SWAP);
+	            
+        opcodes.put("LOAD_CONST", LOAD_CONST);
+        opcodes.put("LOAD_LOCAL", LOAD_LOCAL);
+        opcodes.put("LOAD_OUTER", LOAD_OUTER);        
+        opcodes.put("LOAD_NULL", LOAD_NULL);
+        opcodes.put("LOAD_TRUE", LOAD_TRUE);
+        opcodes.put("LOAD_FALSE", LOAD_FALSE);
+        
+        opcodes.put("LOAD_NAME", LOAD_NAME);
+        opcodes.put("PARAM_END", PARAM_END);
+        
+        opcodes.put("STORE_LOCAL", STORE_LOCAL);
+        opcodes.put("STORE_OUTER", STORE_OUTER);
+        				
 		opcodes.put("xLOAD_OUTER", xLOAD_OUTER);
 		opcodes.put("xLOAD_LOCAL", xLOAD_LOCAL);		
-		opcodes.put("LOAD_NULL", LOAD_NULL);
-		opcodes.put("LOAD_TRUE", LOAD_TRUE);
-		opcodes.put("LOAD_FALSE", LOAD_FALSE);
-		
-		opcodes.put("STORE_LOCAL", STORE_LOCAL);
-		opcodes.put("STORE_OUTER", STORE_OUTER);
-		
 
-		/* stack operators */
-		opcodes.put("SHIFT", SHIFT);
-		opcodes.put("POP", POP);
-		opcodes.put("OPPOP", OPPOP);
-		opcodes.put("DUP", DUP);
-		opcodes.put("RET", RET);
-		opcodes.put("MOV", MOV);
-		opcodes.put("MOVN", MOVN);
-		opcodes.put("SWAP", SWAP);
 		opcodes.put("JMP", JMP);
-		opcodes.put("INVOKE", INVOKE);
-		opcodes.put("TAIL_CALL", TAIL_CALL);		
-		opcodes.put("NEW_NAMESPACE", NEW_NAMESPACE);
-		opcodes.put("NEW", NEW);
+		opcodes.put("IFEQ", IFEQ);
+		
+		opcodes.put("IS_A", IS_A);
+		
 		opcodes.put("NEW_ARRAY", NEW_ARRAY);
 		opcodes.put("NEW_MAP", NEW_MAP);
-		opcodes.put("DEF", DEF);
-		opcodes.put("GEN", GEN);
-		opcodes.put("IS_A", IS_A);
-		opcodes.put("IF", IF);
-		opcodes.put("BREAK", BREAK);
-		opcodes.put("CONTINUE", CONTINUE);
-		opcodes.put("YIELD", YIELD);
+		opcodes.put("NEW_OBJ", NEW_OBJ);
+		
+		opcodes.put("FUNC_DEF", FUNC_DEF);
+		opcodes.put("GEN_DEF", GEN_DEF);
 		opcodes.put("CLASS_DEF", CLASS_DEF);
+		opcodes.put("NAMESPACE_DEF", NAMESPACE_DEF);
+		
+        opcodes.put("BREAK", BREAK);
+        opcodes.put("CONTINUE", CONTINUE);
+        opcodes.put("YIELD", YIELD);
+        opcodes.put("RET", RET);
+        
+        		
+		opcodes.put("INVOKE", INVOKE);
+		opcodes.put("TAIL_CALL", TAIL_CALL);		
+		
+		
+        /* object access */
+        opcodes.put("GET", GET);
+        opcodes.put("SET", SET);
+        opcodes.put("GET_GLOBAL", GET_GLOBAL);
+        opcodes.put("SET_GLOBAL", SET_GLOBAL);
+        opcodes.put("GET_NAMESPACE", GET_NAMESPACE);        
+		
+		
+        /* exception handling */
+        opcodes.put("INIT_FINALLY", INIT_FINALLY);
+        opcodes.put("INIT_ON", INIT_ON);
+        opcodes.put("END_ON", END_ON);
+        opcodes.put("END_FINALLY", END_FINALLY);
+        opcodes.put("END_BLOCK", END_BLOCK);		
 		opcodes.put("THROW", THROW);
 
-		/* object access */
-		opcodes.put("GET", GET);
-		opcodes.put("SET", SET);
-		opcodes.put("GET_GLOBAL", GET_GLOBAL);
-		opcodes.put("SET_GLOBAL", SET_GLOBAL);
-		opcodes.put("GET_NAMESPACE", GET_NAMESPACE);		
 
 		/* arithmetic operators */
 		opcodes.put("ADD", ADD);
@@ -589,15 +665,18 @@ public class Opcodes {
 		opcodes.put("DIV", DIV);
 		opcodes.put("MOD", MOD);
 		opcodes.put("NEG", NEG);
+		
 		opcodes.put("BSL", BSL);
 		opcodes.put("BSR", BSR);
 		opcodes.put("BNOT", BNOT);
 		opcodes.put("XOR", XOR);
 		opcodes.put("LOR", LOR);
 		opcodes.put("LAND", LAND);
+		
 		opcodes.put("OR", OR);
 		opcodes.put("AND", AND);
 		opcodes.put("NOT", NOT);
+		
 		opcodes.put("REQ", REQ);
 		opcodes.put("EQ", EQ);
 		opcodes.put("NEQ", NEQ);
@@ -605,13 +684,8 @@ public class Opcodes {
 		opcodes.put("GTE", GTE);
 		opcodes.put("LT", LT);
 		opcodes.put("LTE", LTE);
-		opcodes.put("LINE", LINE);
-	
-		opcodes.put("INIT_FINALLY", INIT_FINALLY);
-		opcodes.put("INIT_ON", INIT_ON);
-		opcodes.put("END_ON", END_ON);
-		opcodes.put("END_FINALLY", END_FINALLY);
-		opcodes.put("END_BLOCK", END_BLOCK);
+				
+		opcodes.put("LINE", LINE);	
 	}
 
 }

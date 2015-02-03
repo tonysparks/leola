@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 /**
  * Ignore a method
  * 
- * @author chq-tonys
+ * @author Tony
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

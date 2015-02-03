@@ -54,6 +54,10 @@ public class ClassDefinitions {
 	}
 	
 	public ClassDefinition getDefinition(LeoString className) {
+	    if ( ! getClassDefinitions().containsKey(className)) {
+            throw new LeolaRuntimeException("No class found for: " + className);
+        }               
+	    
 		return getClassDefinitions().get(className);
 	}
 	
@@ -91,42 +95,49 @@ public class ClassDefinitions {
 	 * @param params
 	 * @return
 	 */
-	public LeoObject newInstance(Leola runtime, LeoString className, LeoObject[] params) {
-		if ( ! getClassDefinitions().containsKey(className)) {
-			throw new LeolaRuntimeException("No class found for: " + className);
-		}
-				
-		ClassDefinition definition = getClassDefinitions().get(className);
-		
-		LeoObject parentClass = LeoNull.LEONULL;
-		if ( definition.hasParentClass() ) {
-			
-			LeoString[] paramNames = definition.getParams();
-			LeoObject[] superParams = definition.getSuperParams(); 
-			if ( superParams != null ) {
-				LeoObject[] clone = new LeoObject[superParams.length];
-				System.arraycopy(superParams, 0, clone, 0, superParams.length);
-				superParams = clone;
-			}
-			
-			resolveSuperArguments(paramNames, params, superParams);
-			
-			parentClass = newInstance(runtime, definition.getSuperClass().getClassName(), superParams);
-		}
-		
-		Scope scope = new Scope(runtime.getSymbols(), definition.getDeclaredScope(), ScopeType.OBJECT_SCOPE);
-		if ( parentClass != LeoNull.LEONULL ) {
-			LeoClass p = parentClass.as();
-			scope.setParent(p.getScope());
-		}		
-		
-		LeoClass klass = new LeoClass(runtime
-									, scope
-									, definition
-									, parentClass									
-									, params); 
-		
-		return klass;
+	public LeoObject newInstance(Leola runtime, LeoString className, LeoObject[] params) {		
+		ClassDefinition definition = getDefinition(className);		
+		return newInstance(runtime, definition, params);
 	}
+	
+	/**
+     * Creates a new instance of an object.
+     * 
+     * @param runtime
+     * @param definition
+     * @param params
+     * @return
+     */
+    public LeoObject newInstance(Leola runtime, ClassDefinition definition, LeoObject[] params) {        
+        LeoObject parentClass = LeoNull.LEONULL;
+        if ( definition.hasParentClass() ) {
+            
+            LeoString[] paramNames = definition.getParams();
+            LeoObject[] superParams = definition.getSuperParams(); 
+            if ( superParams != null ) {
+                LeoObject[] clone = new LeoObject[superParams.length];
+                System.arraycopy(superParams, 0, clone, 0, superParams.length);
+                superParams = clone;
+            }
+            
+            resolveSuperArguments(paramNames, params, superParams);
+            
+            parentClass = newInstance(runtime, definition.getSuperClass().getClassName(), superParams);
+        }
+        
+        Scope scope = new Scope(runtime.getSymbols(), definition.getDeclaredScope(), ScopeType.OBJECT_SCOPE);
+        if ( parentClass != LeoNull.LEONULL ) {
+            LeoClass p = parentClass.as();
+            scope.setParent(p.getScope());
+        }       
+        
+        LeoClass klass = new LeoClass(runtime
+                                    , scope
+                                    , definition
+                                    , parentClass                                   
+                                    , params); 
+        
+        return klass;
+    }
 }
 

@@ -14,7 +14,7 @@ import java.util.Set;
 import leola.vm.types.LeoObject;
 
 /**
- * @author chq-tonys
+ * @author Tony
  *
  */
 public class SimpleStdOutDebugListener implements DebugListener {

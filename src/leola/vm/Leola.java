@@ -51,7 +51,7 @@ import leola.lang.actors.ActorLibrary;
 import leola.lang.collection.CollectionsLeolaLibrary;
 import leola.lang.io.IOLeolaLibrary;
 import leola.lang.sql.SqlLeolaLibrary;
-import leola.vm.asm.Asm;
+import leola.vm.asm.AsmEmitter;
 import leola.vm.asm.Bytecode;
 import leola.vm.asm.Scope;
 import leola.vm.asm.Symbols;
@@ -947,7 +947,7 @@ public class Leola {
 		ASTNode program = generateAST(reader, exceptionHandler);
 		BytecodeGenerator gen = new BytecodeGenerator(this, this.symbols);
 		program.visit(gen);
-		Asm asm = gen.getAsm();
+		AsmEmitter asm = gen.getAsm();
 		Bytecode bytecode = asm.compile();
 
 		return bytecode;

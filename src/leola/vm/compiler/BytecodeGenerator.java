@@ -42,6 +42,7 @@ import leola.ast.IsExpr;
 import leola.ast.LongExpr;
 import leola.ast.MapDeclExpr;
 import leola.ast.MemberAccessExpr;
+import leola.ast.NamedParameterExpr;
 import leola.ast.NamespaceAccessExpr;
 import leola.ast.NamespaceStmt;
 import leola.ast.NewExpr;
@@ -67,7 +68,7 @@ import leola.ast.YieldStmt;
 import leola.frontend.EvalException;
 import leola.frontend.parsers.ParameterList;
 import leola.vm.Leola;
-import leola.vm.asm.Asm;
+import leola.vm.asm.AsmEmitter;
 import leola.vm.asm.Bytecode;
 import leola.vm.asm.Constants;
 import leola.vm.asm.Pair;
@@ -87,7 +88,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	/**
 	 * The assembler
 	 */
-	private Asm asm;
+	private AsmEmitter asm;
 		
 	private Stack<String> breakLabelStack;
 	private Stack<String> continueLabelStack;
@@ -108,7 +109,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	public BytecodeGenerator(Leola runtime, Symbols symbols) {
 		//this.runtime = runtime;
 		
-		this.asm = new Asm(symbols);
+		this.asm = new AsmEmitter(symbols);
 		this.asm.setDebug(runtime.getArgs().isDebugMode());
 			
 		this.breakLabelStack = new Stack<String>();
@@ -119,7 +120,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	/**
 	 * @return the asm
 	 */
-	public Asm getAsm() {
+	public AsmEmitter getAsm() {
 		return asm;
 	}
 
@@ -605,13 +606,34 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	@Override
 	public void visit(ChainedFuncInvocationExpr s) throws EvalException {
 		asm.line(s.getLineNumber());
-		
+
 		int nargs = 0;
 		Expr[] params = s.getParameters();
 		if ( params != null ) {
-			for(Expr param : params) {
-				param.visit(this);
-			}
+            boolean hasNamedParameters = false;
+            /* check to see if there are any NamedParameters,
+             * if so, we need to add some additional instructions
+             * that effect performance
+             */
+            for(Expr param : params) {
+                if(param instanceof NamedParameterExpr) {
+                    hasNamedParameters = true;
+                    break;
+                }
+            }
+            
+            
+            for(Expr param : params) {
+                param.visit(this);
+                
+                /* mark the end of the parameter,
+                 * so that we can properly index
+                 * the named parameters
+                 */
+                if(hasNamedParameters) {
+                    asm.paramend();
+                }
+            }
 			
 			nargs = params.length;
 		}
@@ -725,6 +747,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		ASTNode parent = s.getParentNode();
 		boolean newLexicalScope =  ((parent instanceof ClassDeclStmt) ||
 									(parent instanceof NamespaceStmt) ||
+									(parent instanceof GenDefExpr) ||
 									(parent instanceof FuncDefExpr) );
 									
 		if(!newLexicalScope) {
@@ -781,7 +804,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		String name = s.getName();		
 		asm.storeAndloadconst(name);
 		
-		asm.newnamespace();
+		asm.namespacedef();
 		{			
 			s.getStmt().visit(this);
 		}
@@ -885,7 +908,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		asm.line(s.getLineNumber());
 		
 		ParameterList parameters = s.getParameters();
-		asm.gen(parameters.size(), parameters.isVarargs());
+		asm.gendef(parameters.size(), parameters.isVarargs());
 		{
 			asm.line(s.getLineNumber());
 						
@@ -898,6 +921,21 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		asm.end();		
 	}
 	
+	
+	
+	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.NamedParameterStmt)
+	 */
+	@Override
+	public void visit(NamedParameterExpr s) throws EvalException {
+	    // TODO	    
+	    int index = asm.getConstants().store(s.getParameterName());
+	    
+	    asm.loadname(index);
+	    s.getValueExpr().visit(this);
+	    
+	}
+	
 	/* (non-Javadoc)
 	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.FuncDefExpr)
 	 */
@@ -906,7 +944,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		asm.line(s.getLineNumber());
 		
 		ParameterList parameters = s.getParameters();
-		asm.def(parameters.size(), parameters.isVarargs());
+		asm.funcdef(parameters.size(), parameters.isVarargs());
 		{
 			asm.line(s.getLineNumber());
 						
@@ -929,8 +967,30 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		int nargs = 0;
 		Expr[] params = s.getParameters();
 		if ( params != null ) {
+		    
+		    boolean hasNamedParameters = false;
+		    /* check to see if there are any NamedParameters,
+		     * if so, we need to add some additional instructions
+		     * that effect performance
+		     */
+		    for(Expr param : params) {
+		        if(param instanceof NamedParameterExpr) {
+		            hasNamedParameters = true;
+		            break;
+		        }
+		    }
+		    
+		    
 			for(Expr param : params) {
 				param.visit(this);
+				
+				/* mark the end of the parameter,
+				 * so that we can properly index
+				 * the named parameters
+				 */
+				if(hasNamedParameters) {
+				    asm.paramend();
+				}
 			}
 			
 			nargs = params.length;
@@ -1026,16 +1086,47 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	@Override
 	public void visit(NewExpr s) throws EvalException {
 		asm.line(s.getLineNumber());
-			
-		Expr[] exprs = s.getParameters();
-		for(Expr expr : s.getParameters()) {
-			expr.visit(this);
+		// TODO
+//		Expr[] exprs = s.getParameters();
+//		for(Expr expr : s.getParameters()) {
+//			expr.visit(this);						
+//		}
+		
+		int nargs = 0;
+		Expr[] params = s.getParameters();
+		if(params != null) {
+            boolean hasNamedParameters = false;
+            /* check to see if there are any NamedParameters,
+             * if so, we need to add some additional instructions
+             * that effect performance
+             */
+            for(Expr param : params) {
+                if(param instanceof NamedParameterExpr) {
+                    hasNamedParameters = true;
+                    break;
+                }
+            }
+            
+            
+            for(Expr param : params) {
+                param.visit(this);
+                
+                /* mark the end of the parameter,
+                 * so that we can properly index
+                 * the named parameters
+                 */
+                if(hasNamedParameters) {
+                    asm.paramend();
+                }
+            }
+            
+            nargs = params.length;
 		}
 		
 		String className = s.getClassName();		
 		asm.storeAndloadconst(className);
 		
-		asm.newobj(exprs!=null?exprs.length:0);
+		asm.newobj(nargs);
 	}
 
 	/* (non-Javadoc)
@@ -1403,7 +1494,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		 * about this
 		 */
 		int index = -1;
-		if(asm.useLocals()) {				
+		if(asm.usesLocals()) {				
 			index = asm.addLocal(ref);							
 		}
 		
@@ -1428,7 +1519,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		
 		// asm.dup(); Seems to be causing a stack leak, I'm not sure why this
 		// was here, Variable declaration isn't an 'Expression'
-		if(asm.useLocals()) {									
+		if(asm.usesLocals()) {									
 			asm.storelocal(index);	
 		}
 		else {

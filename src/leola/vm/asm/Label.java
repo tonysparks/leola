@@ -16,9 +16,9 @@ import java.util.Stack;
 public class Label {
 	private int index;
 	private Stack<Long> deltas;
-	private Asm asm;
+	private AsmEmitter asm;
 	
-	public Label(Asm asm) {
+	public Label(AsmEmitter asm) {
 		this.asm = asm;
 		this.index = -1;
 		this.deltas = new Stack<Long>();
@@ -28,7 +28,7 @@ public class Label {
 	 * Sets the location of the label
 	 */
 	public void set() {
-		this.index = asm.getInstructionSize(); 
+		this.index = asm.getInstructionCount(); 
 	}
 	
 	/**
@@ -53,7 +53,7 @@ public class Label {
 	 * @param opcode
 	 */
 	public void mark(int opcode) {
-		int instrIndex = this.asm.getInstructionSize() - 1;
+		int instrIndex = this.asm.getInstructionCount() - 1;
 		int instr = opcode;
 		
 		long delta = instrIndex;

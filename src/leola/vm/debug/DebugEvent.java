@@ -11,7 +11,7 @@ import leola.vm.asm.Scope;
 import leola.vm.types.LeoObject;
 
 /**
- * @author chq-tonys
+ * @author Tony
  *
  */
 public class DebugEvent {

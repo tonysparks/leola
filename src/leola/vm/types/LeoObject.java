@@ -200,7 +200,8 @@ public abstract class LeoObject {
 	 * @param leoTypes
 	 * @return
 	 */
-	public boolean isOfType(Class<? extends LeoObject> ... leoTypes) {
+	@SuppressWarnings("unchecked")
+    public boolean isOfType(Class<? extends LeoObject> ... leoTypes) {
 		for(Class<?> c: leoTypes) {
 			if ( this.getClass().equals(c)) {
 				return true;
@@ -624,7 +625,7 @@ public abstract class LeoObject {
 	public Object getValue(Class<?> narrowType) {
 		return this;
 	}
-
+	
 	/**
 	 * @return a deep copy clone of this object
 	 */

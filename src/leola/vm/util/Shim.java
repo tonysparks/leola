@@ -20,7 +20,7 @@ import leola.vm.types.LeoString;
  * 
  * Useful for serializing config files
  * 
- * @author chq-tonys
+ * @author Tony
  *
  */
 public class Shim {
