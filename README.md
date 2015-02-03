@@ -24,6 +24,7 @@ Leola currently supports these features:
 * closures
 * higher order functions
 * tailcail optimization
+* named parameters
 
 Sample Code
 ====
@@ -69,6 +70,19 @@ var bestTeamEver = nfl:getTheBestTeamEver()
 
 println("The " + worseTeamEver.getFullName() + " are the worst.")
 println("The " + bestTeamEver.getFullName() + " are the best.")
+
+/* named parameters are also supported */
+var bestQB = def(from, to) {
+  if from > 0 && to < 1991 {
+    return "Bart Star"
+  }
+  
+  /* who cares about the year, it will always be Brett */
+  return "Brett Favre"
+}
+
+// use named parameters by nameOfParameter->Value
+println("The best QB of all time: " + bestQB(from->1970, to->2015))
 
 ````
 
