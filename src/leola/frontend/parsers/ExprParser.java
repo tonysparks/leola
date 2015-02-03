@@ -102,12 +102,21 @@ public class ExprParser extends StmtParser {
     private static final EnumSet<LeolaTokenType> CHAINED_OP =
         EnumSet.of(DOT, LEFT_PAREN, LEFT_BRACKET/*, IDENTIFIER*/);
 
+    private boolean isMapDeclaration;
 
-	/**
+    /**
 	 * @param parser
 	 */
 	public ExprParser(LeolaParser parser) {
+		this(parser, false);
+	}
+    
+	/**
+	 * @param parser
+	 */
+	public ExprParser(LeolaParser parser, boolean isMapDeclaration) {
 		super(parser);
+		this.isMapDeclaration = isMapDeclaration;
 	}
 
 	/**
@@ -575,8 +584,17 @@ public class ExprParser extends StmtParser {
     		break;
     	}
     	case ARROW: {
-    	    NamedParameterExprParser parser = new NamedParameterExprParser(this);
-    	    result = parser.parse(token);
+    		
+    		/* if this is a map declaration, then this 
+    		 * is just a variable, otherwise it is a Named Parameter
+    		 */
+    		if(this.isMapDeclaration) {
+    			result = new VarExpr(token.getText());    				
+    		}
+    		else {
+	    	    NamedParameterExprParser parser = new NamedParameterExprParser(this);
+	    	    result = parser.parse(token);
+    		}
     	    break;
     	}
     	case PLUS_EQ:

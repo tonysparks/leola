@@ -82,7 +82,7 @@ public class ParserUtils {
                                                      , EnumSet<LeolaTokenType> commaDelimeter
                                                      , LeolaTokenType endToken) throws Exception
     {
-        ExprParser expressionParser = new ExprParser(parser);
+        ExprParser expressionParser = new ExprParser(parser, true);
 
         Token token = parser.nextToken();  // consume opening token
 
