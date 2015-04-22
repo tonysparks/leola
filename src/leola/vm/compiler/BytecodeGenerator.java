@@ -48,9 +48,8 @@ import leola.ast.NamespaceStmt;
 import leola.ast.NewExpr;
 import leola.ast.NullExpr;
 import leola.ast.OnExpr;
-import leola.ast.OnStmt;
-import leola.ast.TryStmt;
 import leola.ast.OnExpr.OnClause;
+import leola.ast.OnStmt;
 import leola.ast.OwnableExpr;
 import leola.ast.ProgramStmt;
 import leola.ast.RealExpr;
@@ -59,6 +58,7 @@ import leola.ast.Stmt;
 import leola.ast.StringExpr;
 import leola.ast.SwitchStmt;
 import leola.ast.ThrowStmt;
+import leola.ast.TryStmt;
 import leola.ast.UnaryExpr;
 import leola.ast.UnaryExpr.UnaryOp;
 import leola.ast.VarDeclStmt;
@@ -93,8 +93,11 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	private Stack<String> breakLabelStack;
 	private Stack<String> continueLabelStack;
 	private Stack<Tailcall> tailCallStack;
-	
-	class Tailcall {
+
+	/**
+	 * Marks a tail call recursive method.
+	 */
+	static class Tailcall {
 		String name;		
 		FuncInvocationExpr tailcallExpr;
 		
@@ -104,11 +107,12 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		}
 	}
 	
-	//private Leola runtime;
 	
+	/**
+	 * @param runtime
+	 * @param symbols
+	 */
 	public BytecodeGenerator(Leola runtime, Symbols symbols) {
-		//this.runtime = runtime;
-		
 		this.asm = new AsmEmitter(symbols);
 		this.asm.setDebug(runtime.getArgs().isDebugMode());
 			
@@ -139,16 +143,16 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 			asm.get();
 						
 			indexExpr.visit(this);
-			asm.get();
+			asm.idx();
 			
 		}
 		else {					
 			String reference = s.getVariableName();
 			loadglobalmember(reference);
-			// IF arrays fail, check SVN history...			
+
 			Expr indexExpr = s.getElementIndex();
 			indexExpr.visit(this);
-			asm.get();
+			asm.idx();
 		}
 
 	}
@@ -167,12 +171,11 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		else {						
 			String reference = s.getVariableName();
 			loadglobalmember(reference);
-			//loadmember(s, reference, true, true);						
 		}
 		
 		Expr indexExpr = s.getElementIndex();
 		indexExpr.visit(this);		
-		asm.set();
+		asm.sidx();
 	}
 
 	/* (non-Javadoc)
@@ -421,7 +424,8 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 					Expr indexExpr = setExpr.getElementIndex();
 					indexExpr.visit(this);
 					
-					asm.get();
+//					asm.get();
+					asm.idx();
 				}
 								
 				Expr expr = s.getExpr();
@@ -467,7 +471,8 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 					Expr indexExpr = setExpr.getElementIndex();
 					indexExpr.visit(this);
 					
-					asm.get();
+//					asm.get();
+					asm.idx();
 				}
 											
 				Expr expr = s.getExpr();
@@ -533,7 +538,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		asm.line(s.getLineNumber());
 		
 		s.getElementIndex().visit(this);
-		asm.get();
+		asm.idx();
 	}
 
 	/* (non-Javadoc)
@@ -544,7 +549,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		asm.line(s.getLineNumber());
 		
 		s.getElementIndex().visit(this);
-		asm.set();
+		asm.sidx();
 	}
 
 	/* (non-Javadoc)
@@ -587,11 +592,13 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 				e.getElementIndex().visit(this);				
 				asm.dup();
 				asm.shift(4);
-				asm.get();
+//				asm.get();
+				asm.idx();
 				
 				visitBinaryExpression(s.getBinaryOp());
 				asm.shift(3);					
-				asm.set();
+//				asm.set();
+				asm.sidx();
 			}
 		}
 		else {
@@ -1086,11 +1093,6 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	@Override
 	public void visit(NewExpr s) throws EvalException {
 		asm.line(s.getLineNumber());
-		// TODO
-//		Expr[] exprs = s.getParameters();
-//		for(Expr expr : s.getParameters()) {
-//			expr.visit(this);						
-//		}
 		
 		int nargs = 0;
 		Expr[] params = s.getParameters();

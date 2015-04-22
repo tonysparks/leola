@@ -12,9 +12,11 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import leola.vm.asm.Symbols;
@@ -29,7 +31,7 @@ import leola.vm.util.LeoTypeConverter;
  *
  */
 public class LeoArray extends LeoObject implements List<LeoObject> {
-
+    
 	private LeoObject[] array;
 	private int size;
 	
@@ -82,6 +84,19 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 		this.size = size;
 	}
 
+	/**
+	 * Adds ability to reference the public API of this class
+	 */
+    private Map<LeoObject, LeoObject> arrayApi;	
+	private LeoObject getNativeMethod(LeoObject key) {
+	    if(this.arrayApi == null) {
+	        this.arrayApi = new HashMap<LeoObject, LeoObject>();
+	    }
+	    return getNativeMethod(this, this.arrayApi, key);
+	}
+	
+
+	
 	/**
 	 * Converts the raw array to a {@link LeoArray}
 	 * 
@@ -229,13 +244,55 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	public boolean empty() {
 		return this.size == 0;
 	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#$index(double)
+	 */
+	@Override
+	public LeoObject $index(double other) {
+	    return get( (int) other);
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#$index(int)
+	 */
+	@Override
+	public LeoObject $index(int other) {
+	    return get(other);
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#$index(long)
+	 */
+	@Override
+	public LeoObject $index(long other) {	 
+	    return get( (int)other );
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#$index(leola.vm.types.LeoObject)
+	 */
+	@Override
+	public LeoObject $index(LeoObject other) {
+	    return get(other.asInt());
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#$index(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
+	 */
+	@Override
+	public void $sindex(LeoObject key, LeoObject other) {
+	    set(key, other);
+	}
 
 	/* (non-Javadoc)
 	 * @see leola.vm.types.LeoObject#setObject(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
 	 */
 	@Override
 	public void setObject(LeoObject key, LeoObject value) {	
-		set(key, value);
+//		set(key, value);
+	    getNativeMethod(key);
+	    this.arrayApi.put(key, value);	    
 	}
 	
 	/* (non-Javadoc)
@@ -243,7 +300,8 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 */
 	@Override
 	public LeoObject getObject(LeoObject key) {
-		return get(key.asInt());
+//		return get(key.asInt());
+	    return getNativeMethod(key);
 	}
 	
 	/**

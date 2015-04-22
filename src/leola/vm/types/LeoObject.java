@@ -8,12 +8,16 @@ package leola.vm.types;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
 
 import leola.vm.VM;
 import leola.vm.asm.Outer;
 import leola.vm.asm.Scope;
 import leola.vm.asm.Symbols;
 import leola.vm.exceptions.LeolaRuntimeException;
+import leola.vm.util.ClassUtil;
 
 
 /**
@@ -46,7 +50,9 @@ public abstract class LeoObject {
 	public static final LeoString BSL = LeoString.valueOf("$bsl");
 	public static final LeoString BSR = LeoString.valueOf("$bsr");
 	public static final LeoString XOR = LeoString.valueOf("$xor");
-	
+	public static final LeoString INDEX = LeoString.valueOf("$index");
+	public static final LeoString SINDEX = LeoString.valueOf("$sindex");
+		
 	public static final LeoString toString = LeoString.valueOf("toString");
 	
 	
@@ -200,7 +206,7 @@ public abstract class LeoObject {
 	 * @param leoTypes
 	 * @return
 	 */
-    public boolean isOfType(Class<? extends LeoObject> ... leoTypes) {
+    public boolean isOfType(Class<?> ... leoTypes) {
 		for(Class<?> c: leoTypes) {
 			if ( this.getClass().equals(c)) {
 				return true;
@@ -459,18 +465,23 @@ public abstract class LeoObject {
 //	public LeoObject not() { return null; }
 	public LeoObject $bnot() { return null; }
 	
+	public LeoObject $index(LeoObject other) { return null; }
+	public void      $sindex(LeoObject key, LeoObject other) {}
 	public LeoObject $bsl(LeoObject other) { return null; }
 	public LeoObject $bsr(LeoObject other) { return null; }
 	public LeoObject $xor(LeoObject other) { return null; }
 	public LeoObject $bor(LeoObject other) { return null; }
 	public LeoObject $band(LeoObject other) { return null; }
 	
+	
+	public LeoObject $index(int other) { return null; }
 	public LeoObject $bsl(int other) { return null; }
 	public LeoObject $bsr(int other) { return null; }
 	public LeoObject $xor(int other) { return null; }
 	public LeoObject $bor(int other) { return null; }
 	public LeoObject $band(int other) { return null; }
 	
+	public LeoObject $index(double other) { return null; }
 	public LeoObject $bsl(double other) { return null; }
 	public LeoObject $bsr(double other) { return null; }
 	public LeoObject $xor(double other) { return null; }
@@ -478,6 +489,7 @@ public abstract class LeoObject {
 	public LeoObject $band(double other) { return null; }
 
 	
+	public LeoObject $index(long other) { return null; }
 	public LeoObject $bsl(long other) { return null; }
 	public LeoObject $bsr(long other) { return null; }
 	public LeoObject $xor(long other) { return null; }
@@ -710,5 +722,41 @@ public abstract class LeoObject {
 		
 		return result;
 	}
+	
+	
+	   protected static LeoObject getNativeMethod(Object owner, Map<LeoObject, LeoObject> nativeApi, LeoObject key) {	        	        
+	        LeoObject func = nativeApi.get(key);
+	        if(func == null) {
+	            List<Method> methods = ClassUtil.getMethodsByName(LeoArray.class, key.toString());
+	            removeInterfaceMethods(methods);
+	            
+	            if(methods.isEmpty()) {
+	                throw new LeolaRuntimeException("No method exists by the name: " + key);
+	            }
+	            
+	            func = new LeoNativeFunction(methods, owner);
+	            nativeApi.put(key, func);
+	        }
+	        
+	        return func;
+	    }
+	    
+	    protected static void removeInterfaceMethods(List<Method> methods) {
+	        for(int i = 0; i < methods.size(); i++) {
+	            Method method = methods.get(i);
+	            for(int j = 0; j < method.getParameterTypes().length; j++) {
+	                Class<?> pType = method.getParameterTypes()[j];
+	                if(pType.isPrimitive()) {
+	                    continue;
+	                }
+	                
+	                if(pType.equals(Object.class)) {
+	                    methods.remove(i);
+	                    i -= 1;
+	                }
+	            }
+	            
+	        }
+	    }
 }
 

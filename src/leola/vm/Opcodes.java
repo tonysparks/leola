@@ -465,6 +465,14 @@ public class Opcodes {
 				op = "LTE";
 				break;
 			}
+			case IDX:    {
+                op = "IDX";
+                break;
+            }
+            case SIDX:    {
+                op = "SIDX";
+                break;
+            }
 			
 			case LINE: {
 				op = "LINE";
@@ -515,7 +523,7 @@ public class Opcodes {
 				
 		/* jump instructions */
 		JMP = 20,		              /* ARGsx */
-		IFEQ = 21,                      /* ARGsx */
+		IFEQ = 21,                    /* ARGsx */
 		
 		IS_A = 22,                    /*      */
 		
@@ -550,8 +558,8 @@ public class Opcodes {
 		GET_NAMESPACE = 40,           /* ARGx */
 		
         /* Exception handling */
-        INIT_FINALLY = 41,            /* ARGx */
-        INIT_ON = 42,                 /* ARGx */
+        INIT_FINALLY = 41,            /* ARGsx*/
+        INIT_ON = 42,                 /* ARGsx*/
         END_ON = 43,                  /*      */
         END_FINALLY = 44,             /*      */
         END_BLOCK = 45,               /*      */
@@ -584,8 +592,11 @@ public class Opcodes {
 		LT = 67,                      /*      */
 		LTE = 68,                     /*      */
 				
+		IDX = 69,                     /*      */
+		SIDX = 70,                    /*      */
+		
 		/* debug */
-		LINE = 69                     /* ARGx */
+		LINE = 71                     /* ARGx */
 		;
 	
 	
@@ -684,7 +695,10 @@ public class Opcodes {
 		opcodes.put("GTE", GTE);
 		opcodes.put("LT", LT);
 		opcodes.put("LTE", LTE);
-				
+		
+		opcodes.put("IDX", IDX);
+		opcodes.put("SIDX", SIDX);
+		
 		opcodes.put("LINE", LINE);	
 	}
 

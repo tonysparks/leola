@@ -184,12 +184,19 @@ public class LeoClass extends LeoScopedObject {
 		return result;
 	}
 	
-	private LeoObject override(LeoString name, LeoObject other) {
+	private LeoObject override(LeoString name, LeoObject arg1) {
 		LeoObject function = getProperty(name);
-		LeoObject result = this.runtime.execute(function, other);
+		LeoObject result = this.runtime.execute(function, arg1);
 		
 		return result;
 	}
+	
+	private LeoObject override(LeoString name, LeoObject arg1, LeoObject arg2) {
+        LeoObject function = getProperty(name);
+        LeoObject result = this.runtime.execute(function, arg1, arg2);
+        
+        return result;
+    }
 	
 	/* (non-Javadoc)
 	 * @see leola.vm.types.LeoObject#toString()
@@ -495,6 +502,30 @@ public class LeoClass extends LeoScopedObject {
 		return super.$xor(other);
 	}
 	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#$index(leola.vm.types.LeoObject)
+	 */
+	@Override
+	public LeoObject $index(LeoObject key) {
+	    if ( hasProperty(INDEX) ) {
+            LeoObject result = override(INDEX, key);
+            return result;
+        }
+
+	    return getObject(key);
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#$index(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
+	 */
+	@Override
+	public void $sindex(LeoObject key, LeoObject value) {
+        if ( hasProperty(SINDEX) ) {
+            override(SINDEX, key, value);
+            return;
+        }
+        setObject(key, value);
+	}
 		
 	/* (non-Javadoc)
 	 * @see leola.vm.types.LeoObject#getValue()

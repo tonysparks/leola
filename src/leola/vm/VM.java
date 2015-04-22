@@ -28,6 +28,7 @@ import static leola.vm.Opcodes.GET_GLOBAL;
 import static leola.vm.Opcodes.GET_NAMESPACE;
 import static leola.vm.Opcodes.GT;
 import static leola.vm.Opcodes.GTE;
+import static leola.vm.Opcodes.IDX;
 import static leola.vm.Opcodes.IFEQ;
 import static leola.vm.Opcodes.INIT_FINALLY;
 import static leola.vm.Opcodes.INIT_ON;
@@ -65,6 +66,7 @@ import static leola.vm.Opcodes.REQ;
 import static leola.vm.Opcodes.RET;
 import static leola.vm.Opcodes.SET;
 import static leola.vm.Opcodes.SET_GLOBAL;
+import static leola.vm.Opcodes.SIDX;
 import static leola.vm.Opcodes.SHIFT;
 import static leola.vm.Opcodes.STORE_LOCAL;
 import static leola.vm.Opcodes.STORE_OUTER;
@@ -953,6 +955,25 @@ public class VM {
 							continue;
 						}
 	
+						case IDX: {
+                            LeoObject index = stack[--top];
+                            LeoObject obj = stack[--top];
+    
+                            LeoObject value = obj.$index(index);
+                            stack[top++] = value;						    
+						    continue;
+						}
+						case SIDX: {
+	                      
+                            LeoObject index = stack[--top];
+                            LeoObject obj = stack[--top];
+                            LeoObject value = stack[--top];
+    
+                            obj.$sindex(index, value);
+                            stack[top++] = obj; /* make this an expression */
+                            continue;
+                        }
+						
 						/* object access */
 						case GET: {
 							LeoObject index = stack[--top];
@@ -994,11 +1015,11 @@ public class VM {
 							continue;
 						}
 						case INIT_FINALLY: {
-							blockStack.add(ARGx(i));
+							blockStack.add(ARGsx(i));
 							continue;
 						}
 						case INIT_ON: {
-							blockStack.add(ARGx(i));
+							blockStack.add(ARGsx(i));
 							continue;
 						}
 						case END_ON: {

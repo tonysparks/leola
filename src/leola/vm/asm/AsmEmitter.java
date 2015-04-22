@@ -24,6 +24,7 @@ import static leola.vm.Opcodes.GET_GLOBAL;
 import static leola.vm.Opcodes.GET_NAMESPACE;
 import static leola.vm.Opcodes.GT;
 import static leola.vm.Opcodes.GTE;
+import static leola.vm.Opcodes.IDX;
 import static leola.vm.Opcodes.IFEQ;
 import static leola.vm.Opcodes.INIT_FINALLY;
 import static leola.vm.Opcodes.INIT_ON;
@@ -61,6 +62,7 @@ import static leola.vm.Opcodes.POP;
 import static leola.vm.Opcodes.REQ;
 import static leola.vm.Opcodes.RET;
 import static leola.vm.Opcodes.SET;
+import static leola.vm.Opcodes.SIDX;
 import static leola.vm.Opcodes.SET_ARG1;
 import static leola.vm.Opcodes.SET_ARG2;
 import static leola.vm.Opcodes.SET_ARGx;
@@ -824,7 +826,9 @@ public class AsmEmitter {
 	}
 	
 	public void jmp(int offset) {
-		instrsx(JMP, offset);
+	    if(offset != 0) {
+	        instrsx(JMP, offset);
+	    }
 	}
 	
 	public void brk(String label) {
@@ -848,7 +852,15 @@ public class AsmEmitter {
 		instrx(NEW_MAP, initialSize);
 		incrementMaxstackSize(initialSize);
 	}
-		
+	
+	public void idx() {
+	    instr(IDX);
+        decrementMaxstackSize();
+	}
+	public void sidx() {
+        instr(SIDX);
+        decrementMaxstackSize();
+    }
 	
 	public void get() {
 		instr(GET);
@@ -985,28 +997,46 @@ public class AsmEmitter {
 	    peek().hasBlocks = true;
 		peek().blockSize.add(getInstructionCount());
 		// this will be populated with the correct offset
-		instrx(INIT_FINALLY, 0); 
+		instrsx(INIT_FINALLY, 0); 
 		
 	}
+	public void initfinally(int offset) {
+	    peek().hasBlocks = true;
+	    instrsx(INIT_FINALLY, offset);
+	}
+	public void initfinally(String label) {
+        peek().hasBlocks = true;        
+        markLabel(INIT_FINALLY, label);
+    }
+	
 	public void initon() {
 	    peek().hasBlocks = true;
 	    peek().blockSize.add(getInstructionCount());
 		// this will be populated with the correct offset
-		instrx(INIT_ON, 0); 		
+		instrsx(INIT_ON, 0); 		
 	}
+	
+	public void initon(int offset) {
+	    peek().hasBlocks = true;
+        instrsx(INIT_ON, offset); 
+	}
+	public void initon(String label) {
+        peek().hasBlocks = true;        
+        markLabel(INIT_ON, label);
+    }
 	
 	public void endfinally() {				
 		instr(END_FINALLY);
 	}
 	public void markendfinally() {
 		int startPC = peek().blockSize.pop();
-		getInstructions().set(startPC, SET_ARGx(INIT_FINALLY, getInstructionCount()));
+		getInstructions().set(startPC, SET_ARGsx(INIT_FINALLY, getInstructionCount()));
 		instr(END_BLOCK);
 	}
 	
 	public void markendon() {
 		int startPC = peek().blockSize.pop();
-		getInstructions().set(startPC, SET_ARGx(INIT_ON, getInstructionCount()));
+		getInstructions().set(startPC, SET_ARGsx(INIT_ON, getInstructionCount()));
 		instr(END_BLOCK);
 	}
 	
@@ -1161,7 +1191,10 @@ public class AsmEmitter {
 			
 			if(bytecode.numArgs > 0) {
 	            for(int i = 0; i < bytecode.numArgs; i++) {
-	                bytecode.paramNames[i] = LeoString.valueOf(locals.getReference(i));
+	                String ref = locals.getReference(i);
+	                if(ref != null) {
+	                    bytecode.paramNames[i] = LeoString.valueOf(ref);
+	                }
 	            }
 	        }
 		}

@@ -190,6 +190,14 @@ public class Bytecode {
 		return clone;
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+	    return dump();
+	}
+	
 	/**
 	 * Dump the contents of the bytecode
 	 * 
@@ -253,35 +261,70 @@ public class Bytecode {
 					}
 					break;
 				}
-				case Opcodes.FUNC_DEF: {
-					//String arg1 = Integer.toString(Opcodes.ARGx(code));
-					//String arg2 = Integer.toString(Opcodes.ARG2(code));										
+				case Opcodes.GEN_DEF:
+				case Opcodes.FUNC_DEF: {								
 					int inner = Opcodes.ARGx(code);
 					Bytecode bc = bytecode.inner[inner];
 					sb.append(String.format("%-18s %-6s \t; %-6s ", opcode, bc.numArgs, i));
 					
 					visited.add(inner);
 					
-					sb.append("\n");
-					//for(int t = 0; t < numTabs+1; t++) sb.append("\t");		
-					//sb.append(".scope ").append(i).append("\n");
-					
+					sb.append("\n");					
 					bc.dump(sb, numTabs + 1, bc.pc, bc.len);
+					//for(int t = 0; t < numTabs; t++) sb.append("\t");
+					
+					while(i < len) {
+					    int pCode = Opcodes.OPCODE(instr[i+1]);
+					    if(Opcodes.xLOAD_LOCAL == pCode || 
+					       Opcodes.xLOAD_OUTER == pCode ) {
+					        
+					        for(int t = 0; t < numTabs + 1; t++) sb.append("\t");
+					        String argx = Integer.toString(Opcodes.ARGx(instr[i+1]));                                                        
+		                    sb.append(String.format("%-18s %-6s \t\t; %-6s \n", Opcodes.op2str(pCode), argx, i));
+					        
+					        i++;
+					    }
+					    else break;
+					}
+					
 					for(int t = 0; t < numTabs; t++) sb.append("\t");
 					sb.append(".end\n");					               
 					               
 					break;
 				}
 				case Opcodes.CLASS_DEF: {
-					
+				    
+				    int numberOfInterfaces = Opcodes.ARGx(code);
+                    int inner = bytecode.constants[Opcodes.ARGx(instr[i-1])].asInt();
+                    sb.append(String.format("%-18s %-6s \t; %-6s ", opcode, numberOfInterfaces, i));                                                           
+                    visited.add(inner);
+                    
+                    Bytecode bc = bytecode.inner[inner];
+                    sb.append("\n");                    
+                    bc.dump(sb, numTabs + 1, bc.pc, bc.len);
+                    for(int t = 0; t < numTabs; t++) sb.append("\t");
+                    sb.append(".end\n");
+					break;
+				}
+				case Opcodes.IFEQ:
+				case Opcodes.JMP: {
+				    String argsx = Integer.toString(Opcodes.ARGsx(code));                                                     
+                    sb.append(String.format("%-18s %-6s \t\t; %-6s ", opcode, argsx, i));
+				    break;
+				}
+				case Opcodes.END_BLOCK:
+				case Opcodes.END_FINALLY:
+				case Opcodes.END_ON: {				                                                 
+                    sb.append(String.format("%-18s %-6s \t\t; %-6s ", opcode, "", i));
+				    break;
 				}
 				case Opcodes.TAIL_CALL: {
-					String arg1 = Integer.toString(Opcodes.ARG1(code));														
-					sb.append(String.format("%-18s %-6s \t\t; %-6s ", opcode, arg1, i));
+					String argx = Integer.toString(Opcodes.ARGx(code));														
+					sb.append(String.format("%-18s %-6s \t\t; %-6s ", opcode, argx, i));
 					break;
 				}
 				default: {
-					String argx = Integer.toString(Opcodes.ARGx(code));														
+					String argx = Integer.toString(Opcodes.ARGx(code)); 														
 					sb.append(String.format("%-18s %-6s \t\t; %-6s ", opcode, argx, i));							
 				}
 			}
@@ -361,9 +404,14 @@ public class Bytecode {
 		out.writeInt(this.numLocals);
 		
 		for(int i = 0; i < this.numArgs; i++) {
-		    byte[] b = this.paramNames[i].getString().getBytes();
-            out.write(b.length);
-		    out.write(b);
+		    if(this.paramNames[i] == null) {
+		        out.write(0);
+		    }
+		    else {
+    		    byte[] b = this.paramNames[i].getString().getBytes();
+                out.write(b.length);
+    		    out.write(b);
+		    }
 		}
 		
 		/* write out the var names if this is a class */		

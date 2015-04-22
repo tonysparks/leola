@@ -10,6 +10,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,17 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 		this(map.size());
 		putAll(map);
 	}
+	
+	/**
+     * Adds ability to reference the public API of this class
+     */
+    private Map<LeoObject, LeoObject> mapApi;  
+    private LeoObject getNativeMethod(LeoObject key) {
+        if(this.mapApi == null) { 
+            this.mapApi = new HashMap<LeoObject, LeoObject>();
+        }
+        return getNativeMethod(this, this.mapApi, key);
+    }
 	
 	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#isMap()
@@ -126,12 +138,54 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 		return sb.toString();
 	}
 
+	   /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(double)
+     */
+    @Override
+    public LeoObject $index(double other) {
+        return get(other);
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(int)
+     */
+    @Override
+    public LeoObject $index(int other) {
+        return get(other);
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(long)
+     */
+    @Override
+    public LeoObject $index(long other) {    
+        return get(other);
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(leola.vm.types.LeoObject)
+     */
+    @Override
+    public LeoObject $index(LeoObject other) {
+        return get(other);
+    }
+	
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$sindex(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
+     */
+    @Override
+    public void $sindex(LeoObject key, LeoObject value) {
+        put(key,value);     
+    }
+    
 	/* (non-Javadoc)
 	 * @see leola.vm.types.LeoObject#setObject(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
 	 */
 	@Override
 	public void setObject(LeoObject key, LeoObject value) {
-		put(key, value);
+//		put(key, value);
+	    getNativeMethod(key);
+	    this.mapApi.put(key, value);
 	}
 	
 	/* (non-Javadoc)
@@ -139,7 +193,8 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	 */
 	@Override
 	public LeoObject getObject(LeoObject key) {
-		return get(key);
+//		return get(key);
+	    return getNativeMethod(key);
 	}
 	
 	/**

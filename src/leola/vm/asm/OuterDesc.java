@@ -23,6 +23,10 @@ public class OuterDesc {
 		this.up = up;
 	}
 	
+	public void setIndex(int index) {
+	    this.index = index;
+	}
+	
 	/**
 	 * @return the index
 	 */

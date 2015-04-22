@@ -128,6 +128,9 @@ public class Leola {
 					if(result.isError()) {
 						System.err.println(result);
 					}
+					else {
+					    System.out.println(result);
+					}
 				}
 				catch(LeolaRuntimeException e) {
 					System.err.println(e.getLeoError());

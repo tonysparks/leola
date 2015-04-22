@@ -9,8 +9,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -206,5 +211,153 @@ public class IOLeolaLibrary implements LeolaLibrary {
 		RandomAccessFile raf = new RandomAccessFile(new File(filename), mode);
 		return new LeolaFile(raf, this.runtime);		
 	}	
+	
+	/**
+	 * Creates a new {@link FileInputStream}
+	 * 
+	 * @param filename
+	 * @return the {@link FileInputStream}
+	 * @throws Exception
+	 */
+	public InputStream newFileInputStream(String filename) throws Exception {
+	    return new FileInputStream(filename);
+	}
+	
+	
+	/**
+	 * Creates a new {@link FileOutputStream}
+	 * 
+	 * @param filename
+	 * @param append if open and start appending to the file.  Defaults to false.
+	 * @return the {@link FileOutputStream}
+	 * @throws Exception
+	 */
+	public OutputStream newFileOutputStream(String filename, Boolean append) throws Exception {
+	    return new FileOutputStream(filename, append!=null ? append : false);
+	}
+	
+	/**
+	 * Converts the string into a {@link File}
+	 * 
+	 * @param filename
+	 * @return the {@link File}
+	 */
+	public File file(String filename) {
+	    return new File(filename);
+	}
+	
+	/**
+     * The default buffer size
+     */
+    public static final int DEFAULT_BUFFER_SIZE = 2048 * 2;
+    
+    /**
+     * Reads in a file and pipes to the supplied {@link OutputStream}.
+     * 
+     * @param file
+     * @param oStream
+     * @return
+     * @throws IOException
+     */
+    public static long readFile(File file, OutputStream oStream) throws IOException {
+        FileInputStream iStream = new FileInputStream(file);        
+        FileChannel fileChannel = iStream.getChannel();
+        
+        long bytesRead = 0;    
+        try {
+            WritableByteChannel target = Channels.newChannel(oStream);
+            while(bytesRead < fileChannel.size()) {
+                bytesRead += fileChannel.transferTo(0, fileChannel.size(), target);
+            }
+        }
+        finally {
+            iStream.close();
+        }
+        
+        
+        return bytesRead;
+    }
+    
+    
+    /**
+     * Writes out a file to disk from the supplied {@link InputStream}.
+     * 
+     * @param file
+     * @param iStream
+     * @return
+     * @throws IOException
+     */
+    public static long writeFile(File file, InputStream iStream) throws IOException {
+        FileOutputStream oStream = new FileOutputStream(file);
+        FileChannel fileChannel = oStream.getChannel();
+        FileLock lock = fileChannel.lock();
+        
+        long bytesRead = 0;
+        long totalBytesRead = 0;
+        try {   
+            try {
+                do {
+                    bytesRead = fileChannel.transferFrom(Channels.newChannel(iStream), totalBytesRead, DEFAULT_BUFFER_SIZE);
+                    totalBytesRead += bytesRead;
+                }
+                while( bytesRead > 0);
+            }
+            finally {
+                if ( lock != null ) {
+                    lock.release();      
+                }
+            }
+                
+        }
+        finally {
+            oStream.close();
+        }
+        
+        return totalBytesRead;
+    }
+        
+    /**
+     * Copy the input into the output.
+     * 
+     * @param iStream
+     * @param oStream
+     * @param bufferSize - size of the buffer
+     * @return number of bytes copied.
+     * 
+     * @throws RepositoryException
+     */
+    public static long streamCopy(InputStream iStream, OutputStream oStream, final int bufferSize) throws IOException {
+        
+        byte[] buffer = new byte[bufferSize];
+        long size = streamCopy(iStream, oStream, buffer);       
+        
+        return size;
+    }
+
+    /**
+     * Copy the input into the output.
+     * 
+     * @param iStream
+     * @param oStream
+     * @param buffer - buffer to be used
+     * @return number of bytes copied.
+     * 
+     * @throws RepositoryException
+     */
+    public static long streamCopy(InputStream iStream, OutputStream oStream, byte[] buffer) throws IOException {        
+        long size = 0;
+        int length = 0;
+               
+        while( (length = iStream.read(buffer)) >= 0 ) {
+            oStream.write(buffer, 0, length);
+            size += length;
+        }
+        
+        oStream.flush();
+        
+        
+        return size;
+    }
+
 }
 

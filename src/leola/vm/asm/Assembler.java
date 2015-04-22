@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 import leola.vm.Leola;
 import leola.vm.asm.Scope.ScopeType;
@@ -255,7 +256,13 @@ public class Assembler {
 	
 	private final Map<String, Opcode> opcodes = new HashMap<String, Assembler.Opcode>();	
 	private void init() {
-		
+		class Indexes {
+		    int index;
+		    int count;
+		}
+		final Stack<Indexes> indexStack = new Stack<Indexes>();
+		indexStack.add(new Indexes());
+	    
 		/* Pseudo opcodes */
 		opcodes.put(".CONST", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
@@ -293,8 +300,9 @@ public class Assembler {
 		});
 		
 		opcodes.put(".END", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(AsmEmitter asm, String...  args) {				
 				asm.end();
+				indexStack.pop();
 			}
 		});
 		
@@ -317,7 +325,22 @@ public class Assembler {
 		});
 		opcodes.put("LOAD_OUTER", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
-				asm.loadouter(Integer.parseInt(args[0]));
+			    Outers outers = asm.getOuters();
+			    int outerIndex = Integer.parseInt(args[0]);
+			    
+			    /* if this is a new outer, we must create it and
+			     * the index should match
+			     */
+			    if(outers.getNumberOfOuters() == 0) {
+			        outers.allocate(12);
+			    }
+			    
+			    if(outers.getNumberOfOuters() < outerIndex || outers.get(outerIndex) == null) {
+			        Indexes indexes = indexStack.peek();
+			        outers.store(new OuterDesc(indexes.count++, indexStack.size()-1));
+			    }
+			    
+				asm.loadouter(outerIndex);
 			}
 		});
 		opcodes.put("LOAD_NAME", new Opcode() {            
@@ -330,19 +353,26 @@ public class Assembler {
                 asm.paramend();
             }
         });
-		opcodes.put("xLOAD_OUTER", new Opcode() {			
+		opcodes.put("XLOAD_OUTER", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
-				//asm.def(numberOfParameters)
+			    // Pseudo-Opcode
+			    int outerIndex = Integer.parseInt(args[0]);
+                Outers outers = asm.getOuters();
+                
+                Indexes indexes = indexStack.peek();
+                outers.get(indexes.index++).setIndex(outerIndex);                
 			}
 		});
-		opcodes.put("xLOAD_LOCAL", new Opcode() {			
+		opcodes.put("XLOAD_LOCAL", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
+			    // Pseudo-Opcode
+			    int outerIndex = Integer.parseInt(args[0]);
+			    Outers outers = asm.getOuters();
+			     			    
+			    Indexes indexes = indexStack.peek();
+                outers.get(indexes.index++).setIndex(outerIndex);                			    
 			}
-		});
-		opcodes.put("xLOAD_SCOPE", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
-			}
-		});		
+		});	
 		opcodes.put("LOAD_NULL", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
 				asm.loadnull();
@@ -365,7 +395,22 @@ public class Assembler {
 		});
 		opcodes.put("STORE_OUTER", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
-				asm.storeouter(Integer.parseInt(args[0]));
+			    Outers outers = asm.getOuters();
+                int outerIndex = Integer.parseInt(args[0]);
+                
+                /* if this is a new outer, we must create it and
+                 * the index should match
+                 */
+                if(outers.getNumberOfOuters() == 0) {
+                    outers.allocate(12);
+                }
+                 
+                if(outers.getNumberOfOuters() < outerIndex || outers.get(outerIndex) == null) {
+                    Indexes indexes = indexStack.peek();
+                    outers.store(new OuterDesc(indexes.count++, indexStack.size()-1));
+                }
+			    
+				asm.storeouter(outerIndex);
 			}
 		});
 		
@@ -436,15 +481,10 @@ public class Assembler {
 				asm.tailcall(Integer.parseInt(args[0]));
 			}
 		});
-		
-		opcodes.put("NAMESPACE_DEF", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
-				asm.namespacedef();
-			}
-		});
+				
 		opcodes.put("NEW_OBJ", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
-				asm.newobj(Integer.parseInt(args[0]));
+				asm.newobj(Integer.parseInt(args[0]));				
 			}
 		});
 		opcodes.put("NEW_ARRAY", new Opcode() {			
@@ -461,15 +501,28 @@ public class Assembler {
 			public void invoke(AsmEmitter asm, String...  args) {
 				/* second parameter is to denote var args */
 				asm.funcdef(Integer.parseInt(args[0]), args.length > 1);
+				indexStack.add(new Indexes());
 			}
 		});
 		opcodes.put("GEN_DEF", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
 				/* second parameter is to denote var args */
 				asm.gendef(Integer.parseInt(args[0]), args.length > 1);
+				indexStack.add(new Indexes());
 			}
 		});
-		
+        opcodes.put("CLASS_DEF", new Opcode() {         
+            public void invoke(AsmEmitter asm, String...  args) {
+                asm.classdef(Integer.parseInt(args[0]));
+                indexStack.add(new Indexes());
+            }
+        });		
+        opcodes.put("NAMESPACE_DEF", new Opcode() {         
+            public void invoke(AsmEmitter asm, String...  args) {
+                asm.namespacedef();
+                indexStack.add(new Indexes());
+            }
+        });
         opcodes.put("YIELD", new Opcode() {          
             public void invoke(AsmEmitter asm, String...  args) {
                 asm.yield();
@@ -502,11 +555,7 @@ public class Assembler {
 				asm.cont(args[0]);
 			}
 		});
-		opcodes.put("CLASS_DEF", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
-				asm.classdef(Integer.parseInt(args[0]));
-			}
-		});
+
 		opcodes.put("THROW", new Opcode() {			
 			public void invoke(AsmEmitter asm, String...  args) {
 				asm.throw_();
@@ -667,13 +716,26 @@ public class Assembler {
 			}
 		});
         opcodes.put("INIT_FINALLY", new Opcode() {          
-            public void invoke(AsmEmitter asm, String...  args) {
-                asm.initfinally();
+            public void invoke(AsmEmitter asm, String...  args) {                
+                String label = args[0];
+                try {
+                    asm.initfinally(Integer.parseInt(label)); 
+                }
+                catch(NumberFormatException e) {
+                    asm.initfinally(label);
+                }
             }
         });		
         opcodes.put("INIT_ON", new Opcode() {          
             public void invoke(AsmEmitter asm, String...  args) {
-                asm.initon();
+                
+                String label = args[0];
+                try {
+                    asm.initon(Integer.parseInt(label)); 
+                }
+                catch(NumberFormatException e) {
+                    asm.initon(label);
+                }
             }
         });
         opcodes.put("END_ON", new Opcode() {          
