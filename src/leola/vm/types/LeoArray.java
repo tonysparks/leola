@@ -408,8 +408,17 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 * @return a native array representation
 	 */
 	public LeoObject[] toArray() {
-		return this.array;
+	    LeoObject[] clone = new LeoObject[this.size];
+	    System.arraycopy(this.array, 0, clone, 0, clone.length);
+		return clone;
 	}
+	
+	/**
+     * @return a native array representation
+     */
+    public LeoObject[] getRawArray() {
+        return this.array;
+    }
 	
 	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#clone()

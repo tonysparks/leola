@@ -257,7 +257,7 @@ public class Scope {
 	 * @return the underlying raw values of the {@link Scope}
 	 */
 	public LeoObject[] getScopedValues() {
-		return (this.values != null) ? this.values.vals().toArray() : ArrayUtil.EMPTY_LEOOBJECTS;
+		return (this.values != null) ? this.values.vals().getRawArray() : ArrayUtil.EMPTY_LEOOBJECTS;
 	}
 
 	/**
