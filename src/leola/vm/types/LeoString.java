@@ -294,6 +294,28 @@ public class LeoString extends LeoObject {
     	return true;
     }
 	
+    /**
+     * Retrieves all of the indexes where 'v' is found in this string.
+     * @param v
+     * @return list of all indexes where 'v' is found in this string.
+     */
+    public LeoArray indexesOf(LeoObject v) {
+        LeoArray results = new LeoArray();
+        String str = v.toString();
+        
+        int index = 0;
+        int result = 0;
+        while (result > -1) {
+           result = this.value.indexOf(str, index);
+           if(result > -1) {
+               results.add(LeoInteger.valueOf(result));
+               index = result + 1;
+           }
+        } 
+        
+        return results;
+    }
+    
 	/**
 	 * @return the length of the string
 	 */

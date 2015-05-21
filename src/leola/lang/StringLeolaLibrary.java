@@ -135,5 +135,14 @@ public class StringLeolaLibrary implements LeolaLibrary {
 	public byte[] bytes(LeoObject str) {
 		return str.toString().getBytes();
 	}
+	
+    /**
+     * Retrieves all of the indexes where 'v' is found in this string.
+     * @param v
+     * @return list of all indexes where 'v' is found in this string.
+     */
+	public LeoArray indexesOf(LeoString str, LeoObject v) {
+	    return str.indexesOf(v);
+	}
 }
 
