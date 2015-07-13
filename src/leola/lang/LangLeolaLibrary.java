@@ -8,6 +8,8 @@ package leola.lang;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -21,6 +23,7 @@ import leola.vm.lib.LeolaMethod;
 import leola.vm.types.LeoArray;
 import leola.vm.types.LeoDouble;
 import leola.vm.types.LeoInteger;
+import leola.vm.types.LeoMap;
 import leola.vm.types.LeoNamespace;
 import leola.vm.types.LeoNativeClass;
 import leola.vm.types.LeoNull;
@@ -248,6 +251,53 @@ public class LangLeolaLibrary implements LeolaLibrary {
 		Double d = toNumber(x);
 		return d.intValue();
 	}
+	
+	/**
+	 * @param x
+	 * @return a long representation
+	 */
+	public final long toLong(Object x) {
+	    String str = x.toString();
+	    return Long.parseLong(str);
+	}
+	
+	/**
+	 * @param x
+	 * @return a double representation
+	 */
+	public final double toDouble(Object x) {
+	    return toNumber(x);
+	}
+	
+	
+	/**
+	 * Converts the {@link Collection} into a {@link LeoArray}
+	 * @param list
+	 * @return the {@link LeoArray}
+	 */
+	public final LeoArray toArray(Collection<Object> list) {
+	    LeoArray array = new LeoArray(list.size());
+	    for(Object o : list) {
+	        array.add(Leola.toLeoObject(o));
+	    }
+	    return array;
+	}
+	
+	
+	/**
+	 * Converts the java {@link Map} into a {@link LeoMap} object.
+	 * 
+	 * @param map
+	 * @return the {@link LeoMap}
+	 */
+	public final LeoMap toMap(Map<Object, Object> map) {
+	    LeoMap leomap = new LeoMap();
+	    for(Map.Entry<Object, Object> entry : map.entrySet()) {
+	        leomap.put(Leola.toLeoObject(entry.getKey()), Leola.toLeoObject(entry.getKey()));
+	    }
+	    return leomap;
+	}
+	
 
 	public final char toChar(Object x) {
 		if ( x instanceof String) {

@@ -75,6 +75,17 @@ public class LeoString extends LeoObject {
 		this(new StringBuilder());
 	}	
 	
+	/**
+     * Adds ability to reference the public API of this class
+     */
+    private Map<LeoObject, LeoObject> arrayApi; 
+    private LeoObject getNativeMethod(LeoObject key) {
+        if(this.arrayApi == null) {
+            this.arrayApi = new LeoMap();
+        }
+        return getNativeMethod(this, this.arrayApi, key);
+    }
+	
 	/* (non-Javadoc)
 	 * @see leola.vm.types.LeoObject#toLeoString()
 	 */
@@ -146,6 +157,73 @@ public class LeoString extends LeoObject {
 	public LeoObject $add(long other) {
 		return LeoString.valueOf(other + this.value);
 	}
+	
+	   /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(double)
+     */
+    @Override
+    public LeoObject $index(double other) {
+        return charAt( (int) other);
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(int)
+     */
+    @Override
+    public LeoObject $index(int other) {
+        return charAt(other);
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(long)
+     */
+    @Override
+    public LeoObject $index(long other) {    
+        return charAt( (int)other );
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(leola.vm.types.LeoObject)
+     */
+    @Override
+    public LeoObject $index(LeoObject other) {
+        return charAt(other.asInt());
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
+     */
+    @Override
+    public void $sindex(LeoObject key, LeoObject other) {
+        if(key.isNumber()) {
+            int index = key.asInt();
+            
+            StringBuilder sb = new StringBuilder(this.value);
+            sb.insert(index, other.toString());
+            this.value = sb.toString();
+        }
+        else {
+            String regex = key.toString();
+            this.value = this.value.replaceAll(regex, other.toString());
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#setObject(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
+     */
+    @Override
+    public void setObject(LeoObject key, LeoObject value) { 
+        getNativeMethod(key);
+        this.arrayApi.put(key, value);      
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#getObject(leola.vm.types.LeoObject)
+     */
+    @Override
+    public LeoObject getObject(LeoObject key) {
+        return getNativeMethod(key);
+    }
 	
 	/**
 	 * Appends to this string.
@@ -314,6 +392,13 @@ public class LeoString extends LeoObject {
         } 
         
         return results;
+    }
+    
+    /**
+     * @return removes any leading or trailing whitespace characters
+     */
+    public LeoString trim() {
+        return LeoString.valueOf(this.value.trim());
     }
     
 	/**

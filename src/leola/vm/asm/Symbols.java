@@ -213,6 +213,47 @@ public class Symbols {
 
 		return ns;
 	}
+
+	   /**
+     * Looks up the appropriate {@link ClassDefinitions} containing the className
+     * @param className
+     * @return the {@link ClassDefinitions} or null if not found
+     */
+    public ClassDefinitions lookupClassDefinitions(Scope currentScope, LeoObject className) {
+        if ( className == null ) {
+            throw new LeolaRuntimeException("Invalid class name, can not be empty!");
+        }
+        
+        String jclassName = className.toString();
+        LeoString lclassName = className.toLeoString();
+    
+        ClassDefinitions result = null;
+        String formattedClassName = jclassName.replace(".", ":");
+        int index = formattedClassName.lastIndexOf(':');
+        if ( index > -1 ) {
+            String namespace = formattedClassName.substring(0, index);
+            LeoNamespace ns = lookupNamespace(namespace);
+            if( ns != null ) {
+                String justClassName = formattedClassName.substring(index + 1);
+    
+                Scope scope = ns.getScope();
+                result = checkScopeForDefinitions(scope, LeoString.valueOf(justClassName));
+            }
+        }
+        else {
+            Scope scope = currentScope;
+            while(scope != null) {
+                result = checkScopeForDefinitions(scope, lclassName);
+                if ( result != null ) {
+                    break;
+                }
+                
+                scope = scope.getParent();
+            }
+        }
+
+        return (result);
+    }
 	
 	/**
 	 * Looks up the appropriate {@link ClassDefinitions} containing the className
@@ -220,39 +261,7 @@ public class Symbols {
 	 * @return the {@link ClassDefinitions} or null if not found
 	 */
 	public ClassDefinitions lookupClassDefinitions(LeoObject className) {
-		if ( className == null ) {
-			throw new LeolaRuntimeException("Invalid class name, can not be empty!");
-		}
-		
-		String jclassName = className.toString();
-		LeoString lclassName = className.toLeoString();
-	
-		ClassDefinitions result = null;
-		String formattedClassName = jclassName.replace(".", ":");
-		int index = formattedClassName.lastIndexOf(':');
-		if ( index > -1 ) {
-			String namespace = formattedClassName.substring(0, index);
-			LeoNamespace ns = lookupNamespace(namespace);
-			if( ns != null ) {
-				String justClassName = formattedClassName.substring(index + 1);
-	
-				Scope scope = ns.getScope();
-				result = checkScopeForDefinitions(scope, LeoString.valueOf(justClassName));
-			}
-		}
-		else {
-			Scope scope = peek();
-			while(scope != null) {
-				result = checkScopeForDefinitions(scope, lclassName);
-				if ( result != null ) {
-					break;
-				}
-				
-				scope = scope.getParent();
-			}
-		}
-
-		return (result);
+		return lookupClassDefinitions(peek(), className);
 	}
 	
 	/**

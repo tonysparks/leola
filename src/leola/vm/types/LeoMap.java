@@ -10,7 +10,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +64,7 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
     private Map<LeoObject, LeoObject> mapApi;  
     private LeoObject getNativeMethod(LeoObject key) {
         if(this.mapApi == null) { 
-            this.mapApi = new HashMap<LeoObject, LeoObject>();
+            this.mapApi = new LeoMap();
         }
         return getNativeMethod(this, this.mapApi, key);
     }
@@ -183,9 +182,13 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	 */
 	@Override
 	public void setObject(LeoObject key, LeoObject value) {
-//		put(key, value);
-	    getNativeMethod(key);
-	    this.mapApi.put(key, value);
+	    if(has(key)) {
+	        put(key,value);
+	    }
+	    else {	    
+    	    getNativeMethod(key);
+    	    this.mapApi.put(key, value);
+	    }
 	}
 	
 	/* (non-Javadoc)
@@ -193,8 +196,12 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	 */
 	@Override
 	public LeoObject getObject(LeoObject key) {
-//		return get(key);
-	    return getNativeMethod(key);
+	    if(has(key)) {
+	        return get(key);
+	    }
+	    else {
+	        return getNativeMethod(key);
+	    }
 	}
 	
 	/**

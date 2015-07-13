@@ -751,7 +751,7 @@ public class VM {
 							
 							LeoObject instance = null;
 	
-							ClassDefinitions defs = symbols.lookupClassDefinitions(className);
+							ClassDefinitions defs = symbols.lookupClassDefinitions(scope, className);
 							if ( defs == null ) {
 	
 								if(!runtime.isSandboxed()) {															

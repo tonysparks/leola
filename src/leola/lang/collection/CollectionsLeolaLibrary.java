@@ -20,7 +20,6 @@ import leola.vm.types.LeoNamespace;
 import leola.vm.types.LeoNull;
 import leola.vm.types.LeoObject;
 import leola.vm.types.LeoString;
-import leola.vm.util.LeoTypeConverter;
 
 
 
@@ -44,31 +43,6 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 //		leola.eval(CollectionsLeolaLibrary.class.getResourceAsStream("collections.leola"));
 	}
 
-
-	/**
-	 * Converts the {@link List} to a {@link LeoArray}
-	 *
-	 * @param list
-	 * @return
-	 */
-	public LeoObject toArray(List<Object> list) {
-		LeoArray result = new LeoArray(list.size());
-		for(Object obj : list) {
-			result.$add(LeoTypeConverter.convertToLeolaType(obj));
-		}
-		
-		return result;
-	}
-
-	/**
-	 * Converts the {@link Map} to a {@link LeoMap}
-	 *
-	 * @param map
-	 * @return
-	 */
-	public LeoObject toMap(Map<LeoObject, LeoObject> map) {
-		return new LeoMap(map);
-	}
 	
 	/**
 	 * Repeats the function N times

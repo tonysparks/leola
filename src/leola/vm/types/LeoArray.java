@@ -12,7 +12,6 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -90,7 +89,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
     private Map<LeoObject, LeoObject> arrayApi;	
 	private LeoObject getNativeMethod(LeoObject key) {
 	    if(this.arrayApi == null) {
-	        this.arrayApi = new HashMap<LeoObject, LeoObject>();
+	        this.arrayApi = new LeoMap();
 	    }
 	    return getNativeMethod(this, this.arrayApi, key);
 	}
@@ -458,6 +457,14 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	}
 	
 	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#$neq(leola.vm.types.LeoObject)
+	 */
+	@Override
+	public boolean $neq(LeoObject other) {
+	    return ! $eq(other);
+	}
+	
+	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#eq(leola.types.LeoObject)
 	 */
 	@Override
@@ -469,7 +476,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 					LeoObject l = this.array[i];
 					LeoObject r = otherarray.array[i];
 					if ( ! LeoObject.$eq(l, r) ) {
-						break;
+						return false;
 					}
 				}
 

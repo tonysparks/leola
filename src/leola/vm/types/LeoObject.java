@@ -724,39 +724,54 @@ public abstract class LeoObject {
 	}
 	
 	
-	   protected static LeoObject getNativeMethod(Object owner, Map<LeoObject, LeoObject> nativeApi, LeoObject key) {	        	        
-	        LeoObject func = nativeApi.get(key);
-	        if(func == null) {
-	            List<Method> methods = ClassUtil.getMethodsByName(LeoArray.class, key.toString());
-	            removeInterfaceMethods(methods);
-	            
-	            if(methods.isEmpty()) {
-	                throw new LeolaRuntimeException("No method exists by the name: " + key);
-	            }
-	            
-	            func = new LeoNativeFunction(methods, owner);
-	            nativeApi.put(key, func);
-	        }
-	        
-	        return func;
-	    }
+	/**
+	 * Retrieve the native methods from the owner public method listings.  This will query the owner class
+	 * using reflection if the supplied nativeApi {@link Map} is empty.
+	 * 
+	 * @param owner the instance in which owns the native methods
+	 * @param nativeApi the cache of native methods
+	 * @param key the method name
+	 * @return the {@link LeoObject} of the native method, or null if not found
+	 */
+    protected static LeoObject getNativeMethod(Object owner, Map<LeoObject, LeoObject> nativeApi, LeoObject key) {
+        LeoObject func = nativeApi.get(key);
+        if (!LeoObject.isTrue(func)) {
+            List<Method> methods = ClassUtil.getMethodsByName(owner.getClass(), key.toString());
+            removeInterfaceMethods(methods);
+
+            if (methods.isEmpty()) {
+                throw new LeolaRuntimeException("No method exists by the name: " + key);
+            }
+
+            func = new LeoNativeFunction(methods, owner);
+            nativeApi.put(key, func);
+        }
+        
+        return func;
+    }
 	    
-	    protected static void removeInterfaceMethods(List<Method> methods) {
-	        for(int i = 0; i < methods.size(); i++) {
-	            Method method = methods.get(i);
-	            for(int j = 0; j < method.getParameterTypes().length; j++) {
-	                Class<?> pType = method.getParameterTypes()[j];
-	                if(pType.isPrimitive()) {
-	                    continue;
-	                }
-	                
-	                if(pType.equals(Object.class)) {
-	                    methods.remove(i);
-	                    i -= 1;
-	                }
-	            }
-	            
-	        }
-	    }
+    
+    /**
+     * HACK - removes weird interface methods from the API listing.  
+     * @param methods
+     */
+    protected static void removeInterfaceMethods(List<Method> methods) {
+        for (int i = 0; i < methods.size(); i++) {
+            Method method = methods.get(i);
+            for (int j = 0; j < method.getParameterTypes().length; j++) {
+                Class<?> pType = method.getParameterTypes()[j];
+                if (pType.isPrimitive()) {
+                    continue;
+                }
+
+                if (pType.equals(Object.class)) {
+                    methods.remove(i);
+                    i -= 1;
+                    break;
+                }
+            }
+
+        }
+    }
 }
 

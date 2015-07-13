@@ -46,7 +46,7 @@ public class LeoTypeConverter {
 		else {
 			Class<?> type = javaObj.getClass();
 			if ( ClassUtil.isType(type, STRING) ) {
-				result = new LeoString(javaObj.toString());
+				result = LeoString.valueOf(javaObj.toString());
 			}
 			else if ( ClassUtil.isType(type, BOOLEAN) ){
 				result = ((Boolean)javaObj) ? LeoBoolean.LEOTRUE
