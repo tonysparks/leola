@@ -47,7 +47,6 @@ import leola.lang.MapLeolaLibrary;
 import leola.lang.ReflectionLeolaLibrary;
 import leola.lang.StringLeolaLibrary;
 import leola.lang.SystemLeolaLibrary;
-import leola.lang.actors.ActorLibrary;
 import leola.lang.collection.CollectionsLeolaLibrary;
 import leola.lang.io.IOLeolaLibrary;
 import leola.lang.sql.SqlLeolaLibrary;
@@ -343,7 +342,6 @@ public class Leola {
 			// AUX libraries
 			if ( ! args.isBarebones() && !isSandboxed) {
 				loadLibrary(new IOLeolaLibrary(), "io");
-				loadLibrary(new ActorLibrary(), "act");
 				loadLibrary(new SqlLeolaLibrary(), "db");
 				loadLibrary(new SystemLeolaLibrary(), "sys");
 				loadLibrary(new DebugLeolaLibrary(), "debug");
