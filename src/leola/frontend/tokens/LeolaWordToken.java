@@ -64,7 +64,7 @@ public class LeolaWordToken extends LeolaToken {
     }
 
     /**
-     * Extract a Pascal word token from the source.
+     * Extract a Leola word token from the source.
      * @throws Exception if an error occurred.
      */
     @Override

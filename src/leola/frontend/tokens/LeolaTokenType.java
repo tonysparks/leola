@@ -182,7 +182,7 @@ public enum LeolaTokenType implements TokenType
     }
 
     // Hash table of Leola special symbols.  Each special symbol's text
-    // is the key to its Pascal token type.
+    // is the key to its Leola token type.
     public static Map<String, LeolaTokenType> SPECIAL_SYMBOLS = new HashMap<String, LeolaTokenType>();
     static {
         LeolaTokenType values[] = LeolaTokenType.values();

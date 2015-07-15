@@ -32,7 +32,7 @@ public class LeolaNumberToken extends LeolaToken {
     }
 
     /**
-     * Extract a Pascal number token from the source.
+     * Extract a Leola number token from the source.
      * 
      * @throws Exception
      *             if an error occurred.
@@ -45,7 +45,7 @@ public class LeolaNumberToken extends LeolaToken {
     }
 
     /**
-     * Extract a Pascal number token from the source.
+     * Extract a Leola number token from the source.
      * 
      * @param textBuffer
      *            the buffer to append the token's characters.

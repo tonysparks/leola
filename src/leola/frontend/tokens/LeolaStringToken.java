@@ -29,7 +29,7 @@ public class LeolaStringToken extends LeolaToken
     }
 
     /**
-     * Extract a Pascal string token from the source.
+     * Extract a Leola string token from the source.
      * @throws Exception if an error occurred.
      */
     @Override
