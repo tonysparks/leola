@@ -9,70 +9,78 @@ import leola.frontend.listener.EventDispatcher;
 /**
  * <h1>Source</h1>
  *
- * <p>The framework class that represents the source program.</p>
+ * <p>
+ * The framework class that represents the source program.
+ * </p>
  *
- * <p>Copyright (c) 2009 by Ronald Mak</p>
- * <p>For instructional purposes only.  No warranties.</p>
+ * <p>
+ * Copyright (c) 2009 by Ronald Mak
+ * </p>
+ * <p>
+ * For instructional purposes only. No warranties.
+ * </p>
  */
-public class Source
-{
-    public static final char EOL = '\n';      // end-of-line character
-    public static final char EOF = (char) 0;  // end-of-file character
+public class Source {
+    
+    public static final char EOL = '\n'; // end-of-line character
+    public static final char EOF = (char) 0; // end-of-file character
 
-    private BufferedReader reader;            // reader for the source program
-    private String line;                      // source line
-    private int lineNum;                      // current source line number
-    private int currentPos;                   // current source line position
+    private BufferedReader reader; // reader for the source program
+    private String line; // source line
+    private int lineNum; // current source line number
+    private int currentPos; // current source line position
 
-    private EventDispatcher  eventDispatcher;
+    private EventDispatcher eventDispatcher;
 
     /**
      * Constructor.
-     * @param reader the reader for the source program
-     * @throws IOException if an I/O error occurred
+     * 
+     * @param reader
+     *            the reader for the source program
+     * @throws IOException
+     *             if an I/O error occurred
      */
-    public Source(EventDispatcher eventDispatcher, BufferedReader reader)
-    {
+    public Source(EventDispatcher eventDispatcher, BufferedReader reader) {
         this.lineNum = 0;
-        this.currentPos = -2;  // set to -2 to read the first source line
+        this.currentPos = -2; // set to -2 to read the first source line
         this.reader = reader;
         this.eventDispatcher = eventDispatcher;
     }
 
     /**
-	 * @return the eventDispatcher
-	 */
-	public EventDispatcher getEventDispatcher() {
-		return eventDispatcher;
-	}
+     * @return the eventDispatcher
+     */
+    public EventDispatcher getEventDispatcher() {
+        return eventDispatcher;
+    }
 
     /**
      * Getter.
+     * 
      * @return the current source line number.
      */
-    public int getLineNum()
-    {
+    public int getLineNum() {
         return lineNum;
     }
 
     /**
      * Getter.
-     * @return the position of the next source character in the
-     * current source line.
+     * 
+     * @return the position of the next source character in the current source
+     *         line.
      */
-    public int getPosition()
-    {
+    public int getPosition() {
         return currentPos;
     }
 
     /**
      * Return the source character at the current position.
+     * 
      * @return the source character at the current position.
-     * @throws Exception if an error occurred.
+     * @throws Exception
+     *             if an error occurred.
      */
-    public char currentChar()
-        throws Exception
-    {
+    public char currentChar() throws Exception {
         // First time?
         if (currentPos == -2) {
             readLine();
@@ -103,12 +111,12 @@ public class Source
 
     /**
      * Consume the current source character and return the next character.
+     * 
      * @return the next source character.
-     * @throws Exception if an error occurred.
+     * @throws Exception
+     *             if an error occurred.
      */
-    public char nextChar()
-        throws Exception
-    {
+    public char nextChar() throws Exception {
         ++currentPos;
         return currentChar();
     }
@@ -116,17 +124,18 @@ public class Source
     /**
      * Return the source character following the current character without
      * consuming the current character.
+     * 
      * @return the following character.
-     * @throws Exception if an error occurred.
+     * @throws Exception
+     *             if an error occurred.
      */
-    public char peekChar()
-        throws Exception
-    {
-    	return peekAhead(1);
+    public char peekChar() throws Exception {
+        return peekAhead(1);
     }
 
     /**
      * Looks ahead 'pos' positions
+     * 
      * @param pos
      * @return
      * @throws Excepion
@@ -138,26 +147,24 @@ public class Source
         }
 
         int nextPos = currentPos + pos;
-        return nextPos < line.length() ? line.charAt(nextPos) : EOL;    	
+        return nextPos < line.length() ? line.charAt(nextPos) : EOL;
     }
-    
+
     /**
      * @return true if at the end of the line, else return false.
-     * @throws Exception if an error occurred.
+     * @throws Exception
+     *             if an error occurred.
      */
-    public boolean atEol()
-        throws Exception
-    {
+    public boolean atEol() throws Exception {
         return (line != null) && (currentPos == line.length());
     }
 
     /**
      * @return true if at the end of the file, else return false.
-     * @throws Exception if an error occurred.
+     * @throws Exception
+     *             if an error occurred.
      */
-    public boolean atEof()
-        throws Exception
-    {
+    public boolean atEof() throws Exception {
         // First time?
         if (currentPos == -2) {
             readLine();
@@ -167,30 +174,30 @@ public class Source
     }
 
     /**
-     * Skip the rest of the current input line
-     * by forcing the next read to read a new line.
-     * @throws Exception if an error occurred.
+     * Skip the rest of the current input line by forcing the next read to read
+     * a new line.
+     * 
+     * @throws Exception
+     *             if an error occurred.
      */
-    public void skipToNextLine()
-        throws Exception
-    {
+    public void skipToNextLine() throws Exception {
         if (line != null) {
             currentPos = line.length() + 1;
         }
     }
 
     public String getCurrentLine() {
-    	return this.line;
+        return this.line;
     }
-    
+
     /**
      * Read the next source line.
-     * @throws IOException if an I/O error occurred.
+     * 
+     * @throws IOException
+     *             if an I/O error occurred.
      */
-    private void readLine()
-        throws IOException
-    {
-        line = reader.readLine();  // null when at the end of the source
+    private void readLine() throws IOException {
+        line = reader.readLine(); // null when at the end of the source
         currentPos = -1;
 
         if (line != null) {
@@ -206,16 +213,16 @@ public class Source
 
     /**
      * Close the source.
-     * @throws Exception if an error occurred.
+     * 
+     * @throws Exception
+     *             if an error occurred.
      */
-    public void close()
-        throws Exception
-    {
+    public void close() throws Exception {
         if (reader != null) {
             try {
                 reader.close();
             }
-            catch (IOException ex) {                
+            catch (IOException ex) {
                 throw ex;
             }
         }

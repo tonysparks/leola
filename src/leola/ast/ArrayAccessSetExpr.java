@@ -9,6 +9,12 @@ import leola.frontend.EvalException;
 
 
 /**
+ * Accounts for setting an array access expressions:
+ * 
+ * <pre>
+ *  array[10] = "x"
+ * </pre>
+ * 
  * @author Tony
  *
  */

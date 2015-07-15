@@ -8,6 +8,8 @@ package leola.frontend.events;
 import leola.frontend.listener.Event;
 
 /**
+ * Summary of parsing the code event.
+ * 
  * @author Tony
  *
  */

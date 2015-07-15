@@ -3,16 +3,15 @@ package leola.frontend.tokens;
 import leola.frontend.Source;
 
 import static leola.frontend.tokens.LeolaTokenType.*;
+
+
 /**
- * <h1>PascalWordToken</h1>
+ * Word/Identifier token
+ * 
+ * @author Tony
  *
- * <p> Pascal word tokens (identifiers and reserved words).</p>
- *
- * <p>Copyright (c) 2009 by Ronald Mak</p>
- * <p>For instructional purposes only.  No warranties.</p>
  */
-public class LeolaWordToken extends LeolaToken
-{
+public class LeolaWordToken extends LeolaToken {
 
 	/**
 	 * Determines if the supplied character is valid inside the identifier
@@ -56,13 +55,11 @@ public class LeolaWordToken extends LeolaToken
 	}
 
     /**
-     * Constructor.
      * @param source the source from where to fetch the token's characters.
      * @throws Exception if an error occurred.
      */
     public LeolaWordToken(Source source)
-        throws Exception
-    {
+        throws Exception {
         super(source);
     }
 
@@ -72,8 +69,7 @@ public class LeolaWordToken extends LeolaToken
      */
     @Override
 	protected void extract()
-        throws Exception
-    {
+        throws Exception {
         StringBuilder textBuffer = new StringBuilder();
         char currentChar = currentChar();
 

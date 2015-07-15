@@ -3,35 +3,31 @@ package leola.frontend.tokens;
 import leola.frontend.Source;
 import static leola.frontend.tokens.LeolaTokenType.*;
 import static leola.frontend.tokens.LeolaErrorCode.*;
+
 /**
- * <h1>PascalSpecialSymbolToken</h1>
+ * Special symbol tokens
+ * 
+ * @author Tony
  *
- * <p> Pascal special symbol tokens.</p>
- *
- * <p>Copyright (c) 2009 by Ronald Mak</p>
- * <p>For instructional purposes only.  No warranties.</p>
  */
-public class LeolaSpecialSymbolToken extends LeolaToken
-{
+public class LeolaSpecialSymbolToken extends LeolaToken {
     /**
      * Constructor.
      * @param source the source from where to fetch the token's characters.
      * @throws Exception if an error occurred.
      */
     public LeolaSpecialSymbolToken(Source source)
-        throws Exception
-    {
+        throws Exception {
         super(source);
     }
 
     /**
-     * Extract a Pascal special symbol token from the source.
+     * Extract a Leola special symbol token from the source.
      * @throws Exception if an error occurred.
      */
     @Override
 	protected void extract()
-        throws Exception
-    {
+        throws Exception {
         char currentChar = currentChar();
 
         text = Character.toString(currentChar);
@@ -49,7 +45,7 @@ public class LeolaSpecialSymbolToken extends LeolaToken
                 break;
             }
 
-            // . or ...
+            // . or ..
             case '.': {
             	currentChar = nextChar();
             	 if (currentChar == '.') {

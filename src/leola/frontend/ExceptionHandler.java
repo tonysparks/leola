@@ -8,11 +8,20 @@ package leola.frontend;
 import leola.frontend.tokens.LeolaErrorCode;
 
 /**
+ * Callback interface for handling error either during execution or parsing stages.
+ * 
  * @author Tony
  *
  */
 public interface ExceptionHandler {
 
+    /**
+     * The number of errors that have been encountered.
+     * 
+     * @return the number of errors that have occurred.
+     */
+    public int getErrorCount();
+    
 	/**
 	 * Handles an exception.
 	 * 

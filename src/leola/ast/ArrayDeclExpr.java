@@ -8,6 +8,12 @@ package leola.ast;
 import leola.frontend.EvalException;
 
 /**
+ * Array declaration expression.
+ * 
+ * <pre>
+ *   var array = [ 1, 2, 3 ]
+ * </pre>
+ * 
  * @author Tony
  *
  */

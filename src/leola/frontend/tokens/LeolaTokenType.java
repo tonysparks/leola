@@ -2,8 +2,8 @@ package leola.frontend.tokens;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 
 import leola.ast.BinaryExpr.BinaryOp;
 import leola.frontend.ParseException;
@@ -57,25 +57,21 @@ public enum LeolaTokenType implements TokenType
     private String text;  // token text
 
     /**
-     * Constructor.
      */
-    LeolaTokenType()
-    {
+    LeolaTokenType() {
         this.text = this.toString().toLowerCase();
     }
 
     /**
-     * Constructor.
      * @param text the token text.
      */
-    LeolaTokenType(String text)
-    {
+    LeolaTokenType(String text) {
         this.text = text;
     }
 
     /**
      * To a {@link BinaryOp}
-     * @return
+     * @return the {@link BinaryOp} representation
      */
     public BinaryOp toBinaryOp() {
     	BinaryOp result = null;
@@ -155,22 +151,19 @@ public enum LeolaTokenType implements TokenType
     }
 
     /**
-     * Getter.
      * @return the token text.
      */
-    public String getText()
-    {
+    public String getText() {
         return text;
     }
 
     /**
      * Returns the text as a number
-     * @return
+     * @return the text as a number
      * @throws Exception
      */
     public double getTextAsNumber() throws Exception {
-    	try
-    	{
+    	try {
     		return Double.parseDouble(this.text);
     	}
     	catch(Exception e) {
@@ -180,7 +173,7 @@ public enum LeolaTokenType implements TokenType
     }
 
     // Set of lower-cased Leola reserved word text strings.
-    public static HashSet<String> RESERVED_WORDS = new HashSet<String>();
+    public static Set<String> RESERVED_WORDS = new HashSet<String>();
     static {
         LeolaTokenType values[] = LeolaTokenType.values();
         for (int i = FIRST_RESERVED_INDEX; i <= LAST_RESERVED_INDEX; ++i) {
@@ -190,8 +183,7 @@ public enum LeolaTokenType implements TokenType
 
     // Hash table of Leola special symbols.  Each special symbol's text
     // is the key to its Pascal token type.
-    public static Hashtable<String, LeolaTokenType> SPECIAL_SYMBOLS =
-        new Hashtable<String, LeolaTokenType>();
+    public static Map<String, LeolaTokenType> SPECIAL_SYMBOLS = new HashMap<String, LeolaTokenType>();
     static {
         LeolaTokenType values[] = LeolaTokenType.values();
         for (int i = FIRST_SPECIAL_INDEX; i <= LAST_SPECIAL_INDEX; ++i) {
@@ -202,8 +194,7 @@ public enum LeolaTokenType implements TokenType
     /**
      * Binary Assignment operators
      */
-    public static Map<String, LeolaTokenType> BINARY_ASSIGNMENT =
-    		new HashMap<String, LeolaTokenType>();
+    public static Map<String, LeolaTokenType> BINARY_ASSIGNMENT = new HashMap<String, LeolaTokenType>();
     static {
     	LeolaTokenType values[] = LeolaTokenType.values();
         for (int i = FIRST_BIN_ASSGN_INDEX; i <= LAST_BIN_ASSGN_INDEX; ++i) {

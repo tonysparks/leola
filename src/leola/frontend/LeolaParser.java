@@ -10,6 +10,8 @@ import leola.frontend.events.ParserSummaryEvent;
 import leola.frontend.parsers.ProgramParser;
 
 /**
+ * A {@link Parser} for the Leola programming language.
+ * 
  * @author Tony
  *
  */
@@ -36,8 +38,7 @@ public class LeolaParser extends Parser {
 	 */
 	@Override
 	public int getErrorCount() {
-		// TODO Auto-generated method stub
-		return 0;
+		return getExceptionHandler().getErrorCount();
 	}
 
     /**

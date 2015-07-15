@@ -8,6 +8,12 @@ package leola.ast;
 import leola.frontend.EvalException;
 
 /**
+ * Accounts for array access expressions:
+ * 
+ * <pre>
+ *  array[10]
+ * </pre>
+ * 
  * @author Tony
  *
  */

@@ -263,6 +263,11 @@ public class Leola {
 	private ExceptionHandler exceptionHandler;
 
 	/**
+	 * print the parsing stats
+	 */
+	private boolean printSource;
+	
+	/**
 	 * @throws Exception
 	 */
 	public Leola() throws Exception {
@@ -288,7 +293,7 @@ public class Leola {
 		this.includeDirectories = new ArrayList<File>();
 		this.resourceLoader = new ResourceLoader(this);
 
-
+		this.printSource = false;
 
 		this.symbols = new Symbols();
 		Scope globalScope = this.symbols.getGlobalScope(); /* unsure the global scope */
@@ -1009,14 +1014,14 @@ public class Leola {
         return program;
     }
 
-	private static final String SOURCE_LINE_FORMAT = "%03d %s";
-	private boolean printSource = false;
 
     /**
      * Listener for source messages.
      */
-    private class SourceMessageListener implements SourceLineListener
-    {
+    private class SourceMessageListener implements SourceLineListener {
+        
+        private static final String SOURCE_LINE_FORMAT = "%03d %s";
+        
         /**
          * Called by the source whenever it produces a message.
          * @param message the message.
@@ -1038,13 +1043,12 @@ public class Leola {
     /**
      * Listener for parser messages.
      */
-    private class ParserMessageListener
-    	implements SyntaxErrorListener
-    			  , ParserSummaryListener
+    private class ParserMessageListener implements SyntaxErrorListener, ParserSummaryListener
     {
     	/* (non-Javadoc)
     	 * @see leola.frontend.events.ParserSummaryListener#onEvent(leola.frontend.events.ParserSummaryEvent)
     	 */
+        @Override
     	public void onEvent(ParserSummaryEvent evnt) {
     		if ( printSource ) {
 	            System.out.printf(PARSER_SUMMARY_FORMAT,
@@ -1056,6 +1060,7 @@ public class Leola {
     	/* (non-Javadoc)
     	 * @see leola.frontend.events.SyntaxErrorListener#onEvent(leola.frontend.events.SyntaxErrorEvent)
     	 */
+        @Override
     	public void onEvent(SyntaxErrorEvent event) {
             int lineNumber = event.getLineNumber();
             int position = event.getPosition();
@@ -1093,15 +1098,28 @@ public class Leola {
      *
      */
     private class DefaultExceptionHandler implements ExceptionHandler {
+        private int errorCount;
+        
+        @Override
+        public int getErrorCount() {
+            return errorCount;
+        }
+        
+        @Override
         public void errorToken(Token token, Parser parser, LeolaErrorCode errorCode) {
+            errorCount++;
+            
         	eventDispatcher.sendNow(new SyntaxErrorEvent(this, parser.getSource(), token, errorCode.toString()));
             throw new ParseException(errorCode,
                 token.getText() + " errored because of : " + errorCode + " at line: " + token.getLineNumber() + " at " + token.getPosition());
         }
 
 
+        @Override
         public void onException(Exception e) {
-            throw new IllegalArgumentException(e);
+            errorCount++;
+            
+            throw new LeolaRuntimeException(e);
         }
     }
 }

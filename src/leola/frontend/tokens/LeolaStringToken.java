@@ -5,13 +5,13 @@ import static leola.frontend.tokens.LeolaErrorCode.UNEXPECTED_EOF;
 import static leola.frontend.tokens.LeolaTokenType.ERROR;
 import static leola.frontend.tokens.LeolaTokenType.STRING;
 import leola.frontend.Source;
+
+
 /**
- * <h1>PascalStringToken</h1>
+ * The String token; which includes normal strings and verbatim strings.
+ * 
+ * @author Tony
  *
- * <p> Pascal string tokens.</p>
- *
- * <p>Copyright (c) 2009 by Ronald Mak</p>
- * <p>For instructional purposes only.  No warranties.</p>
  */
 public class LeolaStringToken extends LeolaToken
 {
@@ -24,8 +24,7 @@ public class LeolaStringToken extends LeolaToken
      * @throws Exception if an error occurred.
      */
     public LeolaStringToken(Source source)
-        throws Exception
-    {
+        throws Exception {
         super(source);
     }
 
@@ -35,8 +34,7 @@ public class LeolaStringToken extends LeolaToken
      */
     @Override
 	protected void extract()
-        throws Exception
-    {
+        throws Exception {
         StringBuilder textBuffer = new StringBuilder();
         StringBuilder valueBuffer = new StringBuilder();
 

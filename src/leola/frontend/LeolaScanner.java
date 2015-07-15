@@ -16,6 +16,10 @@ import leola.frontend.tokens.LeolaTokenType;
 import leola.frontend.tokens.LeolaWordToken;
 
 /**
+ * A {@link Scanner} for the Leola programming language.  This will break up
+ * the leola source code into {@link Token} that will be used by the {@link Parser}
+ * to make sense of.
+ * 
  * @author Tony
  *
  */
