@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import leola.frontend.EvalException;
-import leola.vm.asm.Pair;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaIgnore;
 import leola.vm.types.LeoNativeClass;

@@ -8,7 +8,7 @@ package leola.ast;
 import java.util.List;
 
 import leola.frontend.EvalException;
-import leola.vm.asm.Pair;
+import leola.vm.util.Pair;
 
 /**
  * Case Expression

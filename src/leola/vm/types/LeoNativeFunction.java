@@ -11,10 +11,10 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import leola.vm.VM;
-import leola.vm.asm.Pair;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
 import leola.vm.util.LeoTypeConverter;
+import leola.vm.util.Pair;
 
 
 /**

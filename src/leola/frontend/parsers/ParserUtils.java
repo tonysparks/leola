@@ -18,7 +18,7 @@ import leola.frontend.Parser;
 import leola.frontend.Token;
 import leola.frontend.tokens.LeolaErrorCode;
 import leola.frontend.tokens.LeolaTokenType;
-import leola.vm.asm.Pair;
+import leola.vm.util.Pair;
 
 /**
  * Parsing rules that do not return an {@link ASTNode}

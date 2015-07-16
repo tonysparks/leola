@@ -71,10 +71,10 @@ import leola.vm.Leola;
 import leola.vm.asm.AsmEmitter;
 import leola.vm.asm.Bytecode;
 import leola.vm.asm.Constants;
-import leola.vm.asm.Pair;
 import leola.vm.asm.Scope.ScopeType;
 import leola.vm.asm.Symbols;
 import leola.vm.types.LeoString;
+import leola.vm.util.Pair;
 
 /**
  * Generates {@link Bytecode} based off of an Abstract Syntax Tree.

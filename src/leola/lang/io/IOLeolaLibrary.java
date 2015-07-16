@@ -26,7 +26,7 @@ import leola.vm.types.LeoNamespace;
 
 
 /**
- * The Input/Output Library
+ * The Input/Output Library, handles file manipulation operations
  * 
  * @author Tony
  *
@@ -105,12 +105,28 @@ public class IOLeolaLibrary implements LeolaLibrary {
 		return ( f.delete() );
 	}
 	
-	public static final void copy(String filename, String destination) throws Exception {
-		copy(filename, destination, false);
+	/**
+	 * Copies a source file to the destination.  This will error out if the destination already exists.
+	 * 
+	 * @param source the source file name
+	 * @param destination the destination file name
+	 * @throws Exception
+	 */
+	public static final void copy(String source, String destination) throws Exception {
+		copy(source, destination, false);
 	}
 	
-	public static final void xcopy(String filename, String destination) throws Exception {
-		copy(filename, destination, true);
+	
+	/**
+	 * Copies a source file to the destination, overriding the destination file if it already
+	 * exists.
+	 * 
+	 * @param source
+	 * @param destination
+	 * @throws Exception
+	 */
+	public static final void xcopy(String source, String destination) throws Exception {
+		copy(source, destination, true);
 	}
 	
 	private static final void copy(String filename, String destination, boolean force) throws Exception {
@@ -158,18 +174,36 @@ public class IOLeolaLibrary implements LeolaLibrary {
 		}
 	}
 	
-	public static final void move(String filename, String destination) throws Exception {
-		move(filename, destination, false);
+	
+	/**
+	 * Moves the source file to the destination.  This will error out
+	 * if the destination file already exists.
+	 * 
+	 * @param source
+	 * @param destination
+	 * @throws Exception
+	 */
+	public static final void move(String source, String destination) throws Exception {
+		move(source, destination, false);
 	}
 	
-	public static final void xmove(String filename, String destination) throws Exception {
-		move(filename, destination, true);
+	
+	/**
+	 * Moves the source file to the destination, overriding the destination file
+	 * if it already exists.
+	 * 
+	 * @param source
+	 * @param destination
+	 * @throws Exception
+	 */
+	public static final void xmove(String source, String destination) throws Exception {
+		move(source, destination, true);
 	}
 	
-	private static final void move(String filename, String destination, boolean force) throws Exception {
-		File src = new File(filename);
+	private static final void move(String source, String destination, boolean force) throws Exception {
+		File src = new File(source);
 		if ( ! src.exists() ) {
-			throw new IOException(filename + " doesn't exist!");
+			throw new IOException(source + " doesn't exist!");
 		}
 		
 		File dst = new File(destination);
@@ -185,7 +219,7 @@ public class IOLeolaLibrary implements LeolaLibrary {
 		}
 		
 		if ( ! src.renameTo(dst) ) {
-			throw new IOException("Unable to move: " + filename + " to: " + destination );
+			throw new IOException("Unable to move: " + source + " to: " + destination );
 		}
 	}
 	
