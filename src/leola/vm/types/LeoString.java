@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import leola.vm.asm.Symbols;
+import leola.vm.Symbols;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
 

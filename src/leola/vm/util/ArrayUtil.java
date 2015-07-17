@@ -5,8 +5,8 @@
 */
 package leola.vm.util;
 
-import leola.vm.asm.Outer;
-import leola.vm.asm.OuterDesc;
+import leola.vm.compiler.Outer;
+import leola.vm.compiler.OuterDesc;
 import leola.vm.types.LeoObject;
 
 /**

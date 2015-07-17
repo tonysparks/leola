@@ -10,8 +10,8 @@ import java.io.StringReader;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import leola.vm.Leola;
-import leola.vm.asm.Assembler;
-import leola.vm.asm.Bytecode;
+import leola.vm.compiler.Assembler;
+import leola.vm.compiler.Bytecode;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaIgnore;
 import leola.vm.lib.LeolaLibrary;

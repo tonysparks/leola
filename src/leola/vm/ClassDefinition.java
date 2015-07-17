@@ -5,9 +5,8 @@
 */
 package leola.vm;
 
-import leola.vm.asm.Bytecode;
-import leola.vm.asm.Outer;
-import leola.vm.asm.Scope;
+import leola.vm.compiler.Bytecode;
+import leola.vm.compiler.Outer;
 import leola.vm.types.LeoObject;
 import leola.vm.types.LeoOuterObject;
 import leola.vm.types.LeoString;

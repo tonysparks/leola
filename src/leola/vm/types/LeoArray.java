@@ -18,7 +18,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import leola.vm.asm.Symbols;
+import leola.vm.Symbols;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.LeoTypeConverter;
 

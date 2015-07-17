@@ -24,7 +24,7 @@ import leola.frontend.EvalException;
  * @author Tony
  *
  */
-public class TailcallOptimizer extends ASTNodeVisitorAdapter {
+public class TailcallOptimizerVisitor extends ASTNodeVisitorAdapter {
 
 	private boolean isTerminal;
 	private String functionName;
@@ -34,7 +34,7 @@ public class TailcallOptimizer extends ASTNodeVisitorAdapter {
 	/**
 	 * @param functionName
 	 */
-	public TailcallOptimizer(String functionName) {
+	public TailcallOptimizerVisitor(String functionName) {
 		this.functionName = functionName;
 		this.isTailcall = false;
 		this.isTerminal = false;

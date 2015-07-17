@@ -3,8 +3,9 @@
 	Author: Tony Sparks
 	See license.txt
 */
-package leola.vm.asm;
+package leola.vm.compiler;
 
+import leola.vm.Scope;
 import leola.vm.util.ArrayUtil;
 
 /**

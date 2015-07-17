@@ -3,7 +3,7 @@
 	Author: Tony Sparks
 	See license.txt
 */
-package leola.vm.asm;
+package leola.vm.compiler;
 
 import static leola.vm.Opcodes.ADD;
 import static leola.vm.Opcodes.AND;
@@ -11,13 +11,13 @@ import static leola.vm.Opcodes.BNOT;
 import static leola.vm.Opcodes.BSL;
 import static leola.vm.Opcodes.BSR;
 import static leola.vm.Opcodes.CLASS_DEF;
-import static leola.vm.Opcodes.FUNC_DEF;
 import static leola.vm.Opcodes.DIV;
 import static leola.vm.Opcodes.DUP;
 import static leola.vm.Opcodes.END_BLOCK;
 import static leola.vm.Opcodes.END_FINALLY;
 import static leola.vm.Opcodes.END_ON;
 import static leola.vm.Opcodes.EQ;
+import static leola.vm.Opcodes.FUNC_DEF;
 import static leola.vm.Opcodes.GEN_DEF;
 import static leola.vm.Opcodes.GET;
 import static leola.vm.Opcodes.GET_GLOBAL;
@@ -47,12 +47,12 @@ import static leola.vm.Opcodes.MOD;
 import static leola.vm.Opcodes.MOV;
 import static leola.vm.Opcodes.MOVN;
 import static leola.vm.Opcodes.MUL;
+import static leola.vm.Opcodes.NAMESPACE_DEF;
 import static leola.vm.Opcodes.NEG;
 import static leola.vm.Opcodes.NEQ;
-import static leola.vm.Opcodes.NEW_OBJ;
 import static leola.vm.Opcodes.NEW_ARRAY;
 import static leola.vm.Opcodes.NEW_MAP;
-import static leola.vm.Opcodes.NAMESPACE_DEF;
+import static leola.vm.Opcodes.NEW_OBJ;
 import static leola.vm.Opcodes.NOT;
 import static leola.vm.Opcodes.OPCODE;
 import static leola.vm.Opcodes.OPPOP;
@@ -62,13 +62,13 @@ import static leola.vm.Opcodes.POP;
 import static leola.vm.Opcodes.REQ;
 import static leola.vm.Opcodes.RET;
 import static leola.vm.Opcodes.SET;
-import static leola.vm.Opcodes.SIDX;
 import static leola.vm.Opcodes.SET_ARG1;
 import static leola.vm.Opcodes.SET_ARG2;
-import static leola.vm.Opcodes.SET_ARGx;
 import static leola.vm.Opcodes.SET_ARGsx;
+import static leola.vm.Opcodes.SET_ARGx;
 import static leola.vm.Opcodes.SET_GLOBAL;
 import static leola.vm.Opcodes.SHIFT;
+import static leola.vm.Opcodes.SIDX;
 import static leola.vm.Opcodes.STORE_LOCAL;
 import static leola.vm.Opcodes.STORE_OUTER;
 import static leola.vm.Opcodes.SUB;
@@ -85,7 +85,8 @@ import java.util.List;
 import java.util.Stack;
 
 import leola.vm.Opcodes;
-import leola.vm.asm.Scope.ScopeType;
+import leola.vm.Scope;
+import leola.vm.compiler.EmitterScope.ScopeType;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.types.LeoDouble;
 import leola.vm.types.LeoInteger;
@@ -95,21 +96,21 @@ import leola.vm.types.LeoString;
 import leola.vm.util.ArrayUtil;
 
 /**
- * The pseudo assembler language creator.  Easily build/emit opcode codes via the assembler methods.
+ * Easily emit opcode codes via the assembler methods.
  * 
  * @author Tony
  *
  */
-public class AsmEmitter {	
+public class BytecodeEmitter {	
 	private Instructions instructions;	
 	private Labels labels;
-	private Stack<AsmEmitter> inner;
-	private List<AsmEmitter> asms;
+	private Stack<BytecodeEmitter> innerEmitterStack;
+	private List<BytecodeEmitter> innerEmmitters;
 
 	private Stack<Integer> lexicalScopes;	
-		
-	private Symbols symbols;
-	private Scope localScope;
+	
+	private EmitterScope localScope;
+	private EmitterScopes scopes;
 	
 	private DebugSymbols debugSymbols;
 	
@@ -126,10 +127,10 @@ public class AsmEmitter {
 	private boolean hasBlocks;
 	
 	/**
-	 * @param symbols the current scoped symbols
+	 * @param scopes keeps track of created {@link EmitterScope}'s
 	 */
-	public AsmEmitter(Symbols symbols) {
-		this.symbols = symbols;
+	public BytecodeEmitter(EmitterScopes scopes) {
+		this.scopes = scopes;
 		this.usesLocals = false;
 		this.isVarargs = false;
 		this.hasBlocks = false;
@@ -148,7 +149,7 @@ public class AsmEmitter {
 	 * or in the current environment
 	 */
 	public boolean usesLocals() {
-		AsmEmitter peek = peek();
+		BytecodeEmitter peek = peek();
 		return peek.usesLocals || !peek.lexicalScopes.isEmpty();
 	}
 
@@ -224,8 +225,7 @@ public class AsmEmitter {
 	public int getMaxstacksize() {
 		return peek().localScope.getMaxstacksize();
 	}
-   
-	   
+   	   
     /**
      * Starts a block of code, pushing a new {@link Scope}
      */
@@ -240,19 +240,19 @@ public class AsmEmitter {
      */
     public void start(ScopeType scopeType) {        
         this.localScope = scopeType == ScopeType.GLOBAL_SCOPE ? 
-                              this.symbols.getGlobalScope()
-                            : this.symbols.pushScope(scopeType); 
+                              this.scopes.getGlobalScope()
+                            : this.scopes.pushScope(scopeType); 
 
         this.usesLocals = scopeType == ScopeType.LOCAL_SCOPE;
         
         this.instructions = new Instructions();     
         this.labels = new Labels();
                 
-        this.inner = new Stack<AsmEmitter>();
-        this.asms = new ArrayList<AsmEmitter>();
+        this.innerEmitterStack = new Stack<BytecodeEmitter>();
+        this.innerEmmitters = new ArrayList<BytecodeEmitter>();
         
         
-        this.inner.push(this);
+        this.innerEmitterStack.push(this);
         incrementMaxstackSize(2);
     }
 
@@ -260,7 +260,7 @@ public class AsmEmitter {
 	/**
 	 * Ends a block of code
 	 */
-	public AsmEmitter end() {	
+	public BytecodeEmitter end() {	
 		
 		/* reconcile the labels */
 		reconcileLabels();
@@ -268,11 +268,11 @@ public class AsmEmitter {
 		/* reconcile any Outers */		
 		reconcileOuters(peek());
 		
-		this.symbols.popScope();
+		this.scopes.popScope();
 		
-		AsmEmitter asm = this;
-		if ( !this.inner.isEmpty() ) {
-			asm = this.inner.pop();
+		BytecodeEmitter asm = this;
+		if ( !this.innerEmitterStack.isEmpty() ) {
+			asm = this.innerEmitterStack.pop();
 		}
 		
 		return asm;
@@ -290,7 +290,7 @@ public class AsmEmitter {
 	 * 
 	 * @param asm - this scoped Asm
 	 */
-    private void reconcileOuters(AsmEmitter asm) {
+    private void reconcileOuters(BytecodeEmitter asm) {
         Outers outers = asm.getOuters();
 
         for (int i = 0; i < outers.getNumberOfOuters(); i++) {
@@ -304,12 +304,12 @@ public class AsmEmitter {
              */
             if (outerUpIndex > 0) {
                 
-                Scope scope = asm.localScope;
+                EmitterScope scope = asm.localScope;
                 if (scope != null) {
 
                     /* find the asm from the parent scope */
                     scope = scope.getParent();
-                    AsmEmitter outerAsm = findAsmByScope(scope);
+                    BytecodeEmitter outerAsm = findAsmByScope(scope);
                     if (outerAsm != null) {
                         int nup = outerUpIndex - 1;
 
@@ -335,28 +335,28 @@ public class AsmEmitter {
 	 * @return the globals
 	 */
 	public Outers getOuters() {
-		return this.symbols.peek().getOuters();
+	    return peek().localScope.getOuters();
 	}
 	
 	/**
 	 * @return the constants
 	 */
 	public Constants getConstants() {
-		return this.symbols.peek().getConstants();
+	    return peek().localScope.getConstants();
 	}
 	
 	/**
 	 * @return the locals
 	 */
 	public Locals getLocals() {
-		return this.symbols.peek().getLocals();
+	    return peek().localScope.getLocals();
 	}
 	
 	/**
 	 * @return the current scope
 	 */
-	public Scope getScope() {
-		return this.symbols.peek();
+	public EmitterScope getScope() {
+		return this.scopes.peek();
 	}
 	
 	/**
@@ -369,13 +369,13 @@ public class AsmEmitter {
 	
 
 	/**
-	 * Finds the associated Asm by Scope
-	 * @param scope the scope to find the representative Asm
-	 * @return the Asm if found, null if not found
+	 * Finds the associated {@link BytecodeEmitter} by Scope
+	 * @param scope the scope to find the representative {@link BytecodeEmitter}
+	 * @return the {@link BytecodeEmitter} if found, null if not found
 	 */
-	private AsmEmitter findAsmByScope(Scope scope) {
-		for(int i = 0; i < this.inner.size(); i++ ) {
-			AsmEmitter asm = this.inner.get(i);
+	private BytecodeEmitter findAsmByScope(EmitterScope scope) {
+		for(int i = 0; i < this.innerEmitterStack.size(); i++ ) {
+			BytecodeEmitter asm = this.innerEmitterStack.get(i);
 			
 			/* check by reference */
 			if ( asm.localScope == scope ) {
@@ -457,7 +457,7 @@ public class AsmEmitter {
 		}		
 		else {					
 			
-			OuterDesc upvalue = this.symbols.find(ref);
+			OuterDesc upvalue = this.scopes.find(ref);
 			if ( upvalue == null ) {				
 				success = false;
 			}
@@ -500,7 +500,7 @@ public class AsmEmitter {
 		
 		/* this is a global */
 		if ( index == -1 ) {						
-			OuterDesc upvalue = this.symbols.find(ref);
+			OuterDesc upvalue = this.scopes.find(ref);
 			if ( upvalue == null ) {
 				setglobal(ref);
 			}
@@ -541,8 +541,8 @@ public class AsmEmitter {
 	/**
 	 * @return the current scoped Asm
 	 */
-	public AsmEmitter peek() {
-		return this.inner.peek();
+	public BytecodeEmitter peek() {
+		return this.innerEmitterStack.peek();
 	}
 	
 	/**
@@ -579,7 +579,7 @@ public class AsmEmitter {
 	 * @param opcode
 	 */
 	private void instr(int opcode) {
-		this.inner.peek().instructions.add(opcode);
+		this.innerEmitterStack.peek().instructions.add(opcode);
 	}
 	
 	/**
@@ -904,58 +904,58 @@ public class AsmEmitter {
         instrx(NAMESPACE_DEF, getBytecodeIndex());
         incrementMaxstackSize();
         
-        AsmEmitter asm = new AsmEmitter(this.symbols);
+        BytecodeEmitter asm = new BytecodeEmitter(this.scopes);
         asm.setDebug(this.isDebug());
         asm.start(ScopeType.OBJECT_SCOPE);      
                 
-        peek().asms.add(asm);
-        this.inner.push(asm);
+        peek().innerEmmitters.add(asm);
+        this.innerEmitterStack.push(asm);
     }
 	
 	public void classdef(int numberOfInterfaces) {
 		instrx(CLASS_DEF, numberOfInterfaces);
 		incrementMaxstackSize(numberOfInterfaces);		
 		
-		AsmEmitter asm = new AsmEmitter(this.symbols);		
+		BytecodeEmitter asm = new BytecodeEmitter(this.scopes);		
 		asm.setDebug(this.isDebug());
 		asm.start(ScopeType.OBJECT_SCOPE);
 				
-		peek().asms.add(asm);
-		this.inner.push(asm);
+		peek().innerEmmitters.add(asm);
+		this.innerEmitterStack.push(asm);
 	}
 	
 	public void gendef(int numberOfParameters, boolean isVarargs) {
 		instrx(GEN_DEF, getBytecodeIndex());		
 		incrementMaxstackSize(numberOfParameters);
 		
-		AsmEmitter asm = new AsmEmitter(this.symbols);
+		BytecodeEmitter asm = new BytecodeEmitter(this.scopes);
 		asm.setDebug(this.isDebug());
 		
 		asm.numArgs = numberOfParameters;
 		asm.isVarargs = isVarargs;
 		asm.start(ScopeType.LOCAL_SCOPE);
 				
-		peek().asms.add(asm);
-		this.inner.push(asm);
+		peek().innerEmmitters.add(asm);
+		this.innerEmitterStack.push(asm);
 	}
 	
 	public void funcdef(int numberOfParameters, boolean isVarargs) {
 		instrx(FUNC_DEF, getBytecodeIndex());		
 		incrementMaxstackSize(numberOfParameters);
 		
-		AsmEmitter asm = new AsmEmitter(this.symbols);
+		BytecodeEmitter asm = new BytecodeEmitter(this.scopes);
 		asm.setDebug(this.isDebug());
 		
 		asm.numArgs = numberOfParameters;	
 		asm.isVarargs = isVarargs;
 		asm.start(ScopeType.LOCAL_SCOPE);
 				
-		peek().asms.add(asm);
-		this.inner.push(asm);
+		peek().innerEmmitters.add(asm);
+		this.innerEmitterStack.push(asm);
 	}
 	
 	public int getBytecodeIndex() {
-		return peek().asms.size();
+		return peek().innerEmmitters.size();
 	}
 	
 	public void isa() {
@@ -1162,7 +1162,7 @@ public class AsmEmitter {
 		
 		//BytecodeOptimizer.optimize(bytecode);
 		
-		bytecode.numInners = this.asms.size();
+		bytecode.numInners = this.innerEmmitters.size();
 		bytecode.inner = new Bytecode[bytecode.numInners];
 				
 		bytecode.numArgs = this.numArgs;
@@ -1222,13 +1222,9 @@ public class AsmEmitter {
 		bytecode.maxstacksize = stacksize;		
 		
 		for(int i = 0; i < bytecode.inner.length; i++) {
-			bytecode.inner[i] = this.asms.get(i).compile();
+			bytecode.inner[i] = this.innerEmmitters.get(i).compile();
 		}
-		
-		// removes all of the compiler specific data
-		// from the scope
-		this.localScope.compiled();
-		
+				
 		return bytecode;		
 	}
 }

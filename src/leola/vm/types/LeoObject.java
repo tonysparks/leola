@@ -12,10 +12,10 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
+import leola.vm.Scope;
+import leola.vm.Symbols;
 import leola.vm.VM;
-import leola.vm.asm.Outer;
-import leola.vm.asm.Scope;
-import leola.vm.asm.Symbols;
+import leola.vm.compiler.Outer;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
 

@@ -11,9 +11,9 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import leola.vm.Leola;
-import leola.vm.asm.Bytecode;
-import leola.vm.asm.Outer;
-import leola.vm.asm.Scope;
+import leola.vm.Scope;
+import leola.vm.compiler.Bytecode;
+import leola.vm.compiler.Outer;
 import leola.vm.lib.LeolaMethod;
 import leola.vm.util.ClassUtil;
 

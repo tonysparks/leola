@@ -3,7 +3,7 @@
 	Author: Tony Sparks
 	See license.txt
 */
-package leola.vm.asm;
+package leola.vm.compiler;
 
 import java.util.Stack;
 
@@ -16,9 +16,9 @@ import java.util.Stack;
 public class Label {
 	private int index;
 	private Stack<Long> deltas;
-	private AsmEmitter asm;
+	private BytecodeEmitter asm;
 	
-	public Label(AsmEmitter asm) {
+	public Label(BytecodeEmitter asm) {
 		this.asm = asm;
 		this.index = -1;
 		this.deltas = new Stack<Long>();

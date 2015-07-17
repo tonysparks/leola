@@ -3,7 +3,7 @@
 	Author: Tony Sparks
 	See license.txt
 */
-package leola.vm.asm;
+package leola.vm.compiler;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import leola.vm.Opcodes;
+import leola.vm.Symbols;
 import leola.vm.types.LeoClass;
 import leola.vm.types.LeoFunction;
 import leola.vm.types.LeoNamespace;

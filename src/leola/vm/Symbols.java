@@ -3,12 +3,9 @@
 	Author: Tony Sparks
 	See license.txt
 */
-package leola.vm.asm;
+package leola.vm;
 
 
-import leola.vm.ClassDefinitions;
-import leola.vm.NamespaceDefinitions;
-import leola.vm.asm.Scope.ScopeType;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.types.LeoNamespace;
 import leola.vm.types.LeoObject;
@@ -43,17 +40,13 @@ public class Symbols {
 		return scope;
 	}
 	
-	public Scope pushScope(Scope scope) {
-		scope.setParent(this.peek());
-		this.currentScope = scope;
-		return scope;
-	}
+
 	
 	/**
 	 * @return a new {@link Scope} 
 	 */
-	public Scope pushObjectScope() {
-		return pushScope(ScopeType.OBJECT_SCOPE);
+	private Scope pushObjectScope() {
+		return pushScope();
 	}
 	
 
@@ -61,16 +54,16 @@ public class Symbols {
 	 * Pushes a new {@link Scope}
 	 * @return the new {@link Scope}
 	 */
-	public Scope pushLocalScope() {
-		return pushScope(ScopeType.LOCAL_SCOPE);
-	}
+//	public Scope pushLocalScope() {
+//		return pushScope(ScopeType.LOCAL_SCOPE);
+//	}
 	
 	/**
 	 * Pushes a new {@link Scope}
 	 * @return the new {@link Scope}
 	 */
-	public Scope pushScope(ScopeType scopeType) {		
-		Scope result = new Scope(this, peek(), scopeType);
+	private Scope pushScope() {		
+		Scope result = new Scope(this, peek());
 		                								
 		this.currentScope = result;
 		return result;
@@ -80,7 +73,7 @@ public class Symbols {
 	 * Pops the current {@link Scope}
 	 * @return the popped {@link Scope}
 	 */
-	public Scope popScope() {
+	private Scope popScope() {
 		if ( this.currentScope == null ) {
 			this.currentScope = peek(); /* default to global scope */
 		}
@@ -89,54 +82,7 @@ public class Symbols {
 		this.currentScope = poppedScope.getParent();
 		return poppedScope;
 	}
-	
-	/**
-	 * Finds a reference, generating an {@link OuterDesc} if found
-	 * @param reference
-	 * @return
-	 */
-	public OuterDesc find(String reference) {
-		OuterDesc upvalue = null;
 		
-		int up = 0;
-		Scope scope = peek();
-		while(scope != null) {
-			if(scope.hasLocals()) {
-				Locals locals = scope.getLocals();
-				int index = locals.get(reference);
-				if ( index > -1) {
-					upvalue = new OuterDesc(index, up);				
-					break;
-				}
-			}
-			
-			scope = scope.getParent();
-			up++;
-		}
-		
-		return upvalue;
-	}		
-	/**
-	 * Get the {@link Scope} who is 'up' parent from the current {@link Scope}
-	 * @param up
-	 * @return
-	 */
-	public Scope getScope(int up) {		
-		
-		int i = up;
-		Scope scope = peek();
-		while(scope != null && i > 0) {			
-			scope = scope.getParent();
-			i--;
-		}
-		
-		if (i != 0) {
-			throw new IllegalArgumentException("No scope found for upvalue: " + up);
-		}
-		
-		return scope;
-	}
-	
 	/**
 	 * Gets a {@link LeoObject} by reference
 	 * 

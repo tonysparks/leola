@@ -3,16 +3,13 @@
 	Author: Tony Sparks
 	See license.txt
 */
-package leola.vm.asm;
+package leola.vm;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import leola.vm.ClassDefinition;
-import leola.vm.ClassDefinitions;
-import leola.vm.NamespaceDefinitions;
 import leola.vm.lib.LeolaMethod;
 import leola.vm.types.LeoMap;
 import leola.vm.types.LeoNamespace;
@@ -30,46 +27,23 @@ import leola.vm.util.ClassUtil;
  */
 public class Scope {
 
-	/**
-	 * Scope type
-	 * @author Tony
-	 *
-	 */
-	public static enum ScopeType {
-		LOCAL_SCOPE,
-		OBJECT_SCOPE,
-		GLOBAL_SCOPE
-		;
-	}
-
 	private static final AtomicLong id = new AtomicLong();
 	private String sid;
 
 	private Symbols symbols;
-
-	private Constants constants;
-	private Locals locals;
-	private Outers outers;
-
 	private Scope parent;
 
 	private ClassDefinitions classDefinitions;
 	private NamespaceDefinitions namespaceDefinitions;
-	private ScopeType scopeType;
-	private int maxstacksize;
+	
 	private LeoMap values;
 
 	private Scope(Scope scope) {
 		this.symbols = scope.symbols;
-		this.constants = scope.constants;
 		this.parent = scope.parent;
-		this.scopeType = scope.scopeType;
 
 		this.classDefinitions = scope.classDefinitions;
 		this.namespaceDefinitions = scope.namespaceDefinitions;
-
-		this.outers = scope.outers;
-		this.locals = scope.locals.clone();
 
 		this.values = (LeoMap)scope.values.clone();
 
@@ -84,28 +58,15 @@ public class Scope {
 		return this.sid + " parent: " + ((this.getParent()!=null)?this.getParent():"-");
 	}
 
-	public Scope() {
-		this(null, null);
-	}
-
-	/**
-	 * @param symbols
-	 * @param parent
-	 */
-	public Scope(Symbols symbols, Scope parent) {
-		this(symbols, parent, ScopeType.LOCAL_SCOPE);
-	}
 
 	/**
 	 * @param symbols
 	 * @param parent
 	 * @param scopeType
 	 */
-	public Scope(Symbols symbols, Scope parent, ScopeType scopeType) {
+	public Scope(Symbols symbols, Scope parent) {
 		this.symbols = symbols;
 		this.parent = parent;
-		this.scopeType = scopeType;
-		this.maxstacksize = 2; /* always leave room for binary operations */
 
 		this.sid = id.incrementAndGet() + "";
 	}
@@ -117,31 +78,6 @@ public class Scope {
 		return symbols;
 	}
 
-	/**
-	 * @return the maxstacksize
-	 */
-	public int getMaxstacksize() {
-		return maxstacksize;
-	}
-
-	/**
-	 * Increments the allocated stack size by delta.
-	 * @param delta
-	 */
-	public void incrementMaxstacksize(int delta) {
-		this.maxstacksize += delta;
-	}
-
-	/**
-	 * Clears the compiler data
-	 * TODO: Attempt to remove this compiler data into either
-	 * the {@link AsmEmitter} class or another {@link Symbols} stack element
-	 */
-	public void compiled() {
-		this.constants = null;
-		this.outers = null;
-		this.locals = null;
-	}
 
 	/**
 	 * @param parent the parent to set
@@ -151,24 +87,6 @@ public class Scope {
 
 	}
 
-	public void onClone(Scope newParent) {
-		setParent(newParent);
-	}
-
-
-	/**
-	 * @return the scopeType
-	 */
-	public ScopeType getScopeType() {
-		return scopeType;
-	}
-
-	/**
-	 * @param scopeType the scopeType to set
-	 */
-	public void setScopeType(ScopeType scopeType) {
-		this.scopeType = scopeType;
-	}
 
 	/**
 	 * @return true if there are {@link ClassDefinition}s in this {@link Scope}
@@ -202,56 +120,6 @@ public class Scope {
 		return namespaceDefinitions;
 	}
 
-	/**
-	 * @return the constants
-	 */
-	public Constants getConstants() {
-		if ( constants == null ) {
-			constants = new Constants();
-		}
-		return constants;
-	}
-
-	/**
-	 * @return true if there are constants in this scope
-	 */
-	public boolean hasConstants() {
-		return constants != null && constants.getNumberOfConstants() > 0;
-	}
-
-	/**
-	 * @return the globals
-	 */
-	public Outers getOuters() {
-		if ( outers == null ) {
-			outers = new Outers();
-		}
-		return outers;
-	}
-
-	/**
-	 * @return true if there are outers in this scope
-	 */
-	public boolean hasOuters() {
-		return outers != null && outers.getNumberOfOuters() > 0;
-	}
-
-	/**
-	 * @return the locals
-	 */
-	public Locals getLocals() {
-		if ( locals == null ) {
-			locals = new Locals();
-		}
-		return locals;
-	}
-
-	/**
-	 * @return true if there are locals for this scope
-	 */
-	public boolean hasLocals() {
-		return locals != null && locals.getNumberOfLocals() > 0;
-	}
 
 	/**
 	 * @return the underlying raw values of the {@link Scope}
@@ -351,7 +219,7 @@ public class Scope {
 	public LeoObject storeObject(LeoString reference, LeoObject newValue) {
 		
 		Scope current = this;		
-		while (current != null && current.scopeType.equals(ScopeType.OBJECT_SCOPE)) {
+		while (current != null) {
 			
 			// if the value is the the current scope, break out 
 			if (current.values != null && current.values.getWithJNull(reference) != null ) {

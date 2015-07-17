@@ -5,7 +5,7 @@
 */
 package leola.vm.types;
 
-import leola.vm.asm.Outer;
+import leola.vm.compiler.Outer;
 
 /**
  * An object that can carry closure values along with it.

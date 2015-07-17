@@ -8,7 +8,7 @@ package leola.vm.types;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import leola.vm.asm.Scope;
+import leola.vm.Scope;
 import leola.vm.lib.LeolaMethod;
 
 /**

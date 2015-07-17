@@ -393,7 +393,7 @@ public class Args {
 	/**
 	 * @return the isExecuteStatement
 	 */
-	public boolean isExecuteStatement() {
+	public boolean executeStatement() {
 		return isExecuteStatement;
 	}
 	
@@ -425,7 +425,7 @@ public class Args {
 	 * @see #enableVMThreadLocal(boolean)
 	 * @return true if the use of thread locals is enabled
 	 */
-	public boolean isAllowThreadLocal() {
+	public boolean allowThreadLocal() {
 		return this.allowThreadLocals;
 	}
 	

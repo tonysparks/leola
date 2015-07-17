@@ -9,8 +9,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import leola.vm.asm.Bytecode;
-import leola.vm.asm.Symbols;
+import leola.vm.Symbols;
+import leola.vm.compiler.Bytecode;
 
 
 /**

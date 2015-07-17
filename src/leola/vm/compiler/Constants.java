@@ -3,7 +3,7 @@
 	Author: Tony Sparks
 	See license.txt
 */
-package leola.vm.asm;
+package leola.vm.compiler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +26,10 @@ public class Constants {
 	 * Storage
 	 */
 	private List<LeoObject> storage;
-	private LeoObject[] constants;
 	
 	/**
 	 */
 	public Constants() {		
-		this.constants = null;
 	}
 	
 	/**
@@ -83,7 +81,6 @@ public class Constants {
 		}
 		
 		this.storage.add(obj);
-		this.constants = null; /* force a recompile */
 		return this.storage.size() - 1;
 	}
 	
@@ -110,10 +107,11 @@ public class Constants {
 	 * @return compiles into an array of constants
 	 */
 	public LeoObject[] compile() {
-		if ( this.constants == null && this.storage != null) {
-			this.constants = this.storage.toArray(new LeoObject[this.storage.size()]);
+	    LeoObject[] constants = ArrayUtil.EMPTY_LEOOBJECTS;
+		if ( this.storage != null) {
+			constants = this.storage.toArray(new LeoObject[this.storage.size()]);
 		}
-		return this.constants!=null?this.constants:ArrayUtil.EMPTY_LEOOBJECTS;
+		return constants;
 	}
 }
 

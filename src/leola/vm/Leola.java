@@ -50,11 +50,10 @@ import leola.lang.SystemLeolaLibrary;
 import leola.lang.collection.CollectionsLeolaLibrary;
 import leola.lang.io.IOLeolaLibrary;
 import leola.lang.sql.SqlLeolaLibrary;
-import leola.vm.asm.AsmEmitter;
-import leola.vm.asm.Bytecode;
-import leola.vm.asm.Scope;
-import leola.vm.asm.Symbols;
-import leola.vm.compiler.BytecodeGenerator;
+import leola.vm.compiler.Bytecode;
+import leola.vm.compiler.BytecodeEmitter;
+import leola.vm.compiler.BytecodeGeneratorVisitor;
+import leola.vm.compiler.EmitterScopes;
 import leola.vm.debug.DebugListener;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaLibrary;
@@ -109,7 +108,7 @@ public class Leola {
 
 			Args pargs = Args.parse(args);
 
-			if ( pargs.isExecuteStatement()) {
+			if ( pargs.executeStatement()) {
 
 				List<File> includeDirectories = pargs.getIncludeDirectories();
 				Leola runtime = new Leola(pargs);
@@ -300,7 +299,7 @@ public class Leola {
 		this.global = new LeoNamespace(globalScope, GLOBAL_SCOPE_NAME);
 		globalScope.getNamespaceDefinitions().storeNamespace(GLOBAL_SCOPE_NAME, this.global);
 
-		if(args.isAllowThreadLocal()) {
+		if(args.allowThreadLocal()) {
 			this.vm = new VMReference() {				
 				private ThreadLocal<VM> vm = new ThreadLocal<VM>() {		
 					@Override
@@ -680,7 +679,6 @@ public class Leola {
 		if(ns == null) {
 			ns = new LeoNamespace(getSymbols().newObjectScope(), namespace);
 			getSymbols().peek().getNamespaceDefinitions().storeNamespace(namespace, ns);
-			//putGlobal(namespace, ns);
 		}
 		return ns;
 	}
@@ -951,9 +949,9 @@ public class Leola {
 	 */
 	public Bytecode compile(BufferedReader reader, ExceptionHandler exceptionHandler) throws Exception {
 		ASTNode program = generateAST(reader, exceptionHandler);
-		BytecodeGenerator gen = new BytecodeGenerator(this, this.symbols);
+		BytecodeGeneratorVisitor gen = new BytecodeGeneratorVisitor(this, new EmitterScopes());
 		program.visit(gen);
-		AsmEmitter asm = gen.getAsm();
+		BytecodeEmitter asm = gen.getAsm();
 		Bytecode bytecode = asm.compile();
 
 		return bytecode;

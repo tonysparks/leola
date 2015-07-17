@@ -3,7 +3,7 @@
 	Author: Tony Sparks
 	See license.txt
 */
-package leola.vm.asm;
+package leola.vm.compiler;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import leola.vm.Leola;
-import leola.vm.asm.Scope.ScopeType;
+import leola.vm.compiler.EmitterScope.ScopeType;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.types.LeoDouble;
 import leola.vm.types.LeoInteger;
@@ -23,7 +23,7 @@ import leola.vm.types.LeoObject;
 import leola.vm.types.LeoString;
 
 /**
- * Leola Bytecode Assembler, basically just a reader for the assemble which is directly translated to the {@link AsmEmitter} methods.  
+ * Leola Bytecode Assembler, basically just a reader for the assemble which is directly translated to the {@link BytecodeEmitter} methods.  
  * 
  * @author Tony
  *
@@ -62,7 +62,7 @@ public class Assembler {
 		
 		
 		Assembler asm = new Assembler();		
-		AsmEmitter a = asm.parseFile(filename);
+		BytecodeEmitter a = asm.parseFile(filename);
 		Bytecode code = a.compile();
 		
 		asm.writeOutput(code, filename + ".lbc");
@@ -112,7 +112,7 @@ public class Assembler {
 	 * @return
 	 * @throws Exception
 	 */
-	public AsmEmitter parseFile(String filename) throws Exception {
+	public BytecodeEmitter parseFile(String filename) throws Exception {
 		return parseInput(new BufferedReader(new FileReader(new File(filename))));
 	}
 	
@@ -120,13 +120,13 @@ public class Assembler {
 	 * Parses the input assembly.
 	 * 
 	 * @param reader
-	 * @return the {@link AsmEmitter}
+	 * @return the {@link BytecodeEmitter}
 	 * @throws Exception
 	 */
-	public AsmEmitter parseInput(BufferedReader reader) throws Exception {		
+	public BytecodeEmitter parseInput(BufferedReader reader) throws Exception {		
 		String line = null;
 		
-		AsmEmitter asm = new AsmEmitter(new Symbols());
+		BytecodeEmitter asm = new BytecodeEmitter(new EmitterScopes());
 		asm.start(ScopeType.GLOBAL_SCOPE);
 		try {
 			do {
@@ -147,14 +147,14 @@ public class Assembler {
 	}
 	
 	/**
-	 * Convenience method of compiling the {@link AsmEmitter} from {@link Assembler#parseInput(BufferedReader)}
+	 * Convenience method of compiling the {@link BytecodeEmitter} from {@link Assembler#parseInput(BufferedReader)}
 	 * 
 	 * @param reader
 	 * @return the compiled {@link Bytecode}
 	 * @throws Exception
 	 */
 	public Bytecode compile(BufferedReader reader) throws Exception {
-		AsmEmitter asm = parseInput(reader);
+		BytecodeEmitter asm = parseInput(reader);
 		return asm.compile();
 	}
 
@@ -165,7 +165,7 @@ public class Assembler {
 	 * @param line
 	 * @throws Exception
 	 */
-	private final AsmEmitter parseLine(AsmEmitter asm, String line) throws Exception {		
+	private final BytecodeEmitter parseLine(BytecodeEmitter asm, String line) throws Exception {		
 		line = parseOutComment(line);
 		
 		if(line.length() > 0) {
@@ -235,7 +235,7 @@ public class Assembler {
 	}
 	
 	interface Opcode {
-		void invoke(AsmEmitter asm, String ... args);
+		void invoke(BytecodeEmitter asm, String ... args);
 	}
 	
 	private String mergeString(String[] args) {		 
@@ -265,7 +265,7 @@ public class Assembler {
 	    
 		/* Pseudo opcodes */
 		opcodes.put(".CONST", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				String arg1 = args[0].trim();
 				if( arg1.startsWith("\"") ) {
 					String var = mergeString(args);										
@@ -294,37 +294,37 @@ public class Assembler {
 		});
 		
 		opcodes.put(".BEGIN", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.start(ScopeType.OBJECT_SCOPE);
 			}
 		});
 		
 		opcodes.put(".END", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {				
+			public void invoke(BytecodeEmitter asm, String...  args) {				
 				asm.end();
 				indexStack.pop();
 			}
 		});
 		
 		opcodes.put(".LOCALS", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.allocateLocals(Integer.parseInt(args[0]));
 			}
 		});
 		
 		/* Store operations */
 		opcodes.put("LOAD_CONST", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.loadconst(Integer.parseInt(args[0]));
 			}
 		});
 		opcodes.put("LOAD_LOCAL", new Opcode() {
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.loadlocal(Integer.parseInt(args[0]));
 			}
 		});
 		opcodes.put("LOAD_OUTER", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 			    Outers outers = asm.getOuters();
 			    int outerIndex = Integer.parseInt(args[0]);
 			    
@@ -344,17 +344,17 @@ public class Assembler {
 			}
 		});
 		opcodes.put("LOAD_NAME", new Opcode() {            
-            public void invoke(AsmEmitter asm, String...  args) {
+            public void invoke(BytecodeEmitter asm, String...  args) {
                 asm.loadname(Integer.parseInt(args[0]));
             }
         });
 		opcodes.put("PARAM_END", new Opcode() {            
-            public void invoke(AsmEmitter asm, String...  args) {
+            public void invoke(BytecodeEmitter asm, String...  args) {
                 asm.paramend();
             }
         });
 		opcodes.put("XLOAD_OUTER", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 			    // Pseudo-Opcode
 			    int outerIndex = Integer.parseInt(args[0]);
                 Outers outers = asm.getOuters();
@@ -364,7 +364,7 @@ public class Assembler {
 			}
 		});
 		opcodes.put("XLOAD_LOCAL", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 			    // Pseudo-Opcode
 			    int outerIndex = Integer.parseInt(args[0]);
 			    Outers outers = asm.getOuters();
@@ -374,27 +374,27 @@ public class Assembler {
 			}
 		});	
 		opcodes.put("LOAD_NULL", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.loadnull();
 			}
 		});
 		opcodes.put("LOAD_TRUE", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.loadtrue();
 			}
 		});
 		opcodes.put("LOAD_FALSE", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.loadfalse();
 			}
 		});
 		opcodes.put("STORE_LOCAL", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.storelocal(Integer.parseInt(args[0]));
 			}
 		});
 		opcodes.put("STORE_OUTER", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 			    Outers outers = asm.getOuters();
                 int outerIndex = Integer.parseInt(args[0]);
                 
@@ -416,47 +416,47 @@ public class Assembler {
 		
 		/* stack operators */
 		opcodes.put("SHIFT", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.shift(Integer.parseInt(args[0]));
 			}
 		});
 		opcodes.put("POP", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.pop();
 			}
 		});
 		opcodes.put("OPPOP", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.oppop();
 			}
 		});
 		opcodes.put("DUP", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.dup();
 			}
 		});
 		opcodes.put("RET", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.ret();
 			}
 		});
 		opcodes.put("MOV", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.mov();
 			}
 		});
 		opcodes.put("MOVN", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.movn(Integer.parseInt(args[0]));
 			}
 		});
 		opcodes.put("SWAP", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.swap(Integer.parseInt(args[0]));
 			}
 		});
 		opcodes.put("JMP", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				String label = args[0];
 				try {
 					asm.jmp(Integer.parseInt(args[0]));
@@ -467,7 +467,7 @@ public class Assembler {
 			}
 		});
 		opcodes.put("INVOKE", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				if(args.length>1) {
 					asm.invoke(Integer.parseInt(args[0]), Integer.parseInt(args[0])>0);
 				}
@@ -477,64 +477,64 @@ public class Assembler {
 			}
 		});
 		opcodes.put("TAIL_CALL", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.tailcall(Integer.parseInt(args[0]));
 			}
 		});
 				
 		opcodes.put("NEW_OBJ", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.newobj(Integer.parseInt(args[0]));				
 			}
 		});
 		opcodes.put("NEW_ARRAY", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.newarray(Integer.parseInt(args[0]));
 			}
 		});
 		opcodes.put("NEW_MAP", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.newmap(Integer.parseInt(args[0]));
 			}
 		});
 		opcodes.put("FUNC_DEF", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				/* second parameter is to denote var args */
 				asm.funcdef(Integer.parseInt(args[0]), args.length > 1);
 				indexStack.add(new Indexes());
 			}
 		});
 		opcodes.put("GEN_DEF", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				/* second parameter is to denote var args */
 				asm.gendef(Integer.parseInt(args[0]), args.length > 1);
 				indexStack.add(new Indexes());
 			}
 		});
         opcodes.put("CLASS_DEF", new Opcode() {         
-            public void invoke(AsmEmitter asm, String...  args) {
+            public void invoke(BytecodeEmitter asm, String...  args) {
                 asm.classdef(Integer.parseInt(args[0]));
                 indexStack.add(new Indexes());
             }
         });		
         opcodes.put("NAMESPACE_DEF", new Opcode() {         
-            public void invoke(AsmEmitter asm, String...  args) {
+            public void invoke(BytecodeEmitter asm, String...  args) {
                 asm.namespacedef();
                 indexStack.add(new Indexes());
             }
         });
         opcodes.put("YIELD", new Opcode() {          
-            public void invoke(AsmEmitter asm, String...  args) {
+            public void invoke(BytecodeEmitter asm, String...  args) {
                 asm.yield();
             }
         });		
 		opcodes.put("IS_A", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.isa();
 			}
 		});
 		opcodes.put("IFEQ", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				String label = args[0];
 				try {
 					asm.ifeq(Integer.parseInt(label)); 
@@ -546,35 +546,35 @@ public class Assembler {
 			}
 		});
 		opcodes.put("BREAK", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.brk(args[0]);
 			}
 		});
 		opcodes.put("CONTINUE", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.cont(args[0]);
 			}
 		});
 
 		opcodes.put("THROW", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.throw_();
 			}
 		});
 
 		/* object access */
 		opcodes.put("GET", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.get();
 			}
 		});
 		opcodes.put("SET", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.set();
 			}
 		});
 		opcodes.put("GET_GLOBAL", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				String arg1 = args[0];
 				if(arg1.startsWith("\"")) {
 					String var = mergeString(args);
@@ -587,7 +587,7 @@ public class Assembler {
 			}
 		});
 		opcodes.put("SET_GLOBAL", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				String arg1 = args[0];
 				if(arg1.startsWith("\"")) {
 					String var = mergeString(args);
@@ -601,122 +601,122 @@ public class Assembler {
 
 		/* arithmetic operators */
 		opcodes.put("ADD", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.add();
 			}
 		});
 		opcodes.put("SUB", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.sub();
 			}
 		});
 		opcodes.put("MUL", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.mul();
 			}
 		});
 		opcodes.put("DIV", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.div();
 			}
 		});
 		opcodes.put("MOD", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.mod();
 			}
 		});
 		opcodes.put("NEG", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.neg();
 			}
 		});
 		opcodes.put("BSL", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.bsl();
 			}
 		});
 		opcodes.put("BSR", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.bsr();
 			}
 		});
 		opcodes.put("BNOT", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.bnot();
 			}
 		});
 		opcodes.put("XOR", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.xor();
 			}
 		});
 		opcodes.put("LOR", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.lor();
 			}
 		});
 		opcodes.put("LAND", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.land();
 			}
 		});
 		opcodes.put("OR", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.or();
 			}
 		});
 		opcodes.put("AND", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.and();
 			}
 		});
 		opcodes.put("NOT", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.not();
 			}
 		});
 		opcodes.put("REQ", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.req();
 			}
 		});
 		opcodes.put("EQ", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.eq();
 			}
 		});
 		opcodes.put("NEQ", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.neq();
 			}
 		});
 		opcodes.put("GT", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.gt();
 			}
 		});
 		opcodes.put("GTE", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.gte();
 			}
 		});
 		opcodes.put("LT", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.lt();
 			}
 		});
 		opcodes.put("LTE", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.lte();
 			}
 		});
 		opcodes.put("LINE", new Opcode() {			
-			public void invoke(AsmEmitter asm, String...  args) {
+			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.line(Integer.parseInt(args[0]));
 			}
 		});
         opcodes.put("INIT_FINALLY", new Opcode() {          
-            public void invoke(AsmEmitter asm, String...  args) {                
+            public void invoke(BytecodeEmitter asm, String...  args) {                
                 String label = args[0];
                 try {
                     asm.initfinally(Integer.parseInt(label)); 
@@ -727,7 +727,7 @@ public class Assembler {
             }
         });		
         opcodes.put("INIT_ON", new Opcode() {          
-            public void invoke(AsmEmitter asm, String...  args) {
+            public void invoke(BytecodeEmitter asm, String...  args) {
                 
                 String label = args[0];
                 try {
@@ -739,17 +739,17 @@ public class Assembler {
             }
         });
         opcodes.put("END_ON", new Opcode() {          
-            public void invoke(AsmEmitter asm, String...  args) {
+            public void invoke(BytecodeEmitter asm, String...  args) {
                 asm.endon();
             }
         });        
         opcodes.put("END_FINALLY", new Opcode() {          
-            public void invoke(AsmEmitter asm, String...  args) {
+            public void invoke(BytecodeEmitter asm, String...  args) {
                 asm.endfinally();
             }
         });        
         opcodes.put("END_BLOCK", new Opcode() {          
-            public void invoke(AsmEmitter asm, String...  args) {
+            public void invoke(BytecodeEmitter asm, String...  args) {
                 asm.endblock();
             }
         });        

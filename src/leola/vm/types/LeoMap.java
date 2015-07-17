@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import leola.vm.asm.Symbols;
+import leola.vm.Symbols;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ArrayUtil;
 

@@ -10,7 +10,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Stack;
 
-import leola.vm.asm.Symbols;
+import leola.vm.Symbols;
 
 /**
  * An Error object

@@ -68,11 +68,7 @@ import leola.ast.YieldStmt;
 import leola.frontend.EvalException;
 import leola.frontend.parsers.ParameterList;
 import leola.vm.Leola;
-import leola.vm.asm.AsmEmitter;
-import leola.vm.asm.Bytecode;
-import leola.vm.asm.Constants;
-import leola.vm.asm.Scope.ScopeType;
-import leola.vm.asm.Symbols;
+import leola.vm.compiler.EmitterScope.ScopeType;
 import leola.vm.types.LeoString;
 import leola.vm.util.Pair;
 
@@ -83,12 +79,12 @@ import leola.vm.util.Pair;
  * @author Tony
  *
  */
-public class BytecodeGenerator implements ASTNodeVisitor {
+public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 
 	/**
 	 * The assembler
 	 */
-	private AsmEmitter asm;
+	private BytecodeEmitter asm;
 		
 	private Stack<String> breakLabelStack;
 	private Stack<String> continueLabelStack;
@@ -112,19 +108,19 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 	 * @param runtime
 	 * @param symbols
 	 */
-	public BytecodeGenerator(Leola runtime, Symbols symbols) {
-		this.asm = new AsmEmitter(symbols);
+	public BytecodeGeneratorVisitor(Leola runtime, EmitterScopes symbols) {
+		this.asm = new BytecodeEmitter(symbols);
 		this.asm.setDebug(runtime.getArgs().isDebugMode());
 			
 		this.breakLabelStack = new Stack<String>();
 		this.continueLabelStack = new Stack<String>();
-		this.tailCallStack = new Stack<BytecodeGenerator.Tailcall>();
+		this.tailCallStack = new Stack<BytecodeGeneratorVisitor.Tailcall>();
 	}
 		
 	/**
 	 * @return the asm
 	 */
-	public AsmEmitter getAsm() {
+	public BytecodeEmitter getAsm() {
 		return asm;
 	}
 
@@ -1502,7 +1498,7 @@ public class BytecodeGenerator implements ASTNodeVisitor {
 		
 		boolean isTailcall = false;
 		if ( expr instanceof FuncDefExpr ) {
-			TailcallOptimizer tc = new TailcallOptimizer(ref);
+			TailcallOptimizerVisitor tc = new TailcallOptimizerVisitor(ref);
 			Stmt body = ((FuncDefExpr)expr).getBody();
 			body.visit(tc);
 			

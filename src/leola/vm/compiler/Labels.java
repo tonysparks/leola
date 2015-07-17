@@ -3,7 +3,7 @@
     Author: Tony Sparks
     See license.txt
 */
-package leola.vm.asm;
+package leola.vm.compiler;
 
 import static leola.vm.Opcodes.SET_ARGsx;
 
@@ -68,14 +68,14 @@ public class Labels {
     
     /**
      * If the label exists, it will invoke the {@link Label#mark(int)} on the existing {@link Label}.
-     * If the label does not exist, it will create it and associate it with the supplied {@link AsmEmitter} and
+     * If the label does not exist, it will create it and associate it with the supplied {@link BytecodeEmitter} and
      * invoke the {@link Label#mark(int)} on it.
      * 
      * @param asm
      * @param labelName
      * @param opcode
      */
-    public void markLabel(AsmEmitter asm, String labelName, int opcode) {
+    public void markLabel(BytecodeEmitter asm, String labelName, int opcode) {
         if(!hasLabel(labelName)) {
             storeLabel(labelName, new Label(asm));
         }
@@ -86,13 +86,13 @@ public class Labels {
     
     /**
      * If the label exists, it will invoke the {@link Label#set()} on the existing {@link Label}.
-     * If the label does not exist, it will create it and associate it with the supplied {@link AsmEmitter} and
+     * If the label does not exist, it will create it and associate it with the supplied {@link BytecodeEmitter} and
      * invoke the {@link Label#set()} on it.
      * 
      * @param asm
      * @param labelName
      */
-    public void setLabel(AsmEmitter asm, String labelName) {
+    public void setLabel(BytecodeEmitter asm, String labelName) {
         if(!hasLabel(labelName)) {
             storeLabel(labelName, new Label(asm));
         }
@@ -114,9 +114,9 @@ public class Labels {
     /**
      * Reconciles the labels
      * 
-     * @param asm the current scoped {@link AsmEmitter}
+     * @param asm the current scoped {@link BytecodeEmitter}
      */
-    public void reconcileLabels(AsmEmitter asm) {
+    public void reconcileLabels(BytecodeEmitter asm) {
         for(Label label : labels()) {            
             for(long l : label.getDeltas()) {
                 int instrIndex = (int)(l >> 32);
