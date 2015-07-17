@@ -85,7 +85,6 @@ import java.util.List;
 import java.util.Stack;
 
 import leola.vm.Opcodes;
-import leola.vm.Scope;
 import leola.vm.compiler.EmitterScope.ScopeType;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.types.LeoDouble;
@@ -102,120 +101,97 @@ import leola.vm.util.ArrayUtil;
  *
  */
 public class BytecodeEmitter {	
-	private Instructions instructions;	
-	private Labels labels;
-	private Stack<BytecodeEmitter> innerEmitterStack;
-	private List<BytecodeEmitter> innerEmmitters;
-
-	private Stack<Integer> lexicalScopes;	
 	
+    /**
+     * Keeps track of the embedded scopes
+     */
+	private Stack<BytecodeEmitter> innerEmitterStack;
+	
+	/**
+	 * Keeps track of all of the scopes that we have 
+	 * created in this Emitter; so that we can compile bytecode for 
+	 * them
+	 */
+	private List<BytecodeEmitter> innerEmmitters;
+	
+	/**
+	 * The local scope of a {@link BytecodeEmitter}
+	 */
 	private EmitterScope localScope;
+	
+	/**
+	 * The global scope stack
+	 */
 	private EmitterScopes scopes;
 	
-	private DebugSymbols debugSymbols;
 	
-	private boolean usesLocals;
-	private boolean debug;
-	
-	private boolean hasParamIndexes;
-	
-	private int currentLineNumber;
-	private int numArgs;
-	private boolean isVarargs;
-	
-	private Stack<Integer> blockSize;
-	private boolean hasBlocks;
-	
+	/**
+	 * If we are in debugging mode
+	 */
+	private boolean isDebugMode;
 	/**
 	 * @param scopes keeps track of created {@link EmitterScope}'s
 	 */
 	public BytecodeEmitter(EmitterScopes scopes) {
 		this.scopes = scopes;
-		this.usesLocals = false;
-		this.isVarargs = false;
-		this.hasBlocks = false;
-		this.hasParamIndexes = false;
-		
-		this.currentLineNumber = -1;
-		this.lexicalScopes = new Stack<Integer>();
-		this.blockSize = new Stack<Integer>();
-		this.debugSymbols = new DebugSymbols();
-		
-		this.setDebug(false);
+
+        this.innerEmitterStack = new Stack<BytecodeEmitter>();
+        this.innerEmmitters = new ArrayList<BytecodeEmitter>();
 	}
 
+	
 	/**
 	 * @return true if the current scope stores variables on the stack
 	 * or in the current environment
 	 */
 	public boolean usesLocals() {
-		BytecodeEmitter peek = peek();
-		return peek.usesLocals || !peek.lexicalScopes.isEmpty();
+		return peek().localScope.usesLocals();
 	}
 
 	/**
 	 * Mark the beginning of an inner scope
 	 */
 	public void markLexicalScope() {
-		int index = getLocals().getIndex();
-		peek().lexicalScopes.push(index);
-		
-		if(isDebug()) {
-			peek().debugSymbols.startScope(getInstructionCount());
-		}
+	    peek().localScope.markLexicalScope();
 	}
 	
 	/**
 	 * Leave the scope
 	 */
 	public void unmarkLexicalScope() {
-		if(peek().lexicalScopes.isEmpty()) {
-			throw new LeolaRuntimeException("Illegal lexical scope");
-		}
-		
-		/*
-		 * This allows us for reusing the stack space
-		 * for other local variables that will be in
-		 * of scope by the time they get here
-		 */
-		int index = peek().lexicalScopes.pop();
-		int currentIndex = getLocals().getIndex();
-		if(currentIndex != index) {			
-			getLocals().setIndex(index);				
-		}
-		
-		if(isDebug()) {
-			peek().debugSymbols.endScope(getInstructionCount());
-		}
+	    peek().localScope.unmarkLexicalScope();
 	}
 	
 	/**
 	 * @return the debug
 	 */
 	public boolean isDebug() {
-		return debug;
+		return this.isDebugMode;
 	}
 	
 	/**
 	 * @param debug the debug to set
 	 */
 	public void setDebug(boolean debug) {
-		this.debug = debug;
+		this.isDebugMode = debug;
+		if(this.localScope != null) {
+		    this.localScope.setDebug(debug);
+		}
 	}
 	
 	private void incrementMaxstackSize(int delta) {
-		peek().localScope.incrementMaxstacksize(delta);
+	    peek().localScope.incrementMaxstacksize(delta);
 	}
 	
 	private void incrementMaxstackSize() {
-		peek().localScope.incrementMaxstacksize(1);
+	    peek().localScope.incrementMaxstacksize(1);
 	}
 	private void decrementMaxstackSize(int delta) {
-		peek().localScope.incrementMaxstacksize(-delta);
+	    peek().localScope.incrementMaxstacksize(-delta);
 	}
 	
 	private void decrementMaxstackSize() {
-		peek().localScope.incrementMaxstacksize(-1);
+	    peek().localScope.incrementMaxstacksize(-1);
 	}
 	
 	
@@ -225,40 +201,70 @@ public class BytecodeEmitter {
 	public int getMaxstacksize() {
 		return peek().localScope.getMaxstacksize();
 	}
-   	   
+	
+	/**
+	 * Set if this {@link BytecodeEmitter} accepts variable arguments
+	 * as parameters.
+	 * 
+	 * @param hasVarargs
+	 */
+	public void setVarargs(boolean hasVarargs) {
+	    peek().localScope.setVarargs(hasVarargs);
+	}
+	
+	/**
+	 * Set the number of arguments this {@link BytecodeEmitter} can accept.
+	 * 
+	 * @param numberOfArgs
+	 */
+	public void setNumberOfArgs(int numberOfArgs) {
+	    peek().localScope.setNumArgs(numberOfArgs);
+	}
+
     /**
-     * Starts a block of code, pushing a new {@link Scope}
+     * The current active {@link BytecodeEmitter}.  {@link BytecodeEmitter} may contain
+     * sub-scopes (aka {@link BytecodeEmitter} within {@link BytecodeEmitter}'s).  This 
+     * will return the current active one.
+     * 
+     * @return the current active {@link BytecodeEmitter}
      */
-    public void start() {
-        start(ScopeType.LOCAL_SCOPE);
-    }
+    public BytecodeEmitter peek() {
+        return this.innerEmitterStack.peek();
+    }   
+	
+	/**
+	 * Starts an assembler scope
+	 * 
+	 * @param scopeType
+	 */
+	public void start(ScopeType scopeType) {
+	    start(scopeType, 0, false);
+	}
     
     /**
      * Starts an assembler scope
      * 
      * @param scopeType the type of scope
+     * @param numberOfArguments
+     * @param hasVarargs
      */
-    public void start(ScopeType scopeType) {        
+    public void start(ScopeType scopeType, int numberOfArguments, boolean hasVarargs) {        
         this.localScope = scopeType == ScopeType.GLOBAL_SCOPE ? 
                               this.scopes.getGlobalScope()
                             : this.scopes.pushScope(scopeType); 
-
-        this.usesLocals = scopeType == ScopeType.LOCAL_SCOPE;
-        
-        this.instructions = new Instructions();     
-        this.labels = new Labels();
-                
-        this.innerEmitterStack = new Stack<BytecodeEmitter>();
-        this.innerEmmitters = new ArrayList<BytecodeEmitter>();
-        
+                              
+        this.localScope.setNumArgs(numberOfArguments);
+        this.localScope.setVarargs(hasVarargs);
         
         this.innerEmitterStack.push(this);
-        incrementMaxstackSize(2);
     }
+    
 
 	
 	/**
-	 * Ends a block of code
+	 * Ends a block of code, which will pop the current embedded {@link BytecodeEmitter} (if any).
+	 * 
+	 * @see BytecodeEmitter#start(ScopeType, int, boolean)
 	 */
 	public BytecodeEmitter end() {	
 		
@@ -282,7 +288,7 @@ public class BytecodeEmitter {
 	 * Reconciles the labels
 	 */
 	private void reconcileLabels() {
-	    getLabels().reconcileLabels(peek());	    
+	    peek().localScope.reconcileLabels();	    
 	}
 	
 	/**
@@ -351,13 +357,7 @@ public class BytecodeEmitter {
 	public Locals getLocals() {
 	    return peek().localScope.getLocals();
 	}
-	
-	/**
-	 * @return the current scope
-	 */
-	public EmitterScope getScope() {
-		return this.scopes.peek();
-	}
+
 	
 	/**
      * Reserve space for the number of locals
@@ -473,6 +473,7 @@ public class BytecodeEmitter {
 		return success;
 	}
 	
+		
 	/**
 	 * Adds the symbol to the {@link Locals}.
 	 * 
@@ -480,12 +481,7 @@ public class BytecodeEmitter {
 	 * @return the index it is stored in the locals table
 	 */
 	public int addLocal(String reference) {
-		if(isDebug()) {
-			peek().debugSymbols.store(reference, getInstructionCount());
-		}
-		
-		Locals locals = getLocals();
-		return locals.store(reference);
+	    return peek().localScope.addLocal(reference);
 	}
 	
 	/**
@@ -527,29 +523,28 @@ public class BytecodeEmitter {
 	 * @return the labels
 	 */
 	public Labels getLabels() {
-		return peek().labels;
+		return peek().localScope.getLabels();
 	}
 	
 	/**
 	 * @return the instructions
 	 */
 	public Instructions getInstructions() {
-		return peek().instructions;
+		return peek().localScope.getInstructions();
 	}
-	
-	
+
 	/**
-	 * @return the current scoped Asm
-	 */
-	public BytecodeEmitter peek() {
-		return this.innerEmitterStack.peek();
-	}
+     * @return the localScope
+     */
+    public EmitterScope getLocalScope() {
+        return peek().localScope;
+    }
 	
 	/**
 	 * @return the current instruction
 	 */
 	private int peekInstr() {
-		Instructions instrs = peek().instructions;
+		Instructions instrs = peek().localScope.getInstructions();
 		return instrs.peekLast();
 	}
 	
@@ -558,7 +553,7 @@ public class BytecodeEmitter {
 	 * @param instr
 	 */
 	private void setInstr(int instr) {
-	    Instructions instrs = peek().instructions;
+	    Instructions instrs = peek().localScope.getInstructions();
 	    instrs.setLast(instr);
 	}
 	
@@ -570,16 +565,16 @@ public class BytecodeEmitter {
 	 * @param argx
 	 */
 	private void linstrx(int opcode, int argx) {
-		this.instructions.add(SET_ARGx(opcode, argx));
+	    localScope.addInstr(SET_ARGx(opcode, argx));
 	}
 	
 	/**
 	 * Outputs an instruction with no arguments
 	 * 
-	 * @param opcode
+	 * @param instruction
 	 */
-	private void instr(int opcode) {
-		this.innerEmitterStack.peek().instructions.add(opcode);
+	private void instr(int instruction) {
+	    peek().localScope.addInstr(instruction);
 	}
 	
 	/**
@@ -633,6 +628,37 @@ public class BytecodeEmitter {
 		instr(opcode); // will eventually be replaced
 		getLabels().markLabel(this, label, opcode);				
 	}
+		
+	/**
+	 * Constructs a new embedded {@link BytecodeEmitter} with the
+	 * object scope.
+	 */
+    private void newObjectScopeEmitter() {
+
+        BytecodeEmitter asm = new BytecodeEmitter(this.scopes);
+        asm.start(ScopeType.OBJECT_SCOPE);
+        asm.setDebug(this.isDebug());
+
+        peek().innerEmmitters.add(asm);
+        this.innerEmitterStack.push(asm);
+    }
+
+    /**
+     * Constructs a new embedded {@link BytecodeEmitter} with the 
+     * local scope.
+     * 
+     * @param numberOfParameters
+     * @param hasVarargs
+     */
+    private void newLocalScopeEmitter(int numberOfParameters, boolean hasVarargs) {
+
+        BytecodeEmitter asm = new BytecodeEmitter(this.scopes);
+        asm.start(ScopeType.LOCAL_SCOPE, numberOfParameters, hasVarargs);
+        asm.setDebug(this.isDebug());
+
+        peek().innerEmmitters.add(asm);
+        this.innerEmitterStack.push(asm);
+    }
 	
 	/**
 	 * Creates a label with the supplied name
@@ -663,10 +689,18 @@ public class BytecodeEmitter {
 	 * @return the labeled name
 	 */
 	public String nextLabelName() {
-	    return peek().labels.nextLabelName();
+	    return peek().getLabels().nextLabelName();
 	}
 	
-	
+	/**
+     * The current bytecode index of this {@link BytecodeEmitter}.  That is,
+     * the index to be used to retrieve this {@link Bytecode} from {@link Bytecode#inner}
+     *  
+     * @return the index that references this {@link BytecodeEmitter}
+     */
+    public int getBytecodeIndex() {
+        return peek().innerEmmitters.size();
+    }
 	
 	/*================================================================================
 	 * The Assembler
@@ -682,10 +716,9 @@ public class BytecodeEmitter {
 	 */
 	public void line(int line) {
 		if ( this.isDebug() ) {
-			if ( line != this.currentLineNumber && line != 0 
-				&& (getInstructionCount() > 0 && OPCODE(peekInstr()) != LINE )
-				) {
-				this.currentLineNumber = line;
+			if ( line != peek().localScope.getCurrentLineNumber() && line != 0 
+				&& (getInstructionCount() > 0 && OPCODE(peekInstr()) != LINE )) {
+				peek().localScope.setCurrentLineNumber(line);
 				
 				instrx(LINE, line);
 			}
@@ -716,7 +749,7 @@ public class BytecodeEmitter {
         instr(PARAM_END);
         incrementMaxstackSize();
         
-        peek().hasParamIndexes = true;
+        peek().localScope.activateParameterIndexes();
     }
 	
 	
@@ -752,6 +785,8 @@ public class BytecodeEmitter {
 		instr(POP);
 		decrementMaxstackSize();
 	}
+	
+	
 	public void oppop() {
 		boolean dupOptimization = false;
 		
@@ -759,7 +794,7 @@ public class BytecodeEmitter {
 		 * if there was, that means there is a DUP instruction
 		 * that we can ignore, along with this OPPOP
 		 */
-		Instructions instructions = peek().instructions;
+		Instructions instructions = getInstructions();
 		int numberOfInstrs = instructions.getCount();
 		if(numberOfInstrs > 1) {
 		    
@@ -898,66 +933,36 @@ public class BytecodeEmitter {
 	public void setglobal(int constindex) {
 		instrx(SET_GLOBAL, constindex);
 		decrementMaxstackSize();
-	}
+	}	
 	
-   public void namespacedef() {
+    public void namespacedef() {
         instrx(NAMESPACE_DEF, getBytecodeIndex());
         incrementMaxstackSize();
         
-        BytecodeEmitter asm = new BytecodeEmitter(this.scopes);
-        asm.setDebug(this.isDebug());
-        asm.start(ScopeType.OBJECT_SCOPE);      
-                
-        peek().innerEmmitters.add(asm);
-        this.innerEmitterStack.push(asm);
+        newObjectScopeEmitter();
     }
 	
 	public void classdef(int numberOfInterfaces) {
 		instrx(CLASS_DEF, numberOfInterfaces);
 		incrementMaxstackSize(numberOfInterfaces);		
 		
-		BytecodeEmitter asm = new BytecodeEmitter(this.scopes);		
-		asm.setDebug(this.isDebug());
-		asm.start(ScopeType.OBJECT_SCOPE);
-				
-		peek().innerEmmitters.add(asm);
-		this.innerEmitterStack.push(asm);
+		newObjectScopeEmitter();
 	}
 	
 	public void gendef(int numberOfParameters, boolean isVarargs) {
 		instrx(GEN_DEF, getBytecodeIndex());		
 		incrementMaxstackSize(numberOfParameters);
 		
-		BytecodeEmitter asm = new BytecodeEmitter(this.scopes);
-		asm.setDebug(this.isDebug());
-		
-		asm.numArgs = numberOfParameters;
-		asm.isVarargs = isVarargs;
-		asm.start(ScopeType.LOCAL_SCOPE);
-				
-		peek().innerEmmitters.add(asm);
-		this.innerEmitterStack.push(asm);
+		newLocalScopeEmitter(numberOfParameters, isVarargs);
 	}
 	
 	public void funcdef(int numberOfParameters, boolean isVarargs) {
 		instrx(FUNC_DEF, getBytecodeIndex());		
 		incrementMaxstackSize(numberOfParameters);
 		
-		BytecodeEmitter asm = new BytecodeEmitter(this.scopes);
-		asm.setDebug(this.isDebug());
+		newLocalScopeEmitter(numberOfParameters, isVarargs);
+	}
 		
-		asm.numArgs = numberOfParameters;	
-		asm.isVarargs = isVarargs;
-		asm.start(ScopeType.LOCAL_SCOPE);
-				
-		peek().innerEmmitters.add(asm);
-		this.innerEmitterStack.push(asm);
-	}
-	
-	public int getBytecodeIndex() {
-		return peek().innerEmmitters.size();
-	}
-	
 	public void isa() {
 		instr(IS_A);
 		decrementMaxstackSize();
@@ -994,34 +999,33 @@ public class BytecodeEmitter {
 	}
 	
 	public void initfinally() {
-	    peek().hasBlocks = true;
-		peek().blockSize.add(getInstructionCount());
+	    peek().localScope.activateBlocks(getInstructionCount());
+		
 		// this will be populated with the correct offset
 		instrsx(INIT_FINALLY, 0); 
 		
 	}
 	public void initfinally(int offset) {
-	    peek().hasBlocks = true;
+	    peek().localScope.activateBlocks();
 	    instrsx(INIT_FINALLY, offset);
 	}
 	public void initfinally(String label) {
-        peek().hasBlocks = true;        
+	    peek().localScope.activateBlocks();        
         markLabel(INIT_FINALLY, label);
     }
 	
 	public void initon() {
-	    peek().hasBlocks = true;
-	    peek().blockSize.add(getInstructionCount());
+	    peek().localScope.activateBlocks(getInstructionCount());
 		// this will be populated with the correct offset
 		instrsx(INIT_ON, 0); 		
 	}
 	
 	public void initon(int offset) {
-	    peek().hasBlocks = true;
+	    peek().localScope.activateBlocks();
         instrsx(INIT_ON, offset); 
 	}
 	public void initon(String label) {
-        peek().hasBlocks = true;        
+	    peek().localScope.activateBlocks();
         markLabel(INIT_ON, label);
     }
 	
@@ -1029,13 +1033,13 @@ public class BytecodeEmitter {
 		instr(END_FINALLY);
 	}
 	public void markendfinally() {
-		int startPC = peek().blockSize.pop();
+		int startPC = peek().localScope.popBlock();
 		getInstructions().set(startPC, SET_ARGsx(INIT_FINALLY, getInstructionCount()));
 		instr(END_BLOCK);
 	}
 	
 	public void markendon() {
-		int startPC = peek().blockSize.pop();
+	    int startPC = peek().localScope.popBlock();
 		getInstructions().set(startPC, SET_ARGsx(INIT_ON, getInstructionCount()));
 		instr(END_BLOCK);
 	}
@@ -1157,24 +1161,19 @@ public class BytecodeEmitter {
 	 */
 	public Bytecode compile() throws LeolaRuntimeException {
 
-		int [] code = this.instructions.truncate();
+		int [] code = localScope.getRawInstructions();
 		Bytecode bytecode = new Bytecode(code);
-		
-		//BytecodeOptimizer.optimize(bytecode);
-		
-		bytecode.numInners = this.innerEmmitters.size();
-		bytecode.inner = new Bytecode[bytecode.numInners];
-				
-		bytecode.numArgs = this.numArgs;
-		if(this.isVarargs) {
+					
+		bytecode.numArgs = localScope.getNumArgs();
+		if(localScope.hasVarargs()) {
 		    bytecode.setVarargs();
 		}
 		
-		if(this.hasBlocks) {
+		if(localScope.hasBlocks()) {
 		    bytecode.setBlocks();
 		}		
 		
-		if(this.hasParamIndexes) {
+		if(localScope.hasParameterIndexes()) {
 		    bytecode.setParamIndexes();
 		}
 		
@@ -1184,7 +1183,7 @@ public class BytecodeEmitter {
 		}
 		
 		
-		bytecode.paramNames = new LeoString[this.numArgs];
+		bytecode.paramNames = new LeoString[bytecode.numArgs];
 		if(this.localScope.hasLocals()) {
 			Locals locals = this.localScope.getLocals();
 			bytecode.numLocals = locals.getNumberOfLocals();
@@ -1202,7 +1201,7 @@ public class BytecodeEmitter {
 		/* we only care about this for classes */
 		if ( isDebug() ) {
 		    bytecode.setDebug();
-			bytecode.debugSymbols = this.debugSymbols;
+			bytecode.debugSymbols = localScope.getDebugSymbols();
 		}
 										
 		if ( this.localScope.hasConstants() ) {
@@ -1215,12 +1214,17 @@ public class BytecodeEmitter {
 			bytecode.constants = ArrayUtil.EMPTY_LEOOBJECTS;
 		}
 		
-		int stacksize = bytecode.numArgs + bytecode.numLocals + this.localScope.getMaxstacksize(); 		
+		int stacksize = this.localScope.getMaxstacksize();
+		stacksize += bytecode.numArgs;
+		stacksize += bytecode.numLocals; 
 		stacksize += bytecode.numConstants;				
 		stacksize += bytecode.numOuters;		
 				
 		bytecode.maxstacksize = stacksize;		
 		
+		
+	    bytecode.numInners = this.innerEmmitters.size();
+	    bytecode.inner = new Bytecode[bytecode.numInners];
 		for(int i = 0; i < bytecode.inner.length; i++) {
 			bytecode.inner[i] = this.innerEmmitters.get(i).compile();
 		}

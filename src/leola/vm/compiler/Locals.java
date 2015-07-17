@@ -22,15 +22,33 @@ import leola.vm.util.ArrayUtil;
  */
 public class Locals {
 
+    /**
+     * The pool of reference symbols
+     */
 	private String[] pool;	
+	
+	/**
+	 * Current index to store in the pool
+	 */
 	private int index;
+	
+	/**
+	 * Total number of locals defined
+	 * within the scope
+	 */
 	private int numberOfLocals;
 		
 	public Locals() {		
 		this.index = 0;
 	}
 	
-	
+	/**
+	 * Retrieve the index at which the supplied reference lives in the
+	 * pool.
+	 * 
+	 * @param reference
+	 * @return the index at which the reference is stored.  If not found, -1.
+	 */
 	private int getFromPool(String reference) {
 		if(pool==null) {
 			pool = ArrayUtil.newStringArray();
@@ -47,6 +65,13 @@ public class Locals {
 		
 		return index;
 	}
+	
+	/**
+	 * Stores the reference at the supplied index in the pool
+	 * 
+	 * @param reference
+	 * @param index
+	 */
 	private void putInPool(String reference, int index) {
 		if ( index >= this.pool.length ) {
 			this.pool = ArrayUtil.resize(pool, pool.length  << 1 );
@@ -58,28 +83,22 @@ public class Locals {
 	
 	/**
 	 * Allocates the number of local variables stored 
+	 * 
 	 * @param size
 	 */
 	public void allocate(int size) {
 		if ( this.pool == null ) {	
 			this.pool = new String[size];
 		}				
-		this.index = size;
+		this.index = 0;
 		this.numberOfLocals = size;
 	}
 		
-	/**
-	 * @return the variable names
-	 */
-	public String[] vars() {
-		return this.pool;
-	}		
 	
 	/**
 	 * Stores in the pool
 	 * 
 	 * @param reference
-	 * @param obj
 	 * @return the index within the pool in which the reference is stored.
 	 */
 	public int store(String reference) {
@@ -96,6 +115,7 @@ public class Locals {
 		else {
 			return index;
 		}
+		
 		int result = this.index++;
 		this.numberOfLocals = Math.max(this.index, this.numberOfLocals);
 		

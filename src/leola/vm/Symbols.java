@@ -48,16 +48,7 @@ public class Symbols {
 	private Scope pushObjectScope() {
 		return pushScope();
 	}
-	
-
-	/**
-	 * Pushes a new {@link Scope}
-	 * @return the new {@link Scope}
-	 */
-//	public Scope pushLocalScope() {
-//		return pushScope(ScopeType.LOCAL_SCOPE);
-//	}
-	
+		
 	/**
 	 * Pushes a new {@link Scope}
 	 * @return the new {@link Scope}

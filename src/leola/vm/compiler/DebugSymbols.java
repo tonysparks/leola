@@ -18,11 +18,29 @@ import java.util.Stack;
  *
  */
 public class DebugSymbols {
-	static class LocVar {
+    
+    /**
+     * Local variable
+     * 
+     * @author Tony
+     *
+     */
+	private static class LocalVar {
+	    
+	    /**
+	     * The reference/name of the variable
+	     */
 		String symbol;
+		
+		/**
+		 * The starting and ending program counter
+		 * that encompasses the scope.  That is, this
+		 * local variable only lives within these 
+		 * instructions
+		 */
 		int startpc, endpc;
 		
-		LocVar(String symbol, int startpc, int endpc) {		
+		LocalVar(String symbol, int startpc, int endpc) {		
 			this.symbol = symbol;
 			this.startpc = startpc;
 			this.endpc = endpc;
@@ -31,9 +49,23 @@ public class DebugSymbols {
 		
 	}
 	
-	private LocVar[] locvars;
-	private int index;
+	/**
+	 * All of the local variables for
+	 * a {@link Bytecode}
+	 */
+	private LocalVar[] locvars;
+	
+	/**
+	 * Number of lexical scopes within a
+	 * {@link Bytecode}
+	 */
 	private Stack<Integer> scopes;
+	
+	/**
+	 * The actual number of local
+	 * variables
+	 */
+	private int index;
 	
 	private String source;
 	private String sourceFile;
@@ -43,11 +75,11 @@ public class DebugSymbols {
 	 */
 	public DebugSymbols() {
 		this.scopes = new Stack<Integer>();
-		this.locvars = new LocVar[10];
+		this.locvars = new LocalVar[10];
 		this.index = 0;
 	}
 	
-	public DebugSymbols(LocVar[] vars) {
+	public DebugSymbols(LocalVar[] vars) {
 		this.locvars = vars;
 		this.index = vars.length;
 		this.scopes = new Stack<Integer>();
@@ -81,21 +113,43 @@ public class DebugSymbols {
 		return sourceFile;
 	}
 	
+	
+	/**
+	 * Stores a symbol starting at an instruction location (program counter).
+	 * 
+	 * @param reference
+	 * @param startpc
+	 * @return the index at which the symbol is stored
+	 */
 	public int store(String reference, int startpc) {
+	    /* Expand the array if we have reached our local limit
+	     */
 		if ( index >= this.locvars.length ) {			
-			LocVar[] newarray = new LocVar[locvars.length  << 1];
+			LocalVar[] newarray = new LocalVar[locvars.length  << 1];
 			System.arraycopy(this.locvars, 0, newarray, 0, this.locvars.length);
 			this.locvars = newarray;
 		}
 		
-		this.locvars[index] = new LocVar(reference, startpc, -1);
+		this.locvars[index] = new LocalVar(reference, startpc, -1);
 		return this.index++;
 	}
 	
+	
+	/**
+	 * Starts a new scope for local variables
+	 * 
+	 * @param startpc
+	 */
 	public void startScope(int startpc) {
 		scopes.push(startpc);
 	}
 	
+	
+	/**
+	 * Ends the lexical scope for the local variable
+	 * 
+	 * @param endpc
+	 */
 	public void endScope(int endpc) {
 		int pc = scopes.pop();
 		for (int i = 0; i < locvars.length; i++) {
@@ -108,13 +162,17 @@ public class DebugSymbols {
 	}
 	
 	/**
-	 * Retrieves a symbol
+	 * Retrieves a symbol for a local variable
+	 * 
 	 * @param index
-	 * @return
+	 * @param pc the instruction location (program counter)
+	 * @return the reference name at the supplied index and program counter
 	 */
 	public String getSymbol(int index, int pc) {		  
 		for (int i = 0; i < this.index && locvars[i].startpc <= pc; i++) {
-			if (pc < locvars[i].endpc || locvars[i].endpc == -1 ) {  /* is variable active? */
+		    
+		    /* is variable active? */
+			if (pc < locvars[i].endpc || locvars[i].endpc == -1 ) {  
 				index--;
 				if (index < 0)
 					return locvars[i].symbol;
@@ -123,6 +181,10 @@ public class DebugSymbols {
 		return null;  /* not found */
 	}
 	
+	
+	/**
+	 * @return the number of debug symbols
+	 */
 	public int getSize() {
 		return this.index;
 	}
@@ -136,7 +198,7 @@ public class DebugSymbols {
 	 */
 	public static DebugSymbols read(DataInput input) throws IOException {		
 		int len = input.readInt();
-		LocVar[] vars = new LocVar[len];
+		LocalVar[] vars = new LocalVar[len];
 		for(int i = 0; i < len; i++) {
 			int strLen = input.readInt();
 			byte[] s = new byte[strLen];
@@ -145,7 +207,7 @@ public class DebugSymbols {
 			
 			int startpc = input.readInt();
 			int endpc = input.readInt();
-			vars[i] = new LocVar(symbol, startpc, endpc);			
+			vars[i] = new LocalVar(symbol, startpc, endpc);			
 		}
 		
 		return new DebugSymbols(vars);
@@ -159,7 +221,7 @@ public class DebugSymbols {
 	public void write(DataOutput output) throws IOException {
 		output.writeInt(this.index);
 		for(int i = 0; i < this.index; i++) {
-			LocVar var = this.locvars[i];
+			LocalVar var = this.locvars[i];
 			output.writeInt(var.symbol.length());
 			output.write(var.symbol.getBytes());
 			

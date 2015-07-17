@@ -114,9 +114,9 @@ public class Labels {
     /**
      * Reconciles the labels
      * 
-     * @param asm the current scoped {@link BytecodeEmitter}
+     * @param instructions the list of instructions that contain the jump labels
      */
-    public void reconcileLabels(BytecodeEmitter asm) {
+    public void reconcileLabels(Instructions instructions) {
         for(Label label : labels()) {            
             for(long l : label.getDeltas()) {
                 int instrIndex = (int)(l >> 32);
@@ -124,7 +124,7 @@ public class Labels {
                 int delta = label.getLabelInstructionIndex() - instrIndex - 1;
                 int instr = SET_ARGsx(opcode,  delta);   
                 
-                asm.getInstructions().set(instrIndex, instr);
+                instructions.set(instrIndex, instr);
             }
         }
     }
