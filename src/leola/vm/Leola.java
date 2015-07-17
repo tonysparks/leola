@@ -18,8 +18,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.List;
 
 import leola.ast.ASTNode;
@@ -40,6 +40,7 @@ import leola.frontend.events.SyntaxErrorListener;
 import leola.frontend.listener.EventDispatcher;
 import leola.frontend.tokens.LeolaErrorCode;
 import leola.lang.ArrayLeolaLibrary;
+import leola.lang.CollectionsLeolaLibrary;
 import leola.lang.DateLeolaLibrary;
 import leola.lang.DebugLeolaLibrary;
 import leola.lang.LangLeolaLibrary;
@@ -47,7 +48,6 @@ import leola.lang.MapLeolaLibrary;
 import leola.lang.ReflectionLeolaLibrary;
 import leola.lang.StringLeolaLibrary;
 import leola.lang.SystemLeolaLibrary;
-import leola.lang.collection.CollectionsLeolaLibrary;
 import leola.lang.io.IOLeolaLibrary;
 import leola.lang.sql.SqlLeolaLibrary;
 import leola.vm.compiler.Bytecode;
@@ -107,104 +107,84 @@ public class Leola {
 		else {
 
 			Args pargs = Args.parse(args);
-
-			if ( pargs.executeStatement()) {
-
-				List<File> includeDirectories = pargs.getIncludeDirectories();
-				Leola runtime = new Leola(pargs);
-				runtime.setIncludePath(includeDirectories);
-
-				Bytecode code = runtime.compile(new BufferedReader(new StringReader(pargs.getStatement())));
-
-				/* display the bytecode */
-				if ( pargs.displayBytecode()) {
-					System.out.println(code.dump());
-				}
-								
-				try {
-					LeoObject result = runtime.execute(code);
-					if(result.isError()) {
-						System.err.println(result);
-					}
-					else {
-					    System.out.println(result);
-					}
-				}
-				catch(LeolaRuntimeException e) {
-					System.err.println(e.getLeoError());
-				}
+			try {
+    			if ( pargs.executeStatement()) {
+    				executeStatement(pargs);
+    			}
+    			else {
+    				executeScript(pargs);
+    			}
 			}
-			else {
-				String file = pargs.getFileName();
-				boolean isCompiled = file.endsWith(LEOLA_COMPILED_EXT);
-
-				File scriptFile = new File(file);
-				// add the files directory to the path..
-				List<File> includeDirectories = pargs.getIncludeDirectories();
-				includeDirectories.add(new File(scriptFile.getParent()));
-
-				Leola runtime = new Leola(pargs);
-				runtime.setIncludePath(includeDirectories);
-
-
-				Bytecode code = null;
-				if ( !isCompiled ) {
-					try {
-						code = runtime.compile(new BufferedReader(new FileReader(scriptFile)));
-						code.setSourceFile(scriptFile.getName());
-					}
-					catch(ParseException e) {
-						return;	/* let the syntax handler display the error */
-					}
-				}
-				else {
-					BufferedInputStream iStream = new BufferedInputStream(new FileInputStream(scriptFile));
-					DataInput in = new DataInputStream(iStream);
-					code = Bytecode.read(runtime.getGlobalNamespace(), runtime.getSymbols(), in);
-					code.setSourceFile(scriptFile.getName());
-				}
-
-
-				/* display the bytecode */
-				if ( pargs.displayBytecode()) {
-					System.out.println(code.dump());
-				}
-
-
-				if (! isCompiled && pargs.generateBytecode()) {
-					String bytecodeFileName = file + ((file.endsWith(LEOLA_EXT))
-														? "c" : "." + LEOLA_COMPILED_EXT);
-
-					File pFile = new File(bytecodeFileName);
-
-					FileOutputStream fStream = new FileOutputStream(pFile);
-					if ( pFile.exists() ) {
-						fStream.getChannel().truncate(0);
-					}
-
-					BufferedOutputStream oStream = new BufferedOutputStream(fStream);
-					DataOutput output = new DataOutputStream(oStream);
-
-					code.write(output);
-					oStream.flush();
-					oStream.close();
-				}
-				else {
-					try {
-						LeoObject result = runtime.execute(code);
-						if(result.isError()) {
-							System.err.println(result);
-						}
-					}
-					catch(LeolaRuntimeException e) {
-						System.err.println(e.getLeoError());
-					}
-				}
+			catch(ParseException e) {
+			    // the exception handlers will display this
+			}
+			catch(LeolaRuntimeException e) {
+			    System.err.println(e.getLeoError());    
 			}
 		}
 
 	}
 
+	/**
+	 * Executes statement the command line statement
+	 * 
+	 * @param pargs
+	 * @throws Exception
+	 */
+	private static void executeStatement(Args pargs) throws Exception {
+        Leola runtime = new Leola(pargs);
+        Bytecode code = runtime.compile(new BufferedReader(
+                                                new StringReader(pargs.getStatement())));
+
+        if ( pargs.displayBytecode()) {
+            System.out.println(code.dump());
+        }
+             
+        LeoObject result = runtime.execute(code);
+        if(result.isError()) {
+            System.err.println(result);
+        }
+        else {
+            System.out.println(result);
+        }
+
+	}
+	
+	/**
+	 * Execute or compile the supplied script
+	 * 
+	 * @param pargs
+	 * @throws Exception
+	 */
+	private static void executeScript(Args pargs) throws Exception {
+	    File scriptFile = new File(pargs.getFileName());
+        pargs.getIncludeDirectories()
+             .add(new File(scriptFile.getParent()));
+
+        Leola runtime = new Leola(pargs);
+        
+        boolean isCompiled = runtime.hasLeolaCompiledExtension(scriptFile);
+        Bytecode code = !isCompiled ?
+                          runtime.compile(scriptFile) :
+                          runtime.read(scriptFile);
+
+        if ( pargs.displayBytecode()) {
+            System.out.println(code);
+        }
+
+
+        if (! isCompiled && pargs.generateBytecode()) {
+            runtime.write(runtime.toLeolaCompiledFile(scriptFile), code);
+        }
+        else {
+
+            LeoObject result = runtime.execute(code);
+            if(result.isError()) {
+                System.err.println(result);
+            }
+        }
+	}
+	
 	/**
 	 * A means for retrieving a VM instance
 	 * 
@@ -289,9 +269,11 @@ public class Leola {
 		this.eventDispatcher.addEventListener(SyntaxErrorEvent.class, parserListener);
 		this.eventDispatcher.addEventListener(ParserSummaryEvent.class, parserListener);
 
-		this.includeDirectories = new ArrayList<File>();
+		setIncludePath(args.getIncludeDirectories());
 		this.resourceLoader = new ResourceLoader(this);
 
+		
+		
 		this.printSource = false;
 
 		this.symbols = new Symbols();
@@ -491,9 +473,48 @@ public class Leola {
 	}
 
 	/**
+	 * Determines if the supplied {@link File} has the Leola script
+	 * file extension.
+	 * 
+	 * @param file
+	 * @return true if the {@link File} is named as a Leola script file
+	 */
+	public boolean hasLeolaExtension(File file) {
+	    return file.getName().endsWith(LEOLA_EXT);
+	}
+	
+	
+	/**
+     * Determines if the supplied {@link File} has the Leola compiled script
+     * file extension.
+     * 
+     * @param file
+     * @return true if the {@link File} is named as a Leola compiled script file
+     */
+	public boolean hasLeolaCompiledExtension(File file) {
+	    return file.getName().endsWith(LEOLA_COMPILED_EXT);
+	}
+	
+	
+	/**
+	 * Creates a new {@link File} based on the supplied {@link File},
+	 * converts it into a Leola compiled script file extension.
+	 * 
+	 * @param file
+	 * @return a {@link File} that has the Leola comiled script File extension.
+	 */
+	public File toLeolaCompiledFile(File file) {
+        String bytecodeFileName = file.getName() 
+                + ((file.getName().endsWith(LEOLA_EXT)) 
+                        ? "c" : "." + LEOLA_COMPILED_EXT);
+
+        return new File(bytecodeFileName);
+	}
+	
+	/**
 	 * Throws a {@link LeolaRuntimeException} if currently in sandboxed mode.
 	 * 
-	 * This is an internal API used for error checking other components as a convienience method.
+	 * This is an internal API used for error checking other components as a convenience method.
 	 */
 	public void errorIfSandboxed() {
 		if(isSandboxed()) {
@@ -896,7 +917,7 @@ public class Leola {
 		LeoNamespace ns = getOrCreateNamespace(namespace);
 
 		LeoObject result = LeoNull.LEONULL;
-		boolean isCompiled = file.getName().endsWith(LEOLA_COMPILED_EXT);
+		boolean isCompiled = hasLeolaCompiledExtension(file);
 		if(isCompiled) {
 			BufferedInputStream iStream = new BufferedInputStream(new FileInputStream(file));
 			DataInput in = new DataInputStream(iStream);
@@ -929,6 +950,103 @@ public class Leola {
 		return result;
 	}
 
+	/**
+	 * Reads the {@link Bytecode} from the {@link File}
+	 * 
+	 * @param scriptFile
+	 * @return the {@link Bytecode}
+	 * @throws Exception
+	 */
+	public Bytecode read(File scriptFile) throws Exception {
+	    Bytecode code = read(new BufferedInputStream(new FileInputStream(scriptFile)));
+	    if(code != null) {
+	        code.setSourceFile(scriptFile.getName());
+	    }
+	    
+	    return code;
+	}
+	
+	
+	/**
+	 * Reads the {@link Bytecode} from the {@link InputStream}
+	 * 
+	 * @param iStream
+	 * @return the {@link Bytecode}
+	 * @throws Exception
+	 */
+	public Bytecode read(InputStream iStream) throws Exception {
+	    try {
+            DataInput in = new DataInputStream(iStream);            
+            Bytecode code = Bytecode.read(getGlobalNamespace(), getSymbols(), in);            
+            return code;
+	    }
+	    finally {
+	        if(iStream != null) {
+	            iStream.close();
+	        }
+	    }
+	}
+
+	/**
+	 * Writes out the {@link Bytecode} to the {@link File}
+	 * 
+	 * @param scriptFile
+	 * @param bytecode
+	 * @throws Exception
+	 */
+	public void write(File scriptFile, Bytecode bytecode) throws Exception {
+        FileOutputStream fStream = null;
+        try {
+            fStream = new FileOutputStream(scriptFile);
+
+            if (scriptFile.exists()) {
+                fStream.getChannel().truncate(0);
+            }
+
+            write(new BufferedOutputStream(fStream), bytecode);
+        }
+        finally {
+            if (fStream != null) {
+                fStream.close();
+            }
+        }
+	}
+	
+	/**
+	 * Writes the {@link Bytecode} out to the {@link OutputStream}
+	 * 
+	 * @param oStream
+	 * @param bytecode
+	 * @throws Exception
+	 */
+	public void write(OutputStream oStream, Bytecode bytecode) throws Exception {
+
+        try {
+            DataOutput output = new DataOutputStream(oStream);
+            bytecode.write(output);
+            oStream.flush();
+        }
+        finally {
+            if (oStream != null) {
+                oStream.close();
+            }
+        }
+	    
+	}
+	
+	/**
+	 * Compiles the supplied script file
+	 * 
+	 * @param scriptFile
+	 * @return the {@link Bytecode}
+	 * @throws Exception
+	 */
+	public Bytecode compile(File scriptFile) throws Exception {
+	    Bytecode code = compile(new BufferedReader(new FileReader(scriptFile)));
+        code.setSourceFile(scriptFile.getName());
+        return code;
+	}
+	
 	/**
 	 * Compiles the file.
 	 *
@@ -1081,8 +1199,9 @@ public class Leola {
 
             // Text, if any, of the bad token.
             if (tokenText != null) {
-                flagBuffer.append(" [at line: ").append(lineNumber).append(" \"").append(tokenText)
-                    .append("\"]");
+                flagBuffer.append(" [at line: ")
+                          .append(lineNumber)
+                          .append(" '").append(tokenText).append("']");
             }
 
             System.err.println(flagBuffer.toString());

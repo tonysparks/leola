@@ -3,7 +3,7 @@
 	Author: Tony Sparks
 	See license.txt
 */
-package leola.lang.collection;
+package leola.lang;
 
 import java.util.List;
 import java.util.Map;
