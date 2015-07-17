@@ -8,7 +8,6 @@ package leola.vm;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 import leola.vm.lib.LeolaMethod;
 import leola.vm.types.LeoMap;
@@ -26,18 +25,41 @@ import leola.vm.util.ClassUtil;
  *
  */
 public class Scope {
-
-	private static final AtomicLong id = new AtomicLong();
-	private String sid;
-
+    /**
+     * The global symbols
+     */
 	private Symbols symbols;
+	
+	/**
+	 * The parent scope
+	 */
 	private Scope parent;
 
+	
+	/**
+	 * Any class definitions in this 
+	 * scope
+	 */
 	private ClassDefinitions classDefinitions;
+	
+	/**
+	 * Any namespace definitions in this 
+	 * scope
+	 */
 	private NamespaceDefinitions namespaceDefinitions;
 	
+	
+	/**
+	 * The values stored in this scope
+	 */
 	private LeoMap values;
-
+	
+	
+    /**
+     * Cloning constructor
+     * 
+     * @param scope
+     */
 	private Scope(Scope scope) {
 		this.symbols = scope.symbols;
 		this.parent = scope.parent;
@@ -46,16 +68,6 @@ public class Scope {
 		this.namespaceDefinitions = scope.namespaceDefinitions;
 
 		this.values = (LeoMap)scope.values.clone();
-
-		this.sid = "C" + scope.sid;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return this.sid + " parent: " + ((this.getParent()!=null)?this.getParent():"-");
 	}
 
 
@@ -67,17 +79,7 @@ public class Scope {
 	public Scope(Symbols symbols, Scope parent) {
 		this.symbols = symbols;
 		this.parent = parent;
-
-		this.sid = id.incrementAndGet() + "";
 	}
-
-	/**
-	 * @return the symbols
-	 */
-	public Symbols getSymbols() {
-		return symbols;
-	}
-
 
 	/**
 	 * @param parent the parent to set
@@ -105,6 +107,9 @@ public class Scope {
 		return classDefinitions;
 	}
 
+	/**
+	 * @return if this scope has {@link NamespaceDefinitions}
+	 */
 	public boolean hasNamespaceDefinitions() {
 		return this.namespaceDefinitions != null && this.namespaceDefinitions.hasDefinitions();
 	}
@@ -131,8 +136,9 @@ public class Scope {
 	/**
 	 * Recursively attempts to retrieve the value associated with the reference.  If it
 	 * isn't found in this scope, it will ask its parent scope.
+	 * 
 	 * @param reference
-	 * @return
+	 * @return the value if found, otherwise null
 	 */
 	public LeoObject getObject(LeoString reference) {
 		LeoObject value = (this.values != null) ? this.values.getWithJNull(reference) : null;
@@ -143,6 +149,12 @@ public class Scope {
 		return value;
 	}
 
+	/**
+	 * Searches scopes and parent scopes up and until the global scope
+	 * 
+	 * @param reference
+	 * @return the value if found, otherwise null;
+	 */
 	public LeoObject getObjectNoGlobal(LeoString reference) {
 		LeoObject value = (this.values != null) ? this.values.getWithJNull(reference) : null;
 		if ( value == null && parent != null && !parent.isGlobalScope()) {
@@ -153,21 +165,12 @@ public class Scope {
 	}
 
 	/**
-	 * Retrieves a {@link LeoNamespace}
+	 * Retrieves a {@link LeoNamespace} by its name
+	 * 
 	 * @param reference
-	 * @return
+	 * @return the {@link LeoNamespace} if found, otherwise null
 	 */
 	public LeoNamespace getNamespace(LeoString reference) {
-//		LeoObject value = (this.values != null) ? this.values.getWithJNull(reference) : null;
-//		if ( value == null && parent != null ) {
-//			value = parent.getNamespace(reference);
-//		}
-//		else if ( (value != null && !value.isNamespace()) && parent != null) {
-//			value = parent.getNamespace(reference);
-//		}
-//
-//		return value!=null ? (LeoNamespace)value : null;
-
 		LeoNamespace value = (hasNamespaceDefinitions()) ? this.namespaceDefinitions.getNamespace(reference.getString()) : null;
 		if(value == null) {
 			value = parent.getNamespace(reference);
@@ -178,9 +181,10 @@ public class Scope {
 	/**
 	 * Recursively attempts to retrieve the value associated with the reference.  If it
 	 * isn't found in this scope, it will ask its parent scope.
+	 * 
 	 * @see Scope#getObject(LeoString)
 	 * @param reference
-	 * @return
+	 * @return the LeoObject that is linked to the reference, if not found null is returned
 	 */
 	public LeoObject getObject(String reference){
 		return getObject(LeoString.valueOf(reference));
@@ -247,12 +251,21 @@ public class Scope {
 	 * Removes an object from this {@link Scope}
 	 *
 	 * @param reference
-	 * @return
+	 * @return the {@link LeoObject} previously held by the reference (or null if no value was held
+	 * by this reference).
 	 */
 	public LeoObject removeObject(LeoString reference) {
 		return (this.values!=null) ? this.values.remove(reference) : null;
 	}
 
+	
+	/**
+     * Removes an object from this {@link Scope}
+     *
+     * @param reference
+     * @return the {@link LeoObject} previously held by the reference (or null if no value was held
+     * by this reference).
+     */
 	public LeoObject removeObject(String reference) {
 		return removeObject(LeoString.valueOf(reference));
 	}
@@ -264,6 +277,12 @@ public class Scope {
 		return (this.values != null) ? this.values.size() : 0;
 	}
 
+	
+	/**
+	 * Retrieves the raw {@link LeoMap} that contains the reference and {@link LeoObject} associations
+	 * 
+	 * @return the {@link LeoMap} of the references and values
+	 */
 	public LeoMap getRawObjects() {
 		return this.values;
 	}
@@ -293,7 +312,7 @@ public class Scope {
 
 	/**
 	 * Loads the objects methods into the supplied {@link Scope}
-	 * @param scope
+	 * 
 	 * @param jObject
 	 */
 	public void loadNatives(Object jObject) {
@@ -313,7 +332,6 @@ public class Scope {
 	/**
 	 * Loads the static methods of the native class into the supplied {@link Scope}
 	 *
-	 * @param scope
 	 * @param aClass
 	 */
 	public void loadStatics(Class<?> aClass) {

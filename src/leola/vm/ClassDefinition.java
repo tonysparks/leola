@@ -7,12 +7,13 @@ package leola.vm;
 
 import leola.vm.compiler.Bytecode;
 import leola.vm.compiler.Outer;
+import leola.vm.types.LeoClass;
 import leola.vm.types.LeoObject;
 import leola.vm.types.LeoOuterObject;
 import leola.vm.types.LeoString;
 
 /**
- * Represents a class definition
+ * Represents a class definition, all of the meta data required to create a {@link LeoClass}
  * 
  * @author Tony
  *
@@ -110,6 +111,9 @@ public class ClassDefinition {
 		return body;
 	}
 	
+	/**
+	 * @return true if this definition inherits from another
+	 */
 	public boolean hasParentClass() {
 		return this.superClass != null;
 	}
