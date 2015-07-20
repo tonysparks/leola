@@ -6,6 +6,7 @@
 package leola.frontend.parsers;
 
 import static leola.frontend.tokens.LeolaTokenType.COMMA;
+import static leola.frontend.tokens.LeolaTokenType.RIGHT_PAREN;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,16 +34,38 @@ public class ParserUtils {
         EnumSet.of(LeolaTokenType.COMMA, LeolaTokenType.VAR_ARGS, LeolaTokenType.IDENTIFIER); // do to allow expr
 
 
+    // Synchronization set for the , token.
+    protected static final EnumSet<LeolaTokenType> ARRAY_DECLARATION_SET =
+        ExprParser.EXPR_START_SET.clone();
+    static {
+        ARRAY_DECLARATION_SET.add(COMMA);
+        ARRAY_DECLARATION_SET.add(LeolaTokenType.RIGHT_BRACKET);
+    };
+    
+    
+    // Synchronization set for the , token.
+    protected static final EnumSet<LeolaTokenType> PARAMETER_LIST_SET =
+        ExprParser.EXPR_START_SET.clone();
+    static {
+        PARAMETER_LIST_SET.add(COMMA);
+        PARAMETER_LIST_SET.add(RIGHT_PAREN);
+    };
+    
     /**
-     * Parse the actual parameters of a procedure or function call.
+     * Parses a list of expressions as denoted by
+     * 
+     * <pre>
+     *   x,y // parses the x, y expressions
+     * </pre>
+     * 
      * @param token the current token.
      */
-    public static Expr[] parseActualParameters(StmtParser parser
-    										 , Token currentToken
-    										 , EnumSet<LeolaTokenType> commaDelimeter
-    										 , LeolaTokenType endToken) throws Exception
+    private static Expr[] parseExpressionList(StmtParser parser
+                                             , Token currentToken
+                                             , EnumSet<LeolaTokenType> commaDelimeter
+                                             , LeolaTokenType endToken, boolean isParameter) throws Exception
     {
-        ExprParser expressionParser = new ExprParser(parser);
+        ExprParser expressionParser = new ExprParser(parser, isParameter);
 
         Token token = parser.nextToken();  // consume opening (
 
@@ -61,7 +84,7 @@ public class ParserUtils {
                 token = parser.nextToken();  // consume ,
             }
             else if (ExprParser.EXPR_START_SET.contains(tokenType)) {
-            	parser.getExceptionHandler().errorToken(token, parser, LeolaErrorCode.MISSING_COMMA);
+                parser.getExceptionHandler().errorToken(token, parser, LeolaErrorCode.MISSING_COMMA);
             }
             else if (tokenType != endToken) {
                 token = parser.synchronize(ExprParser.EXPR_START_SET);
@@ -72,9 +95,47 @@ public class ParserUtils {
 
         return paramsNode.toArray(new Expr[0]);
     }
+    
+    /**
+     * Parses the parameters to a function call or class instantiation.
+     * 
+     * <pre>
+     *   function(x,y); // parses the x, y expressions
+     * </pre>
+     * 
+     * @param token the current token.
+     */
+    public static Expr[] parseArgumentExpressions(StmtParser parser, Token currentToken) throws Exception {
+        return parseExpressionList(parser, currentToken, PARAMETER_LIST_SET, RIGHT_PAREN, true);
+    }
+    
+    /**
+     * Parses an array declaration
+     * 
+     * <pre>
+     *   var array = [x,y]; // parses the x, y expressions
+     * </pre>
+     * 
+     * @param token the current token.
+     */
+    public static Expr[] parseArrayDeclaration(StmtParser parser
+                                             , Token currentToken) throws Exception {
+        return parseExpressionList(parser, currentToken, ARRAY_DECLARATION_SET, LeolaTokenType.RIGHT_BRACKET, false);
+    }
+    
+    
 
     /**
-     * Parse the actual parameters of a procedure or function call.
+     * Parses the body of a Map during a map declaration.
+     * 
+     * <pre>
+     *   var map = {
+     *      x -> "hello",
+     *      y -> "bye"
+     *   }
+     *  // This function parses the x->"hello",y->"bye" part 
+     *  <pre>
+     * 
      * @param token the current token.
      */
     public static List<Pair<Expr, Expr>> parseMapParameters(StmtParser parser
@@ -82,7 +143,7 @@ public class ParserUtils {
                                                      , EnumSet<LeolaTokenType> commaDelimeter
                                                      , LeolaTokenType endToken) throws Exception
     {
-        ExprParser expressionParser = new ExprParser(parser, true);
+        ExprParser expressionParser = new ExprParser(parser);
 
         Token token = parser.nextToken();  // consume opening token
 
@@ -130,7 +191,11 @@ public class ParserUtils {
     }
 
     /**
-	 * Parses a parameter listings
+	 * Parses a parameter listings, for classes, functions and generators.
+	 * 
+	 * <pre>
+	 *   class Person(name, age); // this parses out the name, age list
+	 * </pre>
 	 *
 	 * @param next
 	 * @return

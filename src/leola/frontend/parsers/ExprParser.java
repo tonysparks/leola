@@ -102,7 +102,7 @@ public class ExprParser extends StmtParser {
     private static final EnumSet<LeolaTokenType> CHAINED_OP =
         EnumSet.of(DOT, LEFT_PAREN, LEFT_BRACKET/*, IDENTIFIER*/);
 
-    private boolean isMapDeclaration;
+    private boolean isNamedParameter;
 
     /**
 	 * @param parser
@@ -113,10 +113,11 @@ public class ExprParser extends StmtParser {
     
 	/**
 	 * @param parser
+	 * @param isNamedParameter
 	 */
-	public ExprParser(LeolaParser parser, boolean isMapDeclaration) {
+	public ExprParser(LeolaParser parser, boolean isNamedParameter) {
 		super(parser);
-		this.isMapDeclaration = isMapDeclaration;
+		this.isNamedParameter = isNamedParameter;
 	}
 
 	/**
@@ -585,15 +586,15 @@ public class ExprParser extends StmtParser {
     	}
     	case ARROW: {
     		
-    		/* if this is a map declaration, then this 
-    		 * is just a variable, otherwise it is a Named Parameter
+    		/* If this is a named parameter, parse it as
+    		 * such, otherwise it is just a Variable Expression
     		 */
-    		if(this.isMapDeclaration) {
-    			result = new VarExpr(token.getText());    				
+    		if(this.isNamedParameter) {
+    			NamedParameterExprParser parser = new NamedParameterExprParser(this);
+                result = parser.parse(token);
     		}
     		else {
-	    	    NamedParameterExprParser parser = new NamedParameterExprParser(this);
-	    	    result = parser.parse(token);
+    		    result = new VarExpr(token.getText());
     		}
     	    break;
     	}
@@ -641,7 +642,7 @@ public class ExprParser extends StmtParser {
     	switch(type) {
     	case LEFT_PAREN: {
     		/* method invocation */
-    		Expr[] params = ParserUtils.parseActualParameters(this, token, FuncInvocationParser.COMMA_SET, RIGHT_PAREN);
+    		Expr[] params = ParserUtils.parseArgumentExpressions(this, token);
     		result = new ChainedFuncInvocationExpr(params);
     		break;
     	}

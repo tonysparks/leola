@@ -6,7 +6,6 @@
 package leola.frontend.parsers;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
 import leola.ast.ASTNode;
@@ -23,16 +22,6 @@ import leola.frontend.tokens.LeolaTokenType;
  *
  */
 public class ClassDefStmtParser extends StmtParser {
-
-    // Set of additive operators.
-//    private static final EnumSet<LeolaTokenType> CLASS_HEADER =
-//        EnumSet.of(LeolaTokenType.COLON, LeolaTokenType.COMMA, LeolaTokenType.IDENTIFIER);
-	
-    // Synchronization set for the , token.
-    protected static final EnumSet<LeolaTokenType> COMMA_SET = ArrayDeclExprParser.COMMA_SET.clone();        
-    static {        
-        COMMA_SET.add(LeolaTokenType.RIGHT_PAREN);
-    };
 	
 	/**
 	 * @param parser
@@ -71,8 +60,7 @@ public class ClassDefStmtParser extends StmtParser {
 			token = nextToken(); // eat the IS
 			 
 			parentClassName = ParserUtils.parseClassName(this, token, LeolaTokenType.LEFT_PAREN);
-			parentClassParams = ParserUtils.parseActualParameters(this, currentToken()
-												, COMMA_SET, LeolaTokenType.RIGHT_PAREN);	
+			parentClassParams = ParserUtils.parseArgumentExpressions(this, currentToken());	
 
 			token = currentToken();
 			type = token.getType();

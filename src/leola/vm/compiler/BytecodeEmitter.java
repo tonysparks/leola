@@ -129,6 +129,14 @@ public class BytecodeEmitter {
 	 * If we are in debugging mode
 	 */
 	private boolean isDebugMode;
+	
+	
+	/**
+     */
+    public BytecodeEmitter() {
+        this(new EmitterScopes());
+    }
+	
 	/**
 	 * @param scopes keeps track of created {@link EmitterScope}'s
 	 */

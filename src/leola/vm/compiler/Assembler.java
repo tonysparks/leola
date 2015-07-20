@@ -126,7 +126,7 @@ public class Assembler {
 	public BytecodeEmitter parseInput(BufferedReader reader) throws Exception {		
 		String line = null;
 		
-		BytecodeEmitter asm = new BytecodeEmitter(new EmitterScopes());
+		BytecodeEmitter asm = new BytecodeEmitter();
 		asm.start(ScopeType.GLOBAL_SCOPE);
 		try {
 			do {

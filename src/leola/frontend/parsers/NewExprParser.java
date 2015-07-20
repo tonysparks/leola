@@ -36,7 +36,7 @@ public class NewExprParser extends FuncInvocationParser {
 		/* Native classes include '.', so we must continue until a '(' */
 		String className = parseClassName(token);
 
-		Expr[] params = parseActualParameters(token);
+		Expr[] params = ParserUtils.parseArgumentExpressions(this, token);
 		NewExpr expr = new NewExpr(className, params);
 		setLineNumber(expr, currentToken());
 		return expr;
