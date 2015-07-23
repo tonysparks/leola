@@ -45,7 +45,7 @@ public class LeolaFile {
 	 */
 	public void with(LeoObject func) throws Exception {
 		try {
-			this.runtime.execute(func, Leola.toLeoObject(this));
+			this.runtime.execute(func, LeoObject.valueOf(this));
 		}
 		catch(Exception e) {
 			try {this.raf.close();}

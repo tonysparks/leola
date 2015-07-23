@@ -29,13 +29,13 @@ public class LeoNamespace extends LeoScopedObject {
 	/**
 	 * The namespaces name
 	 */
-	private String name;
+	private LeoObject name;
 
 	/**
 	 * @param scope
 	 * @param name
 	 */
-	public LeoNamespace(Scope scope, String name) {
+	public LeoNamespace(Scope scope, LeoObject name) {
 		this(null, null, scope, name);
 	}
 
@@ -45,7 +45,7 @@ public class LeoNamespace extends LeoScopedObject {
 	 * @param scope
 	 * @param name
 	 */
-	public LeoNamespace(Leola runtime, Bytecode code, Scope scope, String name) {
+	public LeoNamespace(Leola runtime, Bytecode code, Scope scope, LeoObject name) {
 		super(LeoType.NAMESPACE, scope, (code !=null ) ? code.numOuters : 0);
 
 		this.name = name;
@@ -59,8 +59,10 @@ public class LeoNamespace extends LeoScopedObject {
 //		}
 	}
 
+	
 	/**
-	 * Stores the Java Object into this namespace
+	 * Stores the Java Object into this {@link LeoNamespace}
+	 * 
 	 * @param jObject
 	 */
 	public void store(Object jObject) {
@@ -69,7 +71,7 @@ public class LeoNamespace extends LeoScopedObject {
 		Class<?> nClass = jObject.getClass();
 		List<Method> methods = ClassUtil.getAllDeclaredMethods(nClass);
 		for(Method m: methods) {
-			LeoNativeFunction func = new LeoNativeFunction(nClass, jObject, m.getName(), m.getParameterTypes().length);
+			LeoNativeFunction func = new LeoNativeFunction(nClass, jObject, LeoString.valueOf(m.getName()), m.getParameterTypes().length);
 			if(m.isAnnotationPresent(LeolaMethod.class)) {
 				scope.storeObject(m.getAnnotation(LeolaMethod.class).alias(), func);
 			}
@@ -90,7 +92,7 @@ public class LeoNamespace extends LeoScopedObject {
 	/**
 	 * @return the name
 	 */
-	public String getName() {
+	public LeoObject getName() {
 		return name;
 	}
 

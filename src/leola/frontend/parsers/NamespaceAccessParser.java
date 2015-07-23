@@ -38,8 +38,10 @@ public class NamespaceAccessParser extends ExprParser {
 		NamespaceAccessExpr memExpr = new NamespaceAccessExpr(parentName, expr.getOwner(), expr);
 		memExpr.setParent(true);
 		
-		expr.setOwner(parentName);
-		expr.setParent(false);
+		if( !(expr instanceof NamespaceAccessExpr) ) {
+		    expr.setOwner(parentName);
+		    expr.setParent(false);
+		}
 		
 		setLineNumber(memExpr, currentToken());
 		return memExpr;

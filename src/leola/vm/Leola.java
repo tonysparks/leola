@@ -61,7 +61,7 @@ import leola.vm.types.LeoNamespace;
 import leola.vm.types.LeoNull;
 import leola.vm.types.LeoObject;
 import leola.vm.types.LeoScopedObject;
-import leola.vm.util.LeoTypeConverter;
+import leola.vm.types.LeoString;
 import leola.vm.util.ResourceLoader;
 
 /**
@@ -91,7 +91,7 @@ public class Leola {
 	 * @return the {@link LeoObject} equivalent of the supplied Java Object
 	 */
 	public static LeoObject toLeoObject(Object javaObject) {
-		return LeoTypeConverter.convertToLeolaType(javaObject);
+		return LeoObject.valueOf(javaObject);
 	}
 	
 	/**
@@ -211,11 +211,6 @@ public class Leola {
 	private EventDispatcher eventDispatcher;
 
 	/**
-	 * Symbols
-	 */
-	private Symbols symbols;
-
-	/**
 	 * Resource loader
 	 */
 	private ResourceLoader resourceLoader;
@@ -276,10 +271,9 @@ public class Leola {
 		
 		this.printSource = false;
 
-		this.symbols = new Symbols();
-		Scope globalScope = this.symbols.getGlobalScope(); /* unsure the global scope */
-		this.global = new LeoNamespace(globalScope, GLOBAL_SCOPE_NAME);
-		globalScope.getNamespaceDefinitions().storeNamespace(GLOBAL_SCOPE_NAME, this.global);
+		Scope globalScope = new Scope(null);
+		this.global = new LeoNamespace(globalScope, LeoString.valueOf(GLOBAL_SCOPE_NAME));
+		globalScope.getNamespaceDefinitions().storeNamespace(this.global);
 
 		if(args.allowThreadLocal()) {
 			this.vm = new VMReference() {				
@@ -309,8 +303,8 @@ public class Leola {
 			};
 		}		
 		
-		putGlobal("$args", args.getScriptArgs());
-		putGlobal("this", this.global);
+		put("$args", args.getScriptArgs());
+		put("this", this.global);
 
 		/* allow default system libraries to be loaded */
 		boolean isSandboxed = args.isSandboxed();
@@ -354,13 +348,6 @@ public class Leola {
 	 */
 	public Args getArgs() {
 		return args;
-	}
-
-	/**
-	 * @return the symbols
-	 */
-	public Symbols getSymbols() {
-		return symbols;
 	}
 
 	/**
@@ -419,25 +406,76 @@ public class Leola {
 	public File getWorkingDirectory() {
 		return new File(System.getProperty("user.dir"));
 	}
-
+	
 	/**
-	 * Loads the static methods of the native class into the global {@link Scope}
-	 * @param aClass
-	 */
-	public void loadStaticsGlobal(Class<?> aClass) {
-		loadStatics(this.symbols.getGlobalScope(), aClass);
-	}
+     * Determines if the supplied {@link File} has the Leola script
+     * file extension.
+     * 
+     * @param file
+     * @return true if the {@link File} is named as a Leola script file
+     */
+    public boolean hasLeolaExtension(File file) {
+        return file.getName().endsWith(LEOLA_EXT);
+    }
+    
+    
+    /**
+     * Determines if the supplied {@link File} has the Leola compiled script
+     * file extension.
+     * 
+     * @param file
+     * @return true if the {@link File} is named as a Leola compiled script file
+     */
+    public boolean hasLeolaCompiledExtension(File file) {
+        return file.getName().endsWith(LEOLA_COMPILED_EXT);
+    }
+    
+    
+    /**
+     * Creates a new {@link File} based on the supplied {@link File},
+     * converts it into a Leola compiled script file extension.
+     * 
+     * @param file
+     * @return a {@link File} that has the Leola comiled script File extension.
+     */
+    public File toLeolaCompiledFile(File file) {
+        String bytecodeFileName = file.getName() 
+                + ((file.getName().endsWith(LEOLA_EXT)) 
+                        ? "c" : "." + LEOLA_COMPILED_EXT);
+
+        return new File(bytecodeFileName);
+    }
+    
+    /**
+     * Throws a {@link LeolaRuntimeException} if currently in sandboxed mode.
+     * 
+     * This is an internal API used for error checking other components as a convenience method.
+     */
+    public void errorIfSandboxed() {
+        if(isSandboxed()) {
+            throw new LeolaRuntimeException("Sandboxed mode is enabled, access restricted.");
+        }
+    }
+    
+    private void checkIfSandboxed(Class<?> lib) {
+        if(isSandboxed()) {
+            throw new LeolaRuntimeException("Sandboxed mode is enabled, can not load library: " + lib.getSimpleName());
+        }
+    }
+
+
 
 	/**
 	 * Loads the objects methods into the global {@link Scope}
 	 * @param jObject
 	 */
-	public void loadNativesGlobal(Object jObject) {
-		loadNatives(this.symbols.getGlobalScope(), jObject);
+	public void loadNatives(Object jObject) {
+		loadNatives(this.global.getScope(), jObject);
 	}
 
 	/**
-	 * Loads the objects methods into the supplied {@link Scope}
+	 * Loads the objects methods into the supplied {@link LeoScopedObject}
+	 * 
 	 * @param scope
 	 * @param jObject
 	 */
@@ -455,13 +493,23 @@ public class Leola {
 	}
 
 	/**
-	 * Loads the static methods of the native class into the current {@link Scope}
-	 * @param aClass
-	 */
-	public void loadStatics(Class<?> aClass) {
-		loadStatics(this.symbols.peek(), aClass);
-	}
+     * Loads the static methods of the native class into the global {@link Scope}
+     * @param aClass
+     */
+    public void loadStatics(Class<?> aClass) {
+        loadStatics(this.global.getScope(), aClass);
+    }
 
+    /**
+     * Loads the static methods of the native class into the supplied {@link LeoScopedObject}
+     * 
+     * @param scope
+     * @param aClass
+     */
+    public void loadStatics(LeoScopedObject scope, Class<?> aClass) {
+        loadStatics(scope.getScope(), aClass);
+    }
+    
 	/**
 	 * Loads the static methods of the native class into the supplied {@link Scope}
 	 *
@@ -472,64 +520,10 @@ public class Leola {
 		scope.loadStatics(aClass);	
 	}
 
-	/**
-	 * Determines if the supplied {@link File} has the Leola script
-	 * file extension.
-	 * 
-	 * @param file
-	 * @return true if the {@link File} is named as a Leola script file
-	 */
-	public boolean hasLeolaExtension(File file) {
-	    return file.getName().endsWith(LEOLA_EXT);
-	}
-	
-	
-	/**
-     * Determines if the supplied {@link File} has the Leola compiled script
-     * file extension.
-     * 
-     * @param file
-     * @return true if the {@link File} is named as a Leola compiled script file
-     */
-	public boolean hasLeolaCompiledExtension(File file) {
-	    return file.getName().endsWith(LEOLA_COMPILED_EXT);
-	}
-	
-	
-	/**
-	 * Creates a new {@link File} based on the supplied {@link File},
-	 * converts it into a Leola compiled script file extension.
-	 * 
-	 * @param file
-	 * @return a {@link File} that has the Leola comiled script File extension.
-	 */
-	public File toLeolaCompiledFile(File file) {
-        String bytecodeFileName = file.getName() 
-                + ((file.getName().endsWith(LEOLA_EXT)) 
-                        ? "c" : "." + LEOLA_COMPILED_EXT);
 
-        return new File(bytecodeFileName);
-	}
 	
 	/**
-	 * Throws a {@link LeolaRuntimeException} if currently in sandboxed mode.
-	 * 
-	 * This is an internal API used for error checking other components as a convenience method.
-	 */
-	public void errorIfSandboxed() {
-		if(isSandboxed()) {
-			throw new LeolaRuntimeException("Sandboxed mode is enabled, access restricted.");
-		}
-	}
-	
-	private void checkIfSandboxed(Class<?> lib) {
-		if(isSandboxed()) {
-			throw new LeolaRuntimeException("Sandboxed mode is enabled, can not load library: " + lib.getSimpleName());
-		}
-	}
-	
-	/**
-	 * Loads a {@link LeolaLibrary}.
+	 * Loads a {@link LeolaLibrary} into the global {@link Scope}
 	 *
 	 * @param lib
 	 * @throws Exception
@@ -540,6 +534,13 @@ public class Leola {
 		lib.init(this, this.global);
 	}
 
+	/**
+	 * Loads a {@link LeolaLibrary} into the supplied namespace
+	 * 
+	 * @param lib
+	 * @param namespace
+	 * @throws Exception
+	 */
 	public void loadLibrary(LeolaLibrary lib, String namespace) throws Exception {
 		checkIfSandboxed(lib.getClass());
 		
@@ -574,12 +575,9 @@ public class Leola {
 			nsScope = ns.getScope();
 		}
 		else {
-			nsScope = getSymbols().newObjectScope();
-			ns = new LeoNamespace(nsScope, namespace);
-			getSymbols().peek().getNamespaceDefinitions().storeNamespace(namespace, ns);
-
-			// TODO: Do we want the namespaces accessible?
-			// putGlobal(namespace, ns);
+			nsScope = new Scope(this.global.getScope());
+			ns = new LeoNamespace(nsScope, LeoString.valueOf(namespace));
+			this.global.getNamespaceDefinitions().storeNamespace(ns);
 		}
 
 		loadNatives(nsScope, lib);
@@ -646,8 +644,8 @@ public class Leola {
 	 * @param reference
 	 * @param value
 	 */
-	public void putGlobal(String reference, Object value) {
-		put(this.symbols.getGlobalScope(), reference, value);
+	public void put(String reference, Object value) {
+		put(this.global.getScope(), reference, value);
 	}
 
 	/**
@@ -658,48 +656,64 @@ public class Leola {
 	 * @param value
 	 */
 	public void put(Scope scope, String reference, Object value) {
-		scope.storeObject(reference, LeoTypeConverter.convertToLeolaType(value));
+		scope.storeObject(reference, LeoObject.valueOf(value));
 	}
 
 	/**
-	 * Places an object into the current scope.
-	 * @param reference
-	 * @param value
-	 */
-	public void put(String reference, Object value) {
-		put(this.symbols.peek(), reference, value);
-	}
-
+     * Places the object into a specific {@link LeoScopedObject}
+     *
+     * @param scope
+     * @param reference
+     * @param value
+     */
+    public void put(LeoScopedObject scope, String reference, Object value) {
+        put(scope.getScope(), reference, value);
+    }
+    
 	/**
 	 * Gets a {@link LeoObject} by reference from the global {@link Scope}.
 	 *
 	 * @param reference
 	 * @return the {@link LeoObject}, or null if not found.
 	 */
-	public LeoObject getGlobal(String reference) {
-		return get( this.symbols.getGlobalScope(), reference);
-	}
-
-	/**
-	 * Gets a {@link LeoObject} by reference.
-	 * @param reference
-	 * @return the {@link LeoObject}, or null if not found.
-	 */
 	public LeoObject get(String reference) {
-		LeoObject result = this.symbols.getObject(reference);
-		return result;
+		return get( this.global.getScope(), reference);
 	}
 
+	
+	/**
+     * Gets a {@link LeoObject} by reference from a specific {@link Scope}.
+     * 
+     * @param scope
+     * @param reference
+     * @return the {@link LeoObject}, or null if not found
+     */
+    public LeoObject get(Scope scope, String reference) {
+        return scope.getObject(reference);
+    }
+
+    /**
+     * Gets a {@link LeoObject} by reference from a specific {@link LeoScopedObject}.
+     * 
+     * @param scope
+     * @param reference
+     * @return the {@link LeoObject}, or null if not found
+     */
+    public LeoObject get(LeoScopedObject scope, String reference) {
+        return get(scope.getScope(), reference);
+    }
+    
 	/**
 	 * Retrieves the namespace or creates it if it isn't found
+	 * 
 	 * @param namespace
-	 * @return
+	 * @return the {@link LeoNamespace}
 	 */
 	public LeoNamespace getOrCreateNamespace(String namespace) {
 		LeoNamespace ns = namespace != null ? this.getNamespace(namespace) : this.global;
 		if(ns == null) {
-			ns = new LeoNamespace(getSymbols().newObjectScope(), namespace);
-			getSymbols().peek().getNamespaceDefinitions().storeNamespace(namespace, ns);
+			ns = new LeoNamespace(new Scope(this.global.getScope()), LeoString.valueOf(namespace));
+			this.global.getScope().getNamespaceDefinitions().storeNamespace(ns);
 		}
 		return ns;
 	}
@@ -710,7 +724,7 @@ public class Leola {
 	 * @return the {@link LeoNamespace} object, or null if not found
 	 */
 	public LeoNamespace getNamespace(String namespace) {
-		return this.symbols.lookupNamespace(namespace);
+		return this.global.getScope().lookupNamespace(LeoString.valueOf(namespace));
 	}
 
 	/**
@@ -720,16 +734,6 @@ public class Leola {
 		return this.global;
 	}
 
-
-	/**
-	 * Gets a {@link LeoObject} by reference from a specific {@link Scope}.
-	 * @param scope
-	 * @param reference
-	 * @return the {@link LeoObject}, or null if not found
-	 */
-	public LeoObject get(Scope scope, String reference) {
-		return scope.getObject(reference);
-	}
 
 	
 	/**
@@ -923,7 +927,7 @@ public class Leola {
 			DataInput in = new DataInputStream(iStream);
 
 
-			Bytecode bytecode = Bytecode.read(ns, getSymbols(), in);
+			Bytecode bytecode = Bytecode.read(ns, in);
 			bytecode.setSourceFile(file.getName());
 
 			result = execute(bytecode);
@@ -977,7 +981,7 @@ public class Leola {
 	public Bytecode read(InputStream iStream) throws Exception {
 	    try {
             DataInput in = new DataInputStream(iStream);            
-            Bytecode code = Bytecode.read(getGlobalNamespace(), getSymbols(), in);            
+            Bytecode code = Bytecode.read(getGlobalNamespace(), in);            
             return code;
 	    }
 	    finally {

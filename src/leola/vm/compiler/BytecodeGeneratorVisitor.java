@@ -1075,7 +1075,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		}
 				
 		String identifier = s.getIdentifier();
-		if ( identifier != null && expr instanceof MemberAccessExpr) {
+		if ( identifier != null && (expr instanceof MemberAccessExpr && !(expr instanceof NamespaceAccessExpr))) {
 			asm.storeAndloadconst(identifier);
 			asm.get();
 		}

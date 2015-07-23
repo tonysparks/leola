@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import leola.vm.Symbols;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ArrayUtil;
 
@@ -348,12 +347,12 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	 * @return the {@link LeoObject}
 	 * @throws IOException
 	 */
-	public static LeoMap read(LeoObject env, Symbols symbols, DataInput in) throws IOException {
+	public static LeoMap read(LeoObject env, DataInput in) throws IOException {
 		int size = in.readInt();
 		LeoMap map = new LeoMap(size);
 		for(int i = 0; i < size; i++) {
-			LeoObject key = LeoObject.read(map, symbols, in);
-			LeoObject value = LeoObject.read(map, symbols, in);
+			LeoObject key = LeoObject.read(map, in);
+			LeoObject value = LeoObject.read(map, in);
 			
 			map.put(key, value);
 		}

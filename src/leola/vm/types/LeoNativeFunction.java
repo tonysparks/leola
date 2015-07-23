@@ -13,7 +13,6 @@ import java.util.List;
 import leola.vm.VM;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
-import leola.vm.util.LeoTypeConverter;
 import leola.vm.util.Pair;
 
 
@@ -32,12 +31,13 @@ public class LeoNativeFunction extends LeoObject {
 
 	private Class<?> clss;
 	private Object instance;
-	private String methodName;
+	private LeoObject methodName;
 
 	private Method method;
 
 	private List<Method> overloads;
-			
+	
+	
 	/**
 	 * @param clss
 	 * @param instance
@@ -45,6 +45,16 @@ public class LeoNativeFunction extends LeoObject {
 	 * @param numberOfArgs
 	 */
 	public LeoNativeFunction(Class<?> clss, Object instance, String methodName, int numberOfArgs) {
+	    this(clss, instance, LeoString.valueOf(methodName), numberOfArgs);
+	}
+	
+	/**
+	 * @param clss
+	 * @param instance
+	 * @param methodName
+	 * @param numberOfArgs
+	 */
+	public LeoNativeFunction(Class<?> clss, Object instance, LeoObject methodName, int numberOfArgs) {
 		super(LeoType.NATIVE_FUNCTION);
 		
 		this.clss = clss;
@@ -82,7 +92,7 @@ public class LeoNativeFunction extends LeoObject {
 	/**
 	 * @return the methodName
 	 */
-	public String getMethodName() {
+	public LeoObject getMethodName() {
 		return methodName;
 	}
 	
@@ -203,7 +213,7 @@ public class LeoNativeFunction extends LeoObject {
 				}
 			}
 			else if ( this.method == null ) {						
-				Pair<Method, Object> pairResult = ClassUtil.invokeMethod(this.clss, this.methodName, this.instance, args);
+				Pair<Method, Object> pairResult = ClassUtil.invokeMethod(this.clss, this.methodName.toString(), this.instance, args);
 								
 				setMethod(pairResult.getFirst());
 				result = pairResult.getSecond();
@@ -217,11 +227,10 @@ public class LeoNativeFunction extends LeoObject {
 			return e.getLeoError();
 		}
 		catch (Exception e) {
-//			throw new LeolaRuntimeException(e);
 			return new LeoError(e.getMessage()); 
 		}
 		
-		return LeoTypeConverter.convertToLeolaType(result);
+		return LeoObject.valueOf(result);
 	}
 
 	/* (non-Javadoc)
@@ -277,7 +286,7 @@ public class LeoNativeFunction extends LeoObject {
 	@Override
 	public void write(DataOutput out) throws IOException {
 		out.write(this.getType().ordinal());
-		out.writeBytes(this.methodName);
+		out.writeBytes(this.methodName.toString());
 		out.writeBytes(this.clss.getName());
 		out.writeInt(this.numberOfArgs);
 	}

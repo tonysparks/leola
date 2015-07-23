@@ -20,7 +20,6 @@ import leola.vm.types.LeoMap;
 import leola.vm.types.LeoObject;
 import leola.vm.types.LeoObject.LeoType;
 import leola.vm.types.LeoString;
-import leola.vm.util.LeoTypeConverter;
 
 /**
  * @author Tony
@@ -201,7 +200,7 @@ public class Query {
 			for(int i = 1; i <= numOfColumns; i++) {
 				Object obj = set.getObject(i);
 				row.put( LeoString.valueOf( meta.getColumnName(i)/*.toLowerCase()*/ ),
-						 LeoTypeConverter.convertToLeolaType(obj));
+				         LeoObject.valueOf(obj));
 			}
 			
 			result.$add(row);
@@ -237,7 +236,7 @@ public class Query {
 			for(int i = 1; i <= numOfColumns; i++) {
 				Object obj = set.getObject(i);
 				row.put( LeoString.valueOf( meta.getColumnName(i)/*.toLowerCase()*/ ),
-						 LeoTypeConverter.convertToLeolaType(obj));
+						 LeoObject.valueOf(obj));
 			}
 			
 			result.$add(row);

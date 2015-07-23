@@ -9,7 +9,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import leola.vm.Symbols;
 import leola.vm.util.ClassUtil;
 
 
@@ -221,7 +220,7 @@ public class LeoBoolean extends LeoObject {
 	 * @return the {@link LeoObject}
 	 * @throws IOException
 	 */
-	public static LeoBoolean read(LeoObject env, Symbols symbols, DataInput in) throws IOException {		
+	public static LeoBoolean read(LeoObject env, DataInput in) throws IOException {		
 		return in.readBoolean() ? LEOTRUE : LEOFALSE;
 	}
 }

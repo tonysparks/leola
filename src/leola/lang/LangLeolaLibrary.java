@@ -278,7 +278,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	public final LeoArray toArray(Collection<Object> list) {
 	    LeoArray array = new LeoArray(list.size());
 	    for(Object o : list) {
-	        array.add(Leola.toLeoObject(o));
+	        array.add(LeoObject.valueOf(o));
 	    }
 	    return array;
 	}
@@ -293,7 +293,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	public final LeoMap toMap(Map<Object, Object> map) {
 	    LeoMap leomap = new LeoMap();
 	    for(Map.Entry<Object, Object> entry : map.entrySet()) {
-	        leomap.put(Leola.toLeoObject(entry.getKey()), Leola.toLeoObject(entry.getKey()));
+	        leomap.put(LeoObject.valueOf(entry.getKey()), LeoObject.valueOf(entry.getKey()));
 	    }
 	    return leomap;
 	}

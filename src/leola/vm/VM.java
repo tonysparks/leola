@@ -119,7 +119,6 @@ public class VM {
 	 * Runtime
 	 */
 	private Leola runtime;
-	private Symbols symbols;
 
 	/*thread stack
 	 */
@@ -137,8 +136,7 @@ public class VM {
 	 */
 	public VM(Leola runtime) {
 		this.runtime = runtime;
-		this.symbols = runtime.getSymbols();
-
+		
 		int stackSize = runtime.getArgs().getStackSize();
 		stackSize = (stackSize <= 0) ? DEFAULT_MAX_STACKSIZE : stackSize;
 
@@ -748,7 +746,7 @@ public class VM {
 							
 							LeoObject instance = null;
 	
-							ClassDefinitions defs = symbols.lookupClassDefinitions(scope, className);
+							ClassDefinitions defs = scope.lookupClassDefinitions(className);
 							if ( defs == null ) {
 	
 								if(!runtime.isSandboxed()) {															
@@ -759,11 +757,11 @@ public class VM {
 								}
 							}
 							else {
-							    LeoString resolvedClassName = LeoString.valueOf(symbols.getClassName(className.toString()));
+							    LeoString resolvedClassName = LeoString.valueOf(scope.getClassName(className.toString()));
                                 ClassDefinition definition = defs.getDefinition(resolvedClassName);
 							    
 							    if(paramIndex > 0) {				                       
-	                                resolveNamedParameters(params, args, nargs, definition.getParams(), nargs);
+	                                resolveNamedParameters(params, args, nargs, definition.getParameterNames(), nargs);
 	                                
 	
 	                                /* ready this for any other method calls */
@@ -807,11 +805,11 @@ public class VM {
 							int innerIndex = ARGx(i);
 							Bytecode namespacecode = inner[innerIndex];
 	
-							String name = stack[--top].toString();
+							LeoObject name = stack[--top];
 							NamespaceDefinitions ndefs = scope.getNamespaceDefinitions();
 							LeoNamespace ns = ndefs.getNamespace(name);
 							if(ns==null) {
-								ns = new LeoNamespace(this.runtime, namespacecode, new Scope(this.symbols, scope), name);
+								ns = new LeoNamespace(this.runtime, namespacecode, new Scope(scope), name);
 								ndefs.storeNamespace(name, ns);
 							}
 							else {
@@ -901,7 +899,7 @@ public class VM {
 							ClassDefinition superClassDefinition = null;
 	
 							if ( ! superClassname.$eq(LeoNull.LEONULL) ) {
-								ClassDefinitions defs = symbols.lookupClassDefinitions(superClassname);
+								ClassDefinitions defs = scope.lookupClassDefinitions(superClassname);
 								superClassDefinition = defs.getDefinition(superClassname.toLeoString());
 							}
 	
@@ -1006,9 +1004,9 @@ public class VM {
 						}
 						case GET_NAMESPACE: {
 							int iname = ARGx(i);
-							LeoObject member = scope.getNamespace(constants[iname].toLeoString());
-							stack[top++] = member;
-	
+							LeoNamespace ns = scope.getNamespace(constants[iname].toLeoString());
+							stack[top++] = ns;
+							
 							continue;
 						}
 						case INIT_FINALLY: {

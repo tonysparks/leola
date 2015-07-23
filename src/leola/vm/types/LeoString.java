@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import leola.vm.Symbols;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
 
@@ -614,7 +613,7 @@ public class LeoString extends LeoObject {
 	 * @return the {@link LeoObject}
 	 * @throws IOException
 	 */
-	public static LeoString read(Symbols symbols, DataInput in) throws IOException {
+	public static LeoString read(DataInput in) throws IOException {
 		String str = "";
 		int length = in.readInt();
 		if ( length > 0 ) {

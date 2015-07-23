@@ -10,7 +10,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.text.DecimalFormat;
 
-import leola.vm.Symbols;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
 
@@ -541,7 +540,7 @@ public class LeoDouble extends LeoObject {
 	 * @return the {@link LeoObject}
 	 * @throws IOException
 	 */
-	public static LeoDouble read(Symbols symbols, DataInput in) throws IOException {
+	public static LeoDouble read(DataInput in) throws IOException {
 		double number = in.readDouble();
 		return LeoDouble.valueOf(number);
 	}

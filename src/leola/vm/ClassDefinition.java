@@ -80,28 +80,28 @@ public class ClassDefinition {
 	/**
 	 * @return the superClass
 	 */
-	public ClassDefinition getSuperClass() {
+	public ClassDefinition getSuperClassDefinition() {
 		return superClass;
 	}
 	
 	/**
 	 * @return the superParams
 	 */
-	public LeoObject[] getSuperParams() {
+	public LeoObject[] getSuperParameterNames() {
 		return superParams;
 	}
 	
 	/**
 	 * @return the interfaces
 	 */
-	public LeoString[] getInterfaces() {
+	public LeoString[] getInterfaceNames() {
 		return interfaces;
 	}
 
 	/**
 	 * @return the params
 	 */
-	public LeoString[] getParams() {
+	public LeoString[] getParameterNames() {
 		return params;
 	}
 	/**

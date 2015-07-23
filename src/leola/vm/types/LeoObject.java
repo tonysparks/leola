@@ -13,11 +13,11 @@ import java.util.List;
 import java.util.Map;
 
 import leola.vm.Scope;
-import leola.vm.Symbols;
 import leola.vm.VM;
 import leola.vm.compiler.Outer;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
+import leola.vm.util.LeoTypeConverter;
 
 
 /**
@@ -55,6 +55,27 @@ public abstract class LeoObject {
 		
 	public static final LeoString toString = LeoString.valueOf("toString");
 	
+	/**
+	 * Converts the supplied Java object into the appropriate {@link LeoObject} type.
+	 * 
+	 * @param v the Java object
+	 * @return the converted Java object to the respective {@link LeoObject} type.
+	 */
+	public static final LeoObject valueOf(Object v) {
+	    return LeoTypeConverter.convertToLeolaType(v);
+	}
+	
+	/**
+	 * Attempts to convert the supplied {@link LeoObject} into the equivalent Java Object using
+	 *  the supplied Class as a hint.
+	 *  
+	 * @param jtype the hint at which type the Java Object should be
+	 * @param v the {@link LeoObject} to convert
+	 * @return the Java Object version of the supplied {@link LeoObject}
+	 */
+	public static final Object toJavaObject(Class<?> jtype, LeoObject v) {
+	    return LeoTypeConverter.convertLeoObjectToJavaObj(jtype, v);
+	}
 	
 	/*
 	 * Type
@@ -658,18 +679,18 @@ public abstract class LeoObject {
 	 * @return the reconstituted {@link LeoObject}
 	 * @throws IOException
 	 */
-	public static LeoObject read(LeoObject env, Symbols symbols, DataInput in) throws IOException {
+	public static LeoObject read(LeoObject env, DataInput in) throws IOException {
 		int type = in.readByte();
 		LeoType leoType = LeoType.fromOrdinal(type);
 		LeoObject result = null;
 		
 		switch(leoType) {
 			case ARRAY: {
-				result = LeoArray.read(env, symbols, in);
+				result = LeoArray.read(env, in);
 				break;
 			}
 			case BOOLEAN: {
-				result = LeoBoolean.read(env, symbols, in);
+				result = LeoBoolean.read(env, in);
 				break;
 			}			
 			case ERROR: 
@@ -678,15 +699,15 @@ public abstract class LeoObject {
 				break;
 			}
 			case GENERATOR: {
-				result = LeoGenerator.read(env, symbols, in);
+				result = LeoGenerator.read(env, in);
 				break;
 			}
 			case FUNCTION: {
-				result = LeoFunction.read(env, symbols, in);
+				result = LeoFunction.read(env, in);
 				break;
 			}
 			case MAP: {
-				result = LeoMap.read(env, symbols, in);
+				result = LeoMap.read(env, in);
 				break;
 			}
 			case NAMESPACE: {
@@ -699,23 +720,23 @@ public abstract class LeoObject {
 				break;				
 			}
 			case NULL: {
-				result = LeoNull.read(symbols, in);
+				result = LeoNull.read(in);
 				break;
 			}
 			case INTEGER: {
-				result = LeoInteger.read(symbols, in);
+				result = LeoInteger.read(in);
 				break;
 			}
 			case LONG: {
-				result = LeoLong.read(symbols, in);
+				result = LeoLong.read(in);
 				break;
 			}
 			case REAL: {
-				result = LeoDouble.read(symbols, in);
+				result = LeoDouble.read(in);
 				break;
 			}
 			case STRING: {
-				result = LeoString.read(symbols, in);
+				result = LeoString.read(in);
 				break;
 			}
 		}

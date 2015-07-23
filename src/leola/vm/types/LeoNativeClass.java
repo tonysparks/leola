@@ -13,7 +13,6 @@ import java.util.List;
 
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
-import leola.vm.util.LeoTypeConverter;
 
 
 
@@ -121,7 +120,7 @@ public class LeoNativeClass extends LeoObject {
 			if ( field != null ) {
 				try {
 					Object value = field.get(getInstance());
-					result = LeoTypeConverter.convertToLeolaType(value);
+					result = LeoObject.valueOf(value);
 				}
 				catch(Exception e) {
 					throw new LeolaRuntimeException("Unable to access: " + member, e);

@@ -10,8 +10,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Stack;
 
-import leola.vm.Symbols;
-
 /**
  * An Error object
  * 
@@ -206,8 +204,8 @@ public class LeoError extends LeoObject {
 	 * @return the {@link LeoObject}
 	 * @throws IOException
 	 */
-	public static LeoError read(LeoObject env, Symbols symbols, DataInput in) throws IOException {
-		LeoObject message = LeoObject.read(env, symbols, in);
+	public static LeoError read(LeoObject env, DataInput in) throws IOException {
+		LeoObject message = LeoObject.read(env, in);
 		int lineNumber = in.readInt();
 		return new LeoError(message, lineNumber);
 	}

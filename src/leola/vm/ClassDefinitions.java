@@ -22,8 +22,14 @@ import leola.vm.types.LeoString;
  */
 public class ClassDefinitions {
 
-	private Map<LeoString, ClassDefinition> classDefinitions;
+	private Map<LeoObject, ClassDefinition> classDefinitions;
 	
+	
+	/**
+	 * Determine if there are any {@link ClassDefinition}'s defined
+	 * 
+	 * @return true if there are {@link ClassDefinition}'s defined
+	 */
 	public boolean hasDefinitions() {
 		return this.classDefinitions != null && ! this.classDefinitions.isEmpty();
 	}
@@ -31,27 +37,55 @@ public class ClassDefinitions {
 	/**
 	 * @return the classDefinitions
 	 */
-	public Map<LeoString, ClassDefinition> getClassDefinitions() {
+	public Map<LeoObject, ClassDefinition> getClassDefinitions() {
 		if ( this.classDefinitions == null ) {
-			this.classDefinitions = new ConcurrentHashMap<LeoString, ClassDefinition>();
+			this.classDefinitions = new ConcurrentHashMap<LeoObject, ClassDefinition>();
 		}
 		
 		return classDefinitions;
 	}
 	
-	public void storeClass(LeoString className, ClassDefinition klass) {
+	/**
+	 * Stores a {@link ClassDefinition}
+	 * 
+	 * @param className
+	 * @param klass
+	 */
+	public void storeClass(LeoObject className, ClassDefinition klass) {
 		getClassDefinitions().put(className, klass);
 	}
 	
-	public void removeClass(LeoString className) {
+	
+	/**
+	 * Removes the {@link ClassDefinition} associated with the supplied class name.
+	 * 
+	 * @param className
+	 */
+	public void removeClass(LeoObject className) {
 		getClassDefinitions().remove(className);
 	}
 	
-	public boolean containsClass(LeoString className) {
+	
+	/**
+	 * Determines if there is a {@link ClassDefinition} defined by the supplied
+	 * class name.
+	 * 
+	 * @param className
+	 * @return true if there exists a {@link ClassDefinition} associated with the supplied class name.
+	 */
+	public boolean containsClass(LeoObject className) {
 		return getClassDefinitions().containsKey(className);
 	}
 	
-	public ClassDefinition getDefinition(LeoString className) {
+	/**
+	 * Retrieves the {@link ClassDefinition} associated with the supplied class name.
+	 * 
+	 * @param className
+	 * @return the {@link ClassDefinition} associated with the class name.  If there is not 
+	 * a {@link ClassDefinition} associated with the class name, a {@link LeolaRuntimeException} is 
+	 * thrown.
+	 */
+	public ClassDefinition getDefinition(LeoObject className) {
 	    if ( ! getClassDefinitions().containsKey(className)) {
             throw new LeolaRuntimeException("No class found for: " + className);
         }               
@@ -61,11 +95,12 @@ public class ClassDefinitions {
 	
 	/**
 	 * Resolves the passing of parameters to the super class.
+	 * 
 	 * @param paramNames
 	 * @param params
 	 * @param superParams
 	 */
-	private void resolveSuperArguments(LeoString[] paramNames, LeoObject[] params, LeoObject[] superParams) {
+	private void resolveSuperArguments(LeoObject[] paramNames, LeoObject[] params, LeoObject[] superParams) {
 		if(superParams != null && paramNames != null) {
 			for(int i = 0; i < superParams.length; i++) {
 				LeoObject sp = superParams[i];
@@ -86,32 +121,34 @@ public class ClassDefinitions {
 	}
 	
 	/**
-	 * Creates a new instance of an object.
+	 * Creates a new instance of a class defined by the {@link ClassDefinition} for the supplied
+	 * class name.
 	 * 
 	 * @param runtime
 	 * @param className
 	 * @param params
-	 * @return
+	 * @return the new {@link LeoObject} instance.
 	 */
-	public LeoObject newInstance(Leola runtime, LeoString className, LeoObject[] params) {		
+	public LeoObject newInstance(Leola runtime, LeoObject className, LeoObject[] params) {		
 		ClassDefinition definition = getDefinition(className);		
 		return newInstance(runtime, definition, params);
 	}
 	
 	/**
-     * Creates a new instance of an object.
+     * Creates a new instance of a class defined by the {@link ClassDefinition} for the supplied
+     * class name.
      * 
      * @param runtime
      * @param definition
      * @param params
-     * @return
+     * @return the new {@link LeoObject} instance.
      */
     public LeoObject newInstance(Leola runtime, ClassDefinition definition, LeoObject[] params) {        
         LeoObject parentClass = LeoNull.LEONULL;
         if ( definition.hasParentClass() ) {
             
-            LeoString[] paramNames = definition.getParams();
-            LeoObject[] superParams = definition.getSuperParams(); 
+            LeoString[] paramNames = definition.getParameterNames();
+            LeoObject[] superParams = definition.getSuperParameterNames(); 
             if ( superParams != null ) {
                 LeoObject[] clone = new LeoObject[superParams.length];
                 System.arraycopy(superParams, 0, clone, 0, superParams.length);
@@ -120,10 +157,10 @@ public class ClassDefinitions {
             
             resolveSuperArguments(paramNames, params, superParams);
             
-            parentClass = newInstance(runtime, definition.getSuperClass().getClassName(), superParams);
+            parentClass = newInstance(runtime, definition.getSuperClassDefinition().getClassName(), superParams);
         }
         
-        Scope scope = new Scope(runtime.getSymbols(), definition.getDeclaredScope());
+        Scope scope = new Scope(definition.getDeclaredScope());
         if ( parentClass != LeoNull.LEONULL ) {
             LeoClass p = parentClass.as();
             scope.setParent(p.getScope());

@@ -9,7 +9,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import leola.vm.Symbols;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
 
@@ -519,7 +518,7 @@ public class LeoInteger extends LeoObject {
 	 * @return the {@link LeoObject}
 	 * @throws IOException
 	 */
-	public static LeoInteger read(Symbols symbols, DataInput in) throws IOException {
+	public static LeoInteger read(DataInput in) throws IOException {
 		int number = in.readInt();
 		return LeoInteger.valueOf(number);
 	}

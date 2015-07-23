@@ -26,7 +26,6 @@ import leola.vm.types.LeoObject;
 import leola.vm.types.LeoString;
 import leola.vm.util.ArrayUtil;
 import leola.vm.util.ClassUtil;
-import leola.vm.util.LeoTypeConverter;
 
 /**
  * The Reflection API
@@ -65,9 +64,9 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 	 * @param params
 	 * @return Null if not found, the instance if instantiated
 	 */
-	public LeoObject newInstance(LeoString classname, LeoArray params) {
+	public LeoObject newInstance(LeoObject classname, LeoArray params) {
 		LeoObject result = LeoNull.LEONULL;
-		ClassDefinitions defs = this.runtime.getSymbols().lookupClassDefinitions(classname);
+		ClassDefinitions defs = this.runtime.getGlobalNamespace().getScope().lookupClassDefinitions(classname);
 		if( defs != null) {
 			result = defs.newInstance(this.runtime, classname, params.toArray());
 		}
@@ -225,7 +224,7 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 				if(args!=null && args.length > 0) {
 					largs = new LeoObject[args.length];
 					for(int i = 0; i < args.length; i++) {
-						largs[i] = LeoTypeConverter.convertToLeolaType(args[i]);
+						largs[i] = LeoObject.valueOf(args[i]);
 					}
 				}
 				
@@ -250,7 +249,7 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 				}
 				
 				LeoObject res = runtime.execute(leoMethod, largs);
-				return LeoTypeConverter.convertLeoObjectToJavaObj(method.getReturnType(), res);
+				return LeoObject.toJavaObject(method.getReturnType(), res);
 			}
 		});
 		

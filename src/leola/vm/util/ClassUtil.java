@@ -203,7 +203,7 @@ public class ClassUtil {
 			Field field = aClass.getField(fieldName);
 			Object javaObj = field.get(null);
 
-			result = LeoTypeConverter.convertToLeolaType(javaObj);
+			result = LeoObject.valueOf(javaObj);
 		} catch (Exception e) {
 		}
 
@@ -336,7 +336,7 @@ public class ClassUtil {
 				arg = params[i];
 			}
 
-			args[i] = LeoTypeConverter.convertLeoObjectToJavaObj(aCl, arg);
+			args[i] = LeoObject.toJavaObject(aCl, arg);
 		}
 
 		Object result = method.invoke(owner, args);
@@ -371,7 +371,7 @@ public class ClassUtil {
 				arg = params[i];
 			}
 
-			args[i] = LeoTypeConverter.convertLeoObjectToJavaObj(aCl, arg);
+			args[i] = LeoObject.toJavaObject(aCl, arg);
 		}
 
 		Object result = method.invoke(owner, args);
@@ -575,7 +575,7 @@ public class ClassUtil {
 					if ( value != null ) {
 						if ( value instanceof LeoObject ) {
 							try {
-								Object jObject = LeoTypeConverter.convertLeoObjectToJavaObj(aCl, (LeoObject)value);
+								Object jObject = LeoObject.toJavaObject(aCl, (LeoObject)value);
 								if ( jObject.getClass().equals(aCl) ) {
 									currentScore++;
 								}
@@ -666,7 +666,7 @@ public class ClassUtil {
 			Object[] args = new Object[paramTypes.length];
 			for(int i = 0; i < paramTypes.length; i++ ) {
 				Class<?> aCl = paramTypes[i];
-				args[i] = LeoTypeConverter.convertLeoObjectToJavaObj(aCl, params[i]);
+				args[i] = LeoObject.toJavaObject(aCl, params[i]);
 			}
 
 			result = constructor.newInstance(args);

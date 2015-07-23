@@ -9,8 +9,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import leola.vm.Symbols;
-
 
 /**
  * Leola's null object.
@@ -116,7 +114,7 @@ public class LeoNull extends LeoObject {
 	 * @return the {@link LeoObject}
 	 * @throws IOException
 	 */
-	public static LeoNull read(Symbols symbols, DataInput in) throws IOException {
+	public static LeoNull read(DataInput in) throws IOException {
 		return LeoNull.LEONULL;
 	}
 }

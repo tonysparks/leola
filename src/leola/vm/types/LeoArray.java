@@ -18,9 +18,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import leola.vm.Symbols;
 import leola.vm.exceptions.LeolaRuntimeException;
-import leola.vm.util.LeoTypeConverter;
 
 
 /**
@@ -528,11 +526,11 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 * @return the {@link LeoObject}
 	 * @throws IOException
 	 */
-	public static LeoArray read(LeoObject env, Symbols symbols, DataInput in) throws IOException {
+	public static LeoArray read(LeoObject env, DataInput in) throws IOException {
 		int size = in.readInt();
 		LeoArray result = new LeoArray(size);
 		for(int i = 0; i < size; i++) {
-			LeoObject obj = LeoObject.read(env, symbols, in);
+			LeoObject obj = LeoObject.read(env, in);
 			result.$add(obj);
 		}
 		
@@ -551,7 +549,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 */
 	
 	public boolean contains(Object o) {
-		return this.has(LeoTypeConverter.convertToLeolaType(o));
+		return this.has(LeoObject.valueOf(o));
 	}
 
 	/* (non-Javadoc)

@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
+import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaMethod;
 import leola.vm.types.LeoMap;
 import leola.vm.types.LeoNamespace;
@@ -25,10 +26,6 @@ import leola.vm.util.ClassUtil;
  *
  */
 public class Scope {
-    /**
-     * The global symbols
-     */
-	private Symbols symbols;
 	
 	/**
 	 * The parent scope
@@ -53,31 +50,13 @@ public class Scope {
 	 * The values stored in this scope
 	 */
 	private LeoMap values;
-	
-	
-    /**
-     * Cloning constructor
-     * 
-     * @param scope
-     */
-	private Scope(Scope scope) {
-		this.symbols = scope.symbols;
-		this.parent = scope.parent;
-
-		this.classDefinitions = scope.classDefinitions;
-		this.namespaceDefinitions = scope.namespaceDefinitions;
-
-		this.values = (LeoMap)scope.values.clone();
-	}
-
 
 	/**
 	 * @param symbols
 	 * @param parent
 	 * @param scopeType
 	 */
-	public Scope(Symbols symbols, Scope parent) {
-		this.symbols = symbols;
+	public Scope(Scope parent) {
 		this.parent = parent;
 	}
 
@@ -140,7 +119,7 @@ public class Scope {
 	 * @param reference
 	 * @return the value if found, otherwise null
 	 */
-	public LeoObject getObject(LeoString reference) {
+	public LeoObject getObject(LeoObject reference) {
 		LeoObject value = (this.values != null) ? this.values.getWithJNull(reference) : null;
 		if ( value == null && parent != null) {
 			value = parent.getObject(reference);
@@ -149,13 +128,25 @@ public class Scope {
 		return value;
 	}
 
+    /**
+     * Recursively attempts to retrieve the value associated with the reference.  If it
+     * isn't found in this scope, it will ask its parent scope.
+     * 
+     * @see Scope#getObject(LeoString)
+     * @param reference
+     * @return the LeoObject that is linked to the reference, if not found null is returned
+     */
+    public LeoObject getObject(String reference){
+        return getObject(LeoString.valueOf(reference));
+    }
+    
 	/**
 	 * Searches scopes and parent scopes up and until the global scope
 	 * 
 	 * @param reference
 	 * @return the value if found, otherwise null;
 	 */
-	public LeoObject getObjectNoGlobal(LeoString reference) {
+	public LeoObject getObjectNoGlobal(LeoObject reference) {
 		LeoObject value = (this.values != null) ? this.values.getWithJNull(reference) : null;
 		if ( value == null && parent != null && !parent.isGlobalScope()) {
 			value = parent.getObjectNoGlobal(reference);
@@ -165,34 +156,30 @@ public class Scope {
 	}
 
 	/**
+     * Searches scopes and parent scopes up and until the global scope
+     * 
+     * @param reference
+     * @return the value if found, otherwise null;
+     */
+	public LeoObject getObjectNoGlobal(String reference) {
+	    return getObjectNoGlobal(LeoString.valueOf(reference));
+	}
+	
+	/**
 	 * Retrieves a {@link LeoNamespace} by its name
 	 * 
 	 * @param reference
 	 * @return the {@link LeoNamespace} if found, otherwise null
 	 */
-	public LeoNamespace getNamespace(LeoString reference) {
-		LeoNamespace value = (hasNamespaceDefinitions()) ? this.namespaceDefinitions.getNamespace(reference.getString()) : null;
-		if(value == null) {
+	public LeoNamespace getNamespace(LeoObject reference) {
+		LeoNamespace value = (hasNamespaceDefinitions()) ? this.namespaceDefinitions.getNamespace(reference) : null;
+		if(value == null && parent != null) {
 			value = parent.getNamespace(reference);
 		}
 		return value;
 	}
 
-	/**
-	 * Recursively attempts to retrieve the value associated with the reference.  If it
-	 * isn't found in this scope, it will ask its parent scope.
-	 * 
-	 * @see Scope#getObject(LeoString)
-	 * @param reference
-	 * @return the LeoObject that is linked to the reference, if not found null is returned
-	 */
-	public LeoObject getObject(String reference){
-		return getObject(LeoString.valueOf(reference));
-	}
 
-	public LeoObject getObjectNoGlobal(String reference) {
-		return getObjectNoGlobal(LeoString.valueOf(reference));
-	}
 
 	/**
 	 * Stores an object in this scope and only this scope. This does
@@ -203,14 +190,18 @@ public class Scope {
 	 * @param value
 	 * @return the previously held value, if any
 	 */
-	public LeoObject putObject(LeoString reference, LeoObject value) {
+	public LeoObject putObject(LeoObject reference, LeoObject value) {
 		if(this.values==null) {
 			this.values = new LeoMap();
 		}
 
 		return this.values.put(reference, value);		
 	}
-		
+	
+	public LeoObject putObject(String reference, LeoObject value) {
+	    return putObject(LeoString.valueOf(reference), value);
+	}
+	
 	/**
 	 * Stores an object in this scope, it first checks to see if any parent
 	 * values contain the supplied reference, if it does it will override the existing
@@ -220,7 +211,7 @@ public class Scope {
 	 * @param value
 	 * @return the previously held value, if any
 	 */
-	public LeoObject storeObject(LeoString reference, LeoObject newValue) {
+	public LeoObject storeObject(LeoObject reference, LeoObject newValue) {
 		
 		Scope current = this;		
 		while (current != null) {
@@ -254,7 +245,7 @@ public class Scope {
 	 * @return the {@link LeoObject} previously held by the reference (or null if no value was held
 	 * by this reference).
 	 */
-	public LeoObject removeObject(LeoString reference) {
+	public LeoObject removeObject(LeoObject reference) {
 		return (this.values!=null) ? this.values.remove(reference) : null;
 	}
 
@@ -291,7 +282,7 @@ public class Scope {
 	 * @return true if this scope is the global scope
 	 */
 	public boolean isGlobalScope() {
-		return this == this.symbols.getGlobalScope();
+	    return parent == null;
 	}
 
 	/**
@@ -306,7 +297,11 @@ public class Scope {
 	 * @see java.lang.Object#clone()
 	 */
 	public Scope clone() {
-		Scope clone = new Scope(this);
+		Scope clone = new Scope(this.parent);
+		clone.classDefinitions = this.classDefinitions;
+	    clone.namespaceDefinitions = this.namespaceDefinitions;
+
+	    clone.values = (LeoMap)this.values.clone();
 		return clone;
 	}
 
@@ -350,5 +345,140 @@ public class Scope {
 			}
 		}
 	}
+	
+	
+	
+	/**
+     * Looks up a namespace.
+     *
+     * @param name
+     * @return
+     */
+    private LeoNamespace lookupSimpleNamespace(LeoObject name) {
+        LeoNamespace result = null;
+        
+        Scope scope = this;
+        while(scope != null) {
+            if(scope.hasNamespaceDefinitions()) {
+                NamespaceDefinitions ndefs = scope.getNamespaceDefinitions();
+                result = ndefs.getNamespace(name);
+                if ( result != null ) {                 
+                    break;
+                }
+            }
+            
+            scope = scope.getParent();
+        }
+        
+        return (result);
+    }
+
+    /**
+     * Looks up name spaces (Ex. io:net:sytem:etc) going from the first namespace to the last (with
+     * each namespace defining the next namespace.)
+     *
+     * @param namespace
+     * @return the bottom most namespace
+     */
+    public LeoNamespace lookupNamespace(LeoObject namespace) {
+        LeoNamespace ns = null;
+
+        String[] namespaces = namespace.toString().replace(".", ":").split(":");
+        if ( namespaces.length > 0 ) {
+            ns = this.lookupSimpleNamespace(LeoString.valueOf(namespaces[0]));
+
+            for(int i = 1; i < namespaces.length && ns != null; i++ ) {
+                Scope scope = ns.getScope();
+                if ( scope.hasNamespaceDefinitions() ) {
+                    ns = scope.getNamespaceDefinitions().getNamespace(LeoString.valueOf(namespaces[i]));
+                }
+            }
+        }
+
+        return ns;
+    }
+
+       /**
+     * Looks up the appropriate {@link ClassDefinitions} containing the className
+     * @param className
+     * @return the {@link ClassDefinitions} or null if not found
+     */
+    public ClassDefinitions lookupClassDefinitions(Scope currentScope, LeoObject className) {
+        if ( className == null ) {
+            throw new LeolaRuntimeException("Invalid class name, can not be empty!");
+        }
+        
+        String jclassName = className.toString();
+        LeoString lclassName = className.toLeoString();
+    
+        ClassDefinitions result = null;
+        String formattedClassName = jclassName.replace(".", ":");
+        int index = formattedClassName.lastIndexOf(':');
+        if ( index > -1 ) {
+            String namespace = formattedClassName.substring(0, index);
+            LeoNamespace ns = lookupNamespace(LeoString.valueOf(namespace));
+            if( ns != null ) {
+                String justClassName = formattedClassName.substring(index + 1);
+    
+                Scope scope = ns.getScope();
+                result = checkScopeForDefinitions(scope, LeoString.valueOf(justClassName));
+            }
+        }
+        else {
+            Scope scope = currentScope;
+            while(scope != null) {
+                result = checkScopeForDefinitions(scope, lclassName);
+                if ( result != null ) {
+                    break;
+                }
+                
+                scope = scope.getParent();
+            }
+        }
+
+        return (result);
+    }
+    
+    /**
+     * Looks up the appropriate {@link ClassDefinitions} containing the className
+     * @param className
+     * @return the {@link ClassDefinitions} or null if not found
+     */
+    public ClassDefinitions lookupClassDefinitions(LeoObject className) {
+        return lookupClassDefinitions(this, className);
+    }
+    
+    /**
+     * Gets just the class name, removing any package or namespaces.
+     * 
+     * @param fullyQualifiedClassName
+     * @return
+     */
+    public String getClassName(String fullyQualifiedClassName) {
+        String result = fullyQualifiedClassName;
+        
+        String formattedClassName = fullyQualifiedClassName.replace(".", ":");
+        int index = formattedClassName.lastIndexOf(':');
+        if ( index > -1 ) {         
+            String justClassName = formattedClassName.substring(index + 1);
+            result = justClassName;
+        }       
+        
+        return result;
+    }
+    
+    
+    private ClassDefinitions checkScopeForDefinitions(Scope scope, LeoString justClassName) {
+        ClassDefinitions result = null;
+
+        if ( scope.hasClassDefinitions() ) {
+            ClassDefinitions defs = scope.getClassDefinitions();
+            if ( defs.containsClass(justClassName) ) {
+                result = defs;
+            }
+        }
+
+        return result;      
+    }
 }
 

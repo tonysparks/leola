@@ -108,11 +108,11 @@ public class LeoClass extends LeoScopedObject {
 		this.superClass = superClass;
 		this.className = classDefinition.getClassName();
 		this.constructor = classDefinition.getBody();
-		this.paramNames = classDefinition.getParams();
+		this.paramNames = classDefinition.getParameterNames();
 		this.outers = classDefinition.getOuters();
 				
-		addProperty(LeoString.valueOf("super"), superClass);
-		addProperty(LeoString.valueOf("this"), this);
+		putObject("super", superClass);
+		putObject("this", this);
 				
 		if ( paramNames != null ) {
 			for(int i = 0; i < paramNames.length; i++) {

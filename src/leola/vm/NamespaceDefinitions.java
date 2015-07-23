@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import leola.vm.types.LeoNamespace;
+import leola.vm.types.LeoObject;
 
 /**
  * Stores the {@link LeoNamespace}s
@@ -18,8 +19,14 @@ import leola.vm.types.LeoNamespace;
  */
 public class NamespaceDefinitions {
 
-	private Map<String, LeoNamespace> namespaces;
+	private Map<LeoObject, LeoNamespace> namespaces;
 	
+	
+    /**
+     * Determine if there are any {@link LeoNamespace}'s defined
+     * 
+     * @return true if there are {@link LeoNamespace}'s defined
+     */
 	public boolean hasDefinitions() {
 		return this.namespaces != null && ! this.namespaces.isEmpty();
 	}
@@ -27,27 +34,61 @@ public class NamespaceDefinitions {
 	/**
 	 * @return the classDefinitions
 	 */
-	public Map<String, LeoNamespace> getNamespaceDefinitions() {
+	public Map<LeoObject, LeoNamespace> getNamespaceDefinitions() {
 		if ( this.namespaces == null ) {
-			this.namespaces = new ConcurrentHashMap<String, LeoNamespace>();
+			this.namespaces = new ConcurrentHashMap<LeoObject, LeoNamespace>();
 		}
 		
 		return namespaces;
 	}
 	
-	public void storeNamespace(String namespace, LeoNamespace ns) {
-		getNamespaceDefinitions().put(namespace, ns);
+
+    /**
+     * Stores the {@link LeoNamespace}
+     * 
+     * @param ns
+     */
+	public void storeNamespace(LeoNamespace ns) {
+	    storeNamespace(ns.getName(), ns);
 	}
 	
-	public void removeNamespace(String namespace) {
-		getNamespaceDefinitions().remove(namespace);
+	/**
+	 * Stores the {@link LeoNamespace}, bounded to the supplied namespace name
+	 * 
+	 * @param namespaceName
+	 * @param ns
+	 */
+	public void storeNamespace(LeoObject namespaceName, LeoNamespace ns) {
+		getNamespaceDefinitions().put(namespaceName, ns);
 	}
 	
-	public boolean containsNamespace(String namespace) {
+	/**
+	 * Removes the {@link LeoNamespace} associated with the supplied name
+	 * 
+	 * @param namespaceName
+	 */
+	public void removeNamespace(LeoObject namespaceName) {
+		getNamespaceDefinitions().remove(namespaceName);
+	}
+	
+	/**
+	 * Determines if there is a {@link LeoNamespace} associated with the supplied name.
+	 * 
+	 * @param namespace
+	 * @return true if there is a {@link LeoNamespace} associated with the supplied name.
+	 */
+	public boolean containsNamespace(LeoObject namespace) {
 		return getNamespaceDefinitions().containsKey(namespace);
 	}
 	
-	public LeoNamespace getNamespace(String namespace) {
+	
+	/**
+	 * Retrieves the {@link LeoNamespace} associated with the supplied name.
+	 * @param namespace
+	 * @return the {@link LeoNamespace} associated with the supplied name,
+	 * or null if not bound.
+	 */
+	public LeoNamespace getNamespace(LeoObject namespace) {
 		return getNamespaceDefinitions().get(namespace);
 	}
 }

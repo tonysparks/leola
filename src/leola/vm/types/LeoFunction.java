@@ -10,7 +10,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
-import leola.vm.Symbols;
 import leola.vm.VM;
 import leola.vm.compiler.Bytecode;
 
@@ -317,13 +316,13 @@ public class LeoFunction extends LeoOuterObject {
 	 * @return the {@link LeoObject}
 	 * @throws IOException
 	 */
-	public static LeoFunction read(LeoObject env, Symbols symbols, DataInput in) throws IOException {
-		Bytecode bytecode = Bytecode.read(env, symbols, in);
+	public static LeoFunction read(LeoObject env, DataInput in) throws IOException {
+		Bytecode bytecode = Bytecode.read(env, in);
 		int nouters = in.readInt();
 		
 		LeoObject[] outers = new LeoObject[nouters];
 		for(int i =0; i < nouters; i++) {
-			outers[i] = LeoObject.read(env, symbols, in);
+			outers[i] = LeoObject.read(env, in);
 		}
 		
 		LeoFunction function = new LeoFunction(env, bytecode);	

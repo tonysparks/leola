@@ -12,7 +12,6 @@ import java.util.List;
 import leola.vm.lib.LeolaLibrary;
 import leola.vm.types.LeoArray;
 import leola.vm.types.LeoObject;
-import leola.vm.util.LeoTypeConverter;
 
 /**
  * {@link Leola} VM arguments
@@ -334,7 +333,7 @@ public class Args {
 			String[] sargs = new String[args.length-startProgramArgs];			
 			System.arraycopy(args, startProgramArgs, sargs, 0, sargs.length);
 			
-			LeoObject leoScriptArgs = LeoTypeConverter.convertToLeolaType(sargs);
+			LeoObject leoScriptArgs = LeoObject.valueOf(sargs);
 			pargs.scriptArgs = leoScriptArgs;
 		}
 		

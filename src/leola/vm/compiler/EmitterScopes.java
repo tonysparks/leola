@@ -60,34 +60,4 @@ public class EmitterScopes {
         this.currentScope = poppedScope.getParent();
         return poppedScope;
     }
-    
-    /**
-     * Finds a reference, generating an {@link OuterDesc} if found
-     * 
-     * @param reference
-     * @return the {@link OuterDesc} that describes the {@link Outer}, which
-     * includes its local index and the up value (the number of scopes above
-     * this current scope).
-     */
-    public OuterDesc find(String reference) {
-        OuterDesc upvalue = null;
-        
-        int up = 0;
-        EmitterScope scope = peek();
-        while(scope != null) {
-            if(scope.hasLocals()) {
-                Locals locals = scope.getLocals();
-                int index = locals.get(reference);
-                if ( index > -1) {
-                    upvalue = new OuterDesc(index, up);             
-                    break;
-                }
-            }
-            
-            scope = scope.getParent();
-            up++;
-        }
-        
-        return upvalue;
-    }       
 }

@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import leola.vm.Opcodes;
-import leola.vm.Symbols;
 import leola.vm.types.LeoClass;
 import leola.vm.types.LeoFunction;
 import leola.vm.types.LeoNamespace;
@@ -163,6 +162,9 @@ public class Bytecode {
 		}				
 	}
 	
+	/**
+	 * @return the source file that created this {@link Bytecode}
+	 */
 	public String getSourceFile() {
 		return (this.debugSymbols!=null) ? this.debugSymbols.getSourceFile() : "";
 	}
@@ -191,8 +193,8 @@ public class Bytecode {
 		return clone;
 	}
 	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
+	/**
+	 * @see Bytecode#dump()
 	 */
 	@Override
 	public String toString() {
@@ -200,16 +202,26 @@ public class Bytecode {
 	}
 	
 	/**
-	 * Dump the contents of the bytecode
+	 * Dump the contents of the {@link Bytecode} into a {@link String}
 	 * 
-	 * @return
+	 * @return the {@link Bytecode} represented as a {@link String}
 	 */
 	public String dump() {
 		StringBuilder sb = new StringBuilder();
 		return dump(sb, 0, this.pc, this.len);
 	}
 	
-	public String dump(StringBuilder sb, int numTabs, int pc, int len) {
+	
+	/**
+	 * Dump the contents of the {@link Bytecode} into a {@link String}
+	 * 
+	 * @param sb
+	 * @param numTabs
+	 * @param pc
+	 * @param len
+	 * @return the {@link Bytecode} represented as a {@link String}
+	 */
+	private String dump(StringBuilder sb, int numTabs, int pc, int len) {
 		
 		for(int t = 0; t < numTabs; t++) sb.append("\t");
 		sb.append(".locals ").append(this.numLocals).append("\n");
@@ -241,7 +253,16 @@ public class Bytecode {
 		return sb.toString();
 	}
 	
-	public static void dumpRaw(Bytecode bytecode, StringBuilder sb, int numTabs, int[] instr, int pc, int len) {
+	/**
+	 * 
+	 * @param bytecode
+	 * @param sb
+	 * @param numTabs
+	 * @param instr
+	 * @param pc
+	 * @param len
+	 */
+	private static void dumpRaw(Bytecode bytecode, StringBuilder sb, int numTabs, int[] instr, int pc, int len) {
 		List<Integer> visited = new ArrayList<Integer>(bytecode.numInners);
 		for(int i = pc; i < len; i++) {
 			int code = instr[i];
@@ -439,7 +460,7 @@ public class Bytecode {
 	 * @return the {@link Bytecode}
 	 * @throws IOException
 	 */
-	public static Bytecode read(LeoObject env, Symbols symbols, DataInput in) throws IOException {
+	public static Bytecode read(LeoObject env, DataInput in) throws IOException {
 		int magic = in.readInt();
 		if ( magic != MAGIC_NUMBER ) {
 			throw new IllegalArgumentException
@@ -450,7 +471,7 @@ public class Bytecode {
 		Bytecode code = null;
 		switch(version) {
 			case 1: {
-				code = readVersion1(env, symbols, in);
+				code = readVersion1(env, in);
 				break;
 			}
 			default: {
@@ -468,7 +489,7 @@ public class Bytecode {
 	 * @return
 	 * @throws IOException
 	 */
-	private static Bytecode readVersion1(LeoObject env, Symbols symbols, DataInput in) throws IOException {
+	private static Bytecode readVersion1(LeoObject env, DataInput in) throws IOException {
 		int len = in.readInt();
 		int[] instr = new int[len];
 		for(int i = 0; i < len; i++) {
@@ -481,7 +502,7 @@ public class Bytecode {
 		result.numConstants = in.readInt();		
 		result.constants = new LeoObject[result.numConstants];
 		for(int i = 0; i < result.numConstants; i++) {
-			LeoObject obj = LeoObject.read(env, symbols, in);	
+			LeoObject obj = LeoObject.read(env, in);	
 			result.constants[i] = obj;
 		}
 		
@@ -505,7 +526,7 @@ public class Bytecode {
 		result.numInners = in.readInt();
 		result.inner = new Bytecode[result.numInners];
 		for(int i = 0; i < result.numInners; i++ ) {			
-			Bytecode code = Bytecode.read(env, symbols, in);			
+			Bytecode code = Bytecode.read(env, in);			
 			result.inner[i] = code;			
 		}				
 		

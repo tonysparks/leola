@@ -465,7 +465,7 @@ public class BytecodeEmitter {
 		}		
 		else {					
 			
-			OuterDesc upvalue = this.scopes.find(ref);
+			OuterDesc upvalue = this.scopes.peek().find(ref);
 			if ( upvalue == null ) {				
 				success = false;
 			}
@@ -504,7 +504,7 @@ public class BytecodeEmitter {
 		
 		/* this is a global */
 		if ( index == -1 ) {						
-			OuterDesc upvalue = this.scopes.find(ref);
+			OuterDesc upvalue = this.scopes.peek().find(ref);
 			if ( upvalue == null ) {
 				setglobal(ref);
 			}

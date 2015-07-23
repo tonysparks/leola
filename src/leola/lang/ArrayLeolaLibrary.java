@@ -14,7 +14,6 @@ import leola.vm.lib.LeolaLibrary;
 import leola.vm.types.LeoArray;
 import leola.vm.types.LeoNamespace;
 import leola.vm.types.LeoObject;
-import leola.vm.util.LeoTypeConverter;
 
 /**
  * Standard array library
@@ -123,7 +122,7 @@ public class ArrayLeolaLibrary implements LeolaLibrary {
 			@Override
 			public int compare(LeoObject o1, LeoObject o2) {
 				LeoObject res = runtime.execute(comparator, o1, o2);
-				return (Integer)LeoTypeConverter.convertLeoObjectToJavaObj(int.class, res);
+				return (Integer)LeoObject.toJavaObject(int.class, res);
 			}
 		});
 		return array;
