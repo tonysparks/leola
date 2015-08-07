@@ -9,8 +9,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,7 +17,19 @@ import leola.vm.util.ClassUtil;
 
 
 /**
- * A Leola String
+ * A Leola String. For the most part all String operations return a new {@link LeoString} instance, leaving the {@link LeoString}
+ * more or less immutable.  The one exception is the indexing into the string itself:
+ * 
+ * <pre>
+ *    var aString = "Hello"
+ *    aString[2] = "X"
+ *    println(aString) // HeXllo ; the indexing does an insert
+ * </pre>
+ * 
+ * <b>
+ * This might change in the future, I'm a bit undecided if this is a desirable feature -- furthermore this probably can cause
+ * issues with the {@link LeoString} interning (due to the original string referencing the LeoString, which if altered would no
+ * longer match).
  *
  * @author Tony
  *
@@ -108,12 +118,6 @@ public class LeoString extends LeoObject {
 		return value.toString();
 	}
 
-	/**
-	 * @param value the value to set
-	 */
-	public void setString(String value) {
-		this.value = value;//new StringBuilder(value);
-	}
 
 	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#toString()
@@ -137,9 +141,6 @@ public class LeoString extends LeoObject {
 		return LeoString.valueOf(this.value.toUpperCase());
 	}
 
-	/* (non-Javadoc)
-	 * @see leola.types.LeoObject#add(leola.types.LeoObject)
-	 */
 	@Override
 	public LeoObject $add(LeoObject other) {
 		return append(other);
@@ -157,17 +158,16 @@ public class LeoString extends LeoObject {
 		return LeoString.valueOf(other + this.value);
 	}
 	
-	   /* (non-Javadoc)
-     * @see leola.vm.types.LeoObject#$index(double)
-     */
+	@Override
+	public LeoObject $sub(LeoObject other) {	
+	    return replaceAll(other, LeoObject.valueOf(""));
+	}
+	
     @Override
     public LeoObject $index(double other) {
         return charAt( (int) other);
     }
     
-    /* (non-Javadoc)
-     * @see leola.vm.types.LeoObject#$index(int)
-     */
     @Override
     public LeoObject $index(int other) {
         return charAt(other);
@@ -332,16 +332,17 @@ public class LeoString extends LeoObject {
 
 	/**
 	 * Splits the string by the regex
+	 * 
 	 * @param v
 	 * @return a {@link LeoArray}
 	 */
 	public LeoArray split(LeoObject v) {
 		String[] res = this.value.toString().split(v.toString());
-		List<LeoObject> result = new ArrayList<LeoObject>(res.length);
-		for(String r:res) {
-			result.add(LeoString.valueOf(r));
+		LeoArray result = new LeoArray(res.length);
+		for(int i = 0; i < res.length; i++) {
+		    result.add(LeoString.valueOf(res[i]));
 		}
-		return new LeoArray(result);
+		return result;
 	}
 
 	public boolean endsWith(LeoObject v) {

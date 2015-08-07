@@ -6,6 +6,7 @@
 package leola.vm.util;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -17,6 +18,8 @@ import java.util.List;
 import leola.frontend.EvalException;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaIgnore;
+import leola.vm.lib.LeolaMethod;
+import leola.vm.lib.LeolaMethodVarargs;
 import leola.vm.types.LeoNativeClass;
 import leola.vm.types.LeoNull;
 import leola.vm.types.LeoObject;
@@ -105,12 +108,42 @@ public class ClassUtil {
 
 		return result;
 	}
+	
+	/**
+	 * Retrieves the method names in which have the {@link LeolaMethod} annotation with the {@link LeolaMethod#alias()} of
+	 * the supplied 'methodName'
+	 * 
+     * @param aClass
+     * @param methodName
+     * @return all methods that have a {@link LeolaMethod} annotation with the matching alias name
+     */
+    public static List<Method> getMethodsByAnnotationAlias(Class<?> aClass, String methodName) {
+        List<Method> result = new ArrayList<Method>();
+        try {
+            List<Method> superResult = getAllDeclaredMethods(aClass);
+            for(int i = 0; i < superResult.size(); i++) {
+                Method method = superResult.get(i);
+                
+                if ( method.isAnnotationPresent(LeolaMethod.class) ) {
+                    LeolaMethod methodAlias = method.getAnnotation(LeolaMethod.class);
+                    if(methodAlias.alias().equals(methodName)) {
+                        result.add(method);
+                    }
+                }                
+            }
+        }
+        catch(Exception e) {
+        }
+
+        return result;
+    }
+	
 
 	public static Object invokeMethod(Method method, Object owner, LeoObject[] params) throws Exception {
 		Object result = null;
 		try {
 			method.setAccessible(true);
-			result = tryMethod2(owner, method, params);
+			result = tryMethod(owner, method, params);
 		}
 		catch(InvocationTargetException e) {
 			/* This was a legitimate method invokation, so
@@ -151,60 +184,6 @@ public class ClassUtil {
 		catch(Throwable e) {
 			/* try other methods */
 			// System.out.println(e);
-		}
-
-		return result;
-	}
-
-	/**
-	 * @param aClass
-	 * @param fieldName
-	 * @return
-	 */
-//	public static LeoObject getFieldValue(LeoNativeClass aClass, String fieldName) {
-//		LeoObject result = null;
-//		try {
-//			Class<?> ownerClass = aClass.getNativeClass();
-//			Field field = ownerClass.getField(fieldName);
-//			Object javaObj = field.get(aClass.getInstance());
-//			result = LeoTypeConverter.convertToLeolaType(javaObj);
-//		} catch (Exception e) {
-//		}
-//
-//		return result;
-//	}
-
-	/**
-	 * @param aClass
-	 * @param fieldName
-	 * @return
-	 */
-	public static Object getFieldValue(Object instance, String fieldName) {
-		Object result = null;
-		try {
-			Class<?> aClass = instance.getClass();
-			Field field = aClass.getField(fieldName);
-			result = field.get(instance);
-		} catch (Exception e) {
-		}
-
-		return result;
-	}
-
-	/**
-	 * Gets a static member
-	 * @param aClass
-	 * @param fieldName
-	 * @return
-	 */
-	public static LeoObject getStaticFieldValue(Class<?> aClass, String fieldName) {
-		LeoObject result = null;
-		try {
-			Field field = aClass.getField(fieldName);
-			Object javaObj = field.get(null);
-
-			result = LeoObject.valueOf(javaObj);
-		} catch (Exception e) {
 		}
 
 		return result;
@@ -255,22 +234,6 @@ public class ClassUtil {
 
 	}
 
-	/**
-	 * Determines if the supplied class name is a native class.
-	 *
-	 * @param className
-	 * @return
-	 */
-	public static boolean isNativeClass(String className) {
-		boolean result = false;
-		try {
-			Class.forName(className);
-			result = true;
-		}
-		catch(Throwable e) {}
-
-		return result;
-	}
 
 	/**
 	 * Finds the best possible method. If none is found suitable an exception is thrown.
@@ -322,64 +285,114 @@ public class ClassUtil {
 	 * @param paramTypes
 	 * @return
 	 */
-	private static Object tryMethod2(Object owner, Method method, LeoObject[] params)
-		throws InvocationTargetException, Exception {
-
-		Class<?>[] paramTypes = method.getParameterTypes();
-		Object[] args = new Object[paramTypes.length];
-		for(int i = 0; i < paramTypes.length; i++ ) {
-			Class<?> aCl = paramTypes[i];
-
-			/* Leola allows for missing arguments */
-			LeoObject arg = LeoNull.LEONULL;
-			if ( params != null && i < params.length ) {
-				arg = params[i];
-			}
-
-			args[i] = LeoObject.toJavaObject(aCl, arg);
-		}
-
-		Object result = method.invoke(owner, args);
-
-
-		return (result);
-	}
-
-	/**
-	 * Attempts to instantiate the object
-	 * @param constructor
-	 * @param params
-	 * @param paramTypes
-	 * @return
-	 */
 	private static Object tryMethod(Object owner, Method method, LeoObject[] params)
 		throws InvocationTargetException, Exception {
 
 		Class<?>[] paramTypes = method.getParameterTypes();
-//		if ( (params==null&&paramTypes.length!=0)
-//			|| (params!=null && paramTypes.length != params.length) ) {
-//			throw new Exception();
-//		}
+		
+		int startOfVarargs = -1;
+		boolean hasVarArgs = false;
+		if(method.isAnnotationPresent(LeolaMethodVarargs.class)) {
+		    startOfVarargs = paramTypes.length - 1;
+		    hasVarArgs = true;
+		}
 
 		Object[] args = new Object[paramTypes.length];
+		Object varargs = null;
+		
+		Class<?> arrayType = null;
+		if(hasVarArgs && startOfVarargs < params.length && startOfVarargs < paramTypes.length) {		    
+		    arrayType = paramTypes[startOfVarargs].getComponentType();
+		    
+		    int varargSize = params.length-startOfVarargs;
+		    varargs = Array.newInstance(arrayType, varargSize);		    
+		    args[startOfVarargs] = varargs;
+		}
+		
 		for(int i = 0; i < paramTypes.length; i++ ) {
-			Class<?> aCl = paramTypes[i];
-
-			/* Leola allows for missing arguments */
-			LeoObject arg = LeoNull.LEONULL;
-			if (params != null && i < params.length ) {
-				arg = params[i];
+			 
+			if(hasVarArgs && i>=startOfVarargs && params!=null) {
+			    int len = (params.length - paramTypes.length) + 1;
+			    int varargsIndex = 0;
+			    			    
+			    for(int paramIndex = startOfVarargs; paramIndex <= len; paramIndex++) {
+			        Object javaArg = LeoObject.toJavaObject(arrayType, params[paramIndex]);
+			        Array.set(varargs, varargsIndex++, javaArg);
+			    }
+			    break;
 			}
-
-			args[i] = LeoObject.toJavaObject(aCl, arg);
+			else {
+			    Class<?> aCl = paramTypes[i];
+			    
+	            /* Leola allows for missing arguments */
+	            LeoObject arg = LeoNull.LEONULL;
+	            if (params != null && i < params.length ) {
+	                arg = params[i];
+	            }
+			    
+			    Object javaArg = LeoObject.toJavaObject(aCl, arg);
+			    args[i] = javaArg;
+			}
 		}
 
 		Object result = method.invoke(owner, args);
-
-
 		return (result);
 	}
 
+
+    /**
+     * @param aClass
+     * @param fieldName
+     * @return
+     */
+    public static Object getFieldValue(Object instance, String fieldName) {
+        Object result = null;
+        try {
+            Class<?> aClass = instance.getClass();
+            Field field = aClass.getField(fieldName);
+            result = field.get(instance);
+        } catch (Exception e) {
+        }
+
+        return result;
+    }
+
+    /**
+     * Gets a static member
+     * @param aClass
+     * @param fieldName
+     * @return
+     */
+    public static LeoObject getStaticFieldValue(Class<?> aClass, String fieldName) {
+        LeoObject result = null;
+        try {
+            Field field = aClass.getField(fieldName);
+            Object javaObj = field.get(null);
+
+            result = LeoObject.valueOf(javaObj);
+        } catch (Exception e) {
+        }
+
+        return result;
+    }   
+    
+    /**
+     * Determines if the supplied class name is a native class.
+     *
+     * @param className
+     * @return
+     */
+    public static boolean isNativeClass(String className) {
+        boolean result = false;
+        try {
+            Class.forName(className);
+            result = true;
+        }
+        catch(Throwable e) {}
+
+        return result;
+    }	
+	
 	/**
 	 * Is of type
 	 */

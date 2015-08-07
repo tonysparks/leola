@@ -398,7 +398,7 @@ public class Scope {
         return ns;
     }
 
-       /**
+    /**
      * Looks up the appropriate {@link ClassDefinitions} containing the className
      * @param className
      * @return the {@link ClassDefinitions} or null if not found
@@ -409,7 +409,7 @@ public class Scope {
         }
         
         String jclassName = className.toString();
-        LeoString lclassName = className.toLeoString();
+        LeoObject lclassName = className;
     
         ClassDefinitions result = null;
         String formattedClassName = jclassName.replace(".", ":");
@@ -454,6 +454,17 @@ public class Scope {
      * @param fullyQualifiedClassName
      * @return
      */
+    public LeoObject getClassName(LeoObject fullyQualifiedClassName) {
+        return LeoString.valueOf(getClassName(fullyQualifiedClassName.toString()));
+    }
+    
+    
+    /**
+     * Gets just the class name, removing any package or namespaces.
+     * 
+     * @param fullyQualifiedClassName
+     * @return
+     */
     public String getClassName(String fullyQualifiedClassName) {
         String result = fullyQualifiedClassName;
         
@@ -468,7 +479,7 @@ public class Scope {
     }
     
     
-    private ClassDefinitions checkScopeForDefinitions(Scope scope, LeoString justClassName) {
+    private ClassDefinitions checkScopeForDefinitions(Scope scope, LeoObject justClassName) {
         ClassDefinitions result = null;
 
         if ( scope.hasClassDefinitions() ) {

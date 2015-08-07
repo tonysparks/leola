@@ -73,7 +73,7 @@ public class LeoBoolean extends LeoObject {
 	 * @param value
 	 * @return
 	 */
-	public static LeoBoolean get(boolean value) {
+	public static LeoBoolean valueOf(boolean value) {
 		return value ? LEOTRUE : LEOFALSE;
 	}
 
@@ -122,7 +122,10 @@ public class LeoBoolean extends LeoObject {
 	 */
 	@Override
 	public Object getValue(Class<?> type) {	
-		if ( ClassUtil.isType(type, ClassUtil.BYTE) ){
+	    if(ClassUtil.isType(type, ClassUtil.BOOLEAN)) {
+	        return isTrue();
+	    }
+	    else if ( ClassUtil.isType(type, ClassUtil.BYTE) ){
 			return (byte)(isTrue() ? 1 : 0);
 		}
 		else if ( ClassUtil.isType(type, ClassUtil.CHAR) ){

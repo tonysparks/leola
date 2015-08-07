@@ -6,7 +6,6 @@
 package leola.frontend;
 
 import leola.ast.ASTNode;
-import leola.frontend.events.ParserSummaryEvent;
 import leola.frontend.parsers.ProgramParser;
 
 /**
@@ -58,7 +57,6 @@ public class LeolaParser extends Parser {
 	 */
 	@Override
 	public ASTNode parse() throws Exception {
-        long startTime = System.currentTimeMillis();
         ASTNode program = null;
         try {
             Token token = nextToken();
@@ -66,10 +64,6 @@ public class LeolaParser extends Parser {
             // Parse a program.
             ProgramParser programParser = new ProgramParser(this);            
             program = programParser.parse(token);
-            
-            // Send the parser summary message.
-            float elapsedTime = (System.currentTimeMillis() - startTime) / 1000.0f;
-            getEventDispatcher().sendNow( new ParserSummaryEvent(this, token.getLineNumber(),getErrorCount(), elapsedTime) );
             
         }
         catch (java.io.IOException ex) {

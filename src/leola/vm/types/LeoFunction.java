@@ -10,6 +10,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
+import leola.vm.Leola;
 import leola.vm.VM;
 import leola.vm.compiler.Bytecode;
 
@@ -22,7 +23,10 @@ import leola.vm.compiler.Bytecode;
  */
 public class LeoFunction extends LeoOuterObject {
 
-
+    /**
+     * The Runtime
+     */
+    private Leola runtime;
 	
 	/**
 	 * Arguments
@@ -39,23 +43,25 @@ public class LeoFunction extends LeoOuterObject {
 	 */
 	private LeoObject env;
 	/**
-	 * @param type
-	 * @param numberOfArgs
-	 * @param body
+	 * @param runtime
+	 * @param env
+	 * @param bytecode
 	 */
-	public LeoFunction(LeoObject env, Bytecode bytecode) {
-		this(LeoType.FUNCTION, env, bytecode);				
+	public LeoFunction(Leola runtime, LeoObject env, Bytecode bytecode) {
+		this(runtime, LeoType.FUNCTION, env, bytecode);				
 	}
 	
 	
 	/**
+	 * @param runtime
 	 * @param type
 	 * @param env
 	 * @param bytecode
 	 */
-	protected LeoFunction(LeoType type, LeoObject env, Bytecode bytecode) {
+	protected LeoFunction(Leola runtime, LeoType type, LeoObject env, Bytecode bytecode) {
 		super(type, bytecode.numOuters);
 		
+		this.runtime = runtime;
 		this.env = env;
 		this.bytecode = bytecode;
 		this.numberOfArgs = bytecode.numArgs;
@@ -95,26 +101,14 @@ public class LeoFunction extends LeoOuterObject {
 		return numberOfArgs;
 	}
 
-	/**
-	 * Invokes the function
-	 * 
-	 * @param vm
-	 * @return
-	 */
 	@Override
-	public LeoObject call(VM vm) {
-		return vm.execute(env, this, this.bytecode);		
+	public LeoObject call() {
+		return this.runtime.getActiveVM().execute(env, this, this.bytecode);		
 	}
 	
-	/**
-	 * Invokes the function
-	 * 
-	 * @param vm
-	 * @param arg1
-	 * @return
-	 */
 	@Override
-	public LeoObject call(VM vm, LeoObject arg1) {
+	public LeoObject call(LeoObject arg1) {
+	    VM vm = this.runtime.getActiveVM();
 		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {
 				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1));
@@ -123,16 +117,9 @@ public class LeoFunction extends LeoOuterObject {
 		return vm.execute(env, this, this.bytecode, arg1);		
 	}
 	
-	/**
-	 * Invokes the function
-	 * 
-	 * @param vm
-	 * @param arg1
-	 * @param arg2
-	 * @return
-	 */
 	@Override
-	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2) {
+	public LeoObject call(LeoObject arg1, LeoObject arg2) {
+	    VM vm = this.runtime.getActiveVM();
 		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {				
 				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1, arg2));
@@ -142,17 +129,9 @@ public class LeoFunction extends LeoOuterObject {
 		return vm.execute(env, this, this.bytecode, arg1, arg2);
 	}
 	
-	/**
-	 * Invokes the function
-	 * 
-	 * @param vm
-	 * @param arg1
-	 * @param arg2
-	 * @param arg3
-	 * @return
-	 */
 	@Override
-	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2, LeoObject arg3) {
+	public LeoObject call(LeoObject arg1, LeoObject arg2, LeoObject arg3) {
+	    VM vm = this.runtime.getActiveVM();
 		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {				
 				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1, arg2, arg3));
@@ -163,18 +142,9 @@ public class LeoFunction extends LeoOuterObject {
 		return vm.execute(env, this, this.bytecode, arg1, arg2, arg3);
 	}
 	
-	/**
-	 * Invokes the function
-	 * 
-	 * @param vm
-	 * @param arg1
-	 * @param arg2
-	 * @param arg3
-	 * @param arg4
-	 * @return
-	 */
 	@Override
-	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4) {
+	public LeoObject call(LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4) {
+	    VM vm = this.runtime.getActiveVM();
 		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {				
 				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1, arg2, arg3, arg4));
@@ -186,19 +156,9 @@ public class LeoFunction extends LeoOuterObject {
 		return vm.execute(env, this, this.bytecode, arg1, arg2, arg3, arg4);
 	}
 	
-	/**
-	 * Invokes the function
-	 * 
-	 * @param vm
-	 * @param arg1
-	 * @param arg2
-	 * @param arg3
-	 * @param arg4
-	 * @param arg5
-	 * @return
-	 */
 	@Override
-	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4, LeoObject arg5) {
+	public LeoObject call(LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4, LeoObject arg5) {
+	    VM vm = this.runtime.getActiveVM();
 		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {				
 				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1, arg2, arg3, arg4, arg5));
@@ -211,15 +171,9 @@ public class LeoFunction extends LeoOuterObject {
 		return vm.execute(env, this, this.bytecode, arg1, arg2, arg3, arg4, arg5);
 	}
 	
-	/**
-	 * Invokes the function
-	 * 
-	 * @param vm
-	 * @param args
-	 * @return
-	 */
 	@Override
-	public LeoObject call(VM vm, LeoObject[] args) {
+	public LeoObject call(LeoObject[] args) {
+	    VM vm = this.runtime.getActiveVM();
 		if(this.bytecode.hasVarargs()) {
 			int index = this.bytecode.getVarargIndex();
 			LeoArray varargs =  LeoArray.toLeoArray( Arrays.copyOfRange(args, index, args.length) );
@@ -316,7 +270,7 @@ public class LeoFunction extends LeoOuterObject {
 	 * @return the {@link LeoObject}
 	 * @throws IOException
 	 */
-	public static LeoFunction read(LeoObject env, DataInput in) throws IOException {
+	public static LeoFunction read(Leola runtime, LeoObject env, DataInput in) throws IOException {
 		Bytecode bytecode = Bytecode.read(env, in);
 		int nouters = in.readInt();
 		
@@ -325,7 +279,7 @@ public class LeoFunction extends LeoOuterObject {
 			outers[i] = LeoObject.read(env, in);
 		}
 		
-		LeoFunction function = new LeoFunction(env, bytecode);	
+		LeoFunction function = new LeoFunction(runtime, env, bytecode);	
 		return function;
 	}
 }

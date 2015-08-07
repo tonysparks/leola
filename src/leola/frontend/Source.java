@@ -3,7 +3,6 @@ package leola.frontend;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import leola.frontend.events.SourceLineEvent;
 import leola.frontend.listener.EventDispatcher;
 
 /**
@@ -202,12 +201,6 @@ public class Source {
 
         if (line != null) {
             ++lineNum;
-        }
-
-        // Send a source line message containing the line number
-        // and the line text to all the listeners.
-        if (line != null) {
-            this.eventDispatcher.sendNow(new SourceLineEvent(this, line, lineNum));
         }
     }
 

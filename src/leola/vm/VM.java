@@ -48,8 +48,8 @@ import static leola.vm.Opcodes.LOR;
 import static leola.vm.Opcodes.LT;
 import static leola.vm.Opcodes.LTE;
 import static leola.vm.Opcodes.MOD;
-import static leola.vm.Opcodes.MOV;
-import static leola.vm.Opcodes.MOVN;
+import static leola.vm.Opcodes.SWAP;
+import static leola.vm.Opcodes.ROTL;
 import static leola.vm.Opcodes.MUL;
 import static leola.vm.Opcodes.NAMESPACE_DEF;
 import static leola.vm.Opcodes.NEG;
@@ -66,12 +66,12 @@ import static leola.vm.Opcodes.REQ;
 import static leola.vm.Opcodes.RET;
 import static leola.vm.Opcodes.SET;
 import static leola.vm.Opcodes.SET_GLOBAL;
-import static leola.vm.Opcodes.SHIFT;
+import static leola.vm.Opcodes.ROTR;
 import static leola.vm.Opcodes.SIDX;
 import static leola.vm.Opcodes.STORE_LOCAL;
 import static leola.vm.Opcodes.STORE_OUTER;
 import static leola.vm.Opcodes.SUB;
-import static leola.vm.Opcodes.SWAP;
+import static leola.vm.Opcodes.SWAPN;
 import static leola.vm.Opcodes.TAIL_CALL;
 import static leola.vm.Opcodes.THROW;
 import static leola.vm.Opcodes.XOR;
@@ -98,7 +98,6 @@ import leola.vm.types.LeoNamespace;
 import leola.vm.types.LeoNull;
 import leola.vm.types.LeoObject;
 import leola.vm.types.LeoScopedObject;
-import leola.vm.types.LeoString;
 import leola.vm.util.ClassUtil;
 
 
@@ -491,17 +490,6 @@ public class VM {
 						}
 	
 						/* stack operators */
-						case SHIFT:	{
-							int n = ARGx(i);
-	
-							LeoObject t = stack[top-1];
-							for(int j = 1; j < n; j++) {
-								stack[top-j] = stack[top-j-1];
-							}
-							stack[top-n] = t;
-	
-							continue;
-						}
 						case POP:	{
 							stack[top--] = null;
 							continue;
@@ -543,13 +531,13 @@ public class VM {
 							}
 							break;
 						}
-						case MOV: {
+						case SWAP: {
 							LeoObject t = stack[top-2];
 							stack[top-2] = stack[top-1];
 							stack[top-1] = t;
 							continue;
 						}
-						case SWAP: {
+						case SWAPN: {
 							int n = ARGx(i);
 							for(int j = 1; j <= n; j++) {
 								LeoObject t = stack[top-j];
@@ -558,7 +546,7 @@ public class VM {
 							}
 							continue;
 						}
-						case MOVN: {
+						case ROTL: {
 							int n = ARGx(i) + 1;
 	
 							LeoObject t = stack[top-n];
@@ -570,6 +558,17 @@ public class VM {
 	
 							continue;
 						}
+                        case ROTR:  {
+                            int n = ARGx(i);
+    
+                            LeoObject t = stack[top-1];
+                            for(int j = 1; j < n; j++) {
+                                stack[top-j] = stack[top-j-1];
+                            }
+                            stack[top-n] = t;
+    
+                            continue;
+                        }						
 						case JMP:	{
 							int pos = ARGsx(i);
 							pc += pos;
@@ -632,10 +631,7 @@ public class VM {
 									break;
 								}
 								default: {
-									LeoObject args[] = new LeoObject[nargs];
-									for(int j = nargs - 1; j >= 0; j--) {
-										args[j] = stack[--top];
-									}
+								    LeoObject[] args = readArrayFromStack(nargs, stack);
 									System.arraycopy(args, 0, stack, base, nargs);
 								}
 							}
@@ -661,25 +657,25 @@ public class VM {
 	
 							switch(nargs) {
 								case 0: {
-									c = fun.call(this);
+									c = fun.call();
 									break;
 								}
 								case 1: {
 									LeoObject arg1 = stack[--top];
-									c = fun.call(this, arg1);
+									c = fun.call(arg1);
 									break;
 								}
 								case 2: {
 									LeoObject arg2 = stack[--top];
 									LeoObject arg1 = stack[--top];
-									c = fun.call(this, arg1, arg2);
+									c = fun.call(arg1, arg2);
 									break;
 								}
 								case 3: {
 									LeoObject arg3 = stack[--top];
 									LeoObject arg2 = stack[--top];
 									LeoObject arg1 = stack[--top];
-									c = fun.call(this, arg1, arg2, arg3);
+									c = fun.call(arg1, arg2, arg3);
 									break;
 								}
 								case 4: {
@@ -687,7 +683,7 @@ public class VM {
 									LeoObject arg3 = stack[--top];
 									LeoObject arg2 = stack[--top];
 									LeoObject arg1 = stack[--top];
-									c = fun.call(this, arg1, arg2, arg3, arg4);
+									c = fun.call(arg1, arg2, arg3, arg4);
 									break;
 								}
 								case 5: {
@@ -696,15 +692,12 @@ public class VM {
 									LeoObject arg3 = stack[--top];
 									LeoObject arg2 = stack[--top];
 									LeoObject arg1 = stack[--top];
-									c = fun.call(this, arg1, arg2, arg3, arg4, arg5);
+									c = fun.call(arg1, arg2, arg3, arg4, arg5);
 									break;
 								}
 								default: {
-									LeoObject args[] = new LeoObject[nargs];
-									for(int j = nargs - 1; j >= 0; j--) {
-										args[j] = stack[--top];
-									}
-									c = fun.call(this, args);
+									LeoObject[] args = readArrayFromStack(nargs, stack);
+									c = fun.call(args);
 								}
 							}
 	
@@ -736,13 +729,7 @@ public class VM {
 							LeoObject className = stack[--top];
 	
 							int nargs = ARGx(i);
-							LeoObject[] args = null;
-							if ( nargs > 0 ) {
-								args = new LeoObject[nargs];
-								for(int j = nargs - 1; j >= 0; j--) {
-									args[j] = stack[--top];
-								}
-							}
+							LeoObject[] args = readArrayFromStack(nargs, stack);
 							
 							LeoObject instance = null;
 	
@@ -757,7 +744,7 @@ public class VM {
 								}
 							}
 							else {
-							    LeoString resolvedClassName = LeoString.valueOf(scope.getClassName(className.toString()));
+							    LeoObject resolvedClassName = scope.getClassName(className);
                                 ClassDefinition definition = defs.getDefinition(resolvedClassName);
 							    
 							    if(paramIndex > 0) {				                       
@@ -832,7 +819,7 @@ public class VM {
 						case GEN_DEF: {
 							int innerIndex = ARGx(i);
 							Bytecode bytecode = inner[innerIndex];
-							LeoGenerator fun = new LeoGenerator(scopedObj, bytecode.clone());
+							LeoGenerator fun = new LeoGenerator(this.runtime, scopedObj, bytecode.clone());
 	
 							Outer[] outers = fun.getOuters();
 							if (outers(outers, calleeouters, openouters, stack, bytecode.numOuters, base, pc, code, lineNumber)) {
@@ -846,7 +833,7 @@ public class VM {
 						case FUNC_DEF: {
 							int innerIndex = ARGx(i);
 							Bytecode bytecode = inner[innerIndex];
-							LeoFunction fun = new LeoFunction(scopedObj, bytecode);
+							LeoFunction fun = new LeoFunction(this.runtime, scopedObj, bytecode);
 	
 							Outer[] outers = fun.getOuters();							
 							if (outers(outers, calleeouters, openouters, stack, bytecode.numOuters, base, pc, code, lineNumber)) {
@@ -861,46 +848,25 @@ public class VM {
 	
 							LeoObject bytecodeIndex = stack[--top];
 							Bytecode body = inner[bytecodeIndex.asInt()];
-	
-							LeoObject[] superParams = null;
+							
 							int numSuperParams = stack[--top].asInt();
-							if( numSuperParams> 0 ) {
-								superParams = new LeoObject[numSuperParams];
-								for(int j = numSuperParams-1; j >= 0; j--) {
-									superParams[j] = stack[--top];
-								}
-							}
+							LeoObject[] superParams = readArrayFromStack(numSuperParams, stack);
 	
-	
-							/* Defines the class signature */
 							int nparams = stack[--top].asInt();
-							LeoString[] paramNames = null;
-							if ( nparams > 0 ) {
-								paramNames = new LeoString[nparams];
-								for(int j = nparams-1; j >= 0; j--) {
-									paramNames[j] = stack[--top].toLeoString();
-								}
-							}
-	
-	
-							LeoString[] interfaces = null;
+							LeoObject[] paramNames = readArrayFromStack(nparams, stack);
+								
 							int numberOfInterfaces = ARGx(i);
-							if ( numberOfInterfaces > 0 ) {
-								interfaces = new LeoString[numberOfInterfaces];
-								for(int j = 0; j < numberOfInterfaces; j++) {
-									interfaces[j] = stack[--top].toLeoString();
-								}
-							}
-	
+							LeoObject[] interfaces = readArrayFromStack(numberOfInterfaces, stack);
+								
 							LeoObject superClassname = stack[--top];
-							LeoString className = stack[--top].toLeoString();
+							LeoObject className = stack[--top];
 	
 	
 							ClassDefinition superClassDefinition = null;
 	
 							if ( ! superClassname.$eq(LeoNull.LEONULL) ) {
 								ClassDefinitions defs = scope.lookupClassDefinitions(superClassname);
-								superClassDefinition = defs.getDefinition(superClassname.toLeoString());
+								superClassDefinition = defs.getDefinition(superClassname);
 							}
 	
 							ClassDefinition classDefinition = new ClassDefinition(className
@@ -925,7 +891,7 @@ public class VM {
 							LeoObject obj = stack[--top];
 							LeoObject type = stack[--top];
 	
-							stack[top++] = LeoBoolean.get(obj.isOfType(type.toString()));
+							stack[top++] = LeoBoolean.valueOf(obj.isOfType(type.toString()));
 	
 							continue;
 						}
@@ -991,20 +957,20 @@ public class VM {
 						}
 						case GET_GLOBAL: {
 							int iname = ARGx(i);
-							LeoObject member = scope.getObject(constants[iname].toLeoString());
+							LeoObject member = scope.getObject(constants[iname]);
 							stack[top++] = member;
 	
 							continue;
 						}
 						case SET_GLOBAL: {
 							int iname = ARGx(i);
-							scopedObj.addProperty(constants[iname].toLeoString(), stack[--top]);
+							scopedObj.addProperty(constants[iname], stack[--top]);
 	
 							continue;
 						}
 						case GET_NAMESPACE: {
 							int iname = ARGx(i);
-							LeoNamespace ns = scope.getNamespace(constants[iname].toLeoString());
+							LeoNamespace ns = scope.getNamespace(constants[iname]);
 							stack[top++] = ns;
 							
 							continue;
@@ -1135,20 +1101,20 @@ public class VM {
 						case OR:	{
 							LeoObject r = stack[--top];
 							LeoObject l = stack[--top];
-							LeoObject c = LeoBoolean.get(l.isTrue() || r.isTrue());
+							LeoObject c = LeoBoolean.valueOf(l.isTrue() || r.isTrue());
 							stack[top++] = c;
 							continue;
 						}
 						case AND:	{
 							LeoObject r = stack[--top];
 							LeoObject l = stack[--top];
-							LeoObject c = LeoBoolean.get(l.isTrue() && r.isTrue());
+							LeoObject c = LeoBoolean.valueOf(l.isTrue() && r.isTrue());
 							stack[top++] = c;
 							continue;
 						}
 						case NOT:	{
 							LeoObject l = stack[--top];
-							LeoObject c = LeoBoolean.get(!l.isTrue());
+							LeoObject c = LeoBoolean.valueOf(!l.isTrue());
 							stack[top++] = c;
 							continue;
 						}
@@ -1156,49 +1122,49 @@ public class VM {
 						case REQ:	{
 							LeoObject r = stack[--top];
 							LeoObject l = stack[--top];
-							LeoObject c = LeoBoolean.get(l.$req(r));
+							LeoObject c = LeoBoolean.valueOf(l.$req(r));
 							stack[top++] = c;
 							continue;
 						}
 						case EQ:	{
 							LeoObject r = stack[--top];
 							LeoObject l = stack[--top];
-							LeoObject c = LeoBoolean.get(l.$eq(r));
+							LeoObject c = LeoBoolean.valueOf(l.$eq(r));
 							stack[top++] = c;
 							continue;
 						}
 						case NEQ:	{
 							LeoObject r = stack[--top];
 							LeoObject l = stack[--top];
-							LeoObject c = LeoBoolean.get(l.$neq(r));
+							LeoObject c = LeoBoolean.valueOf(l.$neq(r));
 							stack[top++] = c;
 							continue;
 						}
 						case GT:	{
 							LeoObject r = stack[--top];
 							LeoObject l = stack[--top];
-							LeoObject c = LeoBoolean.get(l.$gt(r));
+							LeoObject c = LeoBoolean.valueOf(l.$gt(r));
 							stack[top++] = c;
 							continue;
 						}
 						case GTE:	{
 							LeoObject r = stack[--top];
 							LeoObject l = stack[--top];
-							LeoObject c = LeoBoolean.get(l.$gte(r));
+							LeoObject c = LeoBoolean.valueOf(l.$gte(r));
 							stack[top++] = c;
 							continue;
 						}
 						case LT:	{
 							LeoObject r = stack[--top];
 							LeoObject l = stack[--top];
-							LeoObject c = LeoBoolean.get(l.$lt(r));
+							LeoObject c = LeoBoolean.valueOf(l.$lt(r));
 							stack[top++] = c;
 							continue;
 						}
 						case LTE:	{
 							LeoObject r = stack[--top];
 							LeoObject l = stack[--top];
-							LeoObject c = LeoBoolean.get(l.$lte(r));
+							LeoObject c = LeoBoolean.valueOf(l.$lte(r));
 							stack[top++] = c;
 							continue;
 						}
@@ -1227,10 +1193,10 @@ public class VM {
 					pc = blockStack.peek();
 				}
 				else {
-				
+				    final int stackSize = Math.min(stack.length, base+code.maxstacksize);
 					/* close the outers for this function call */
-					if ( closeOuters /*|| true*/ ) {
-						for(int j=base;j<openouters.length && j<base+code.maxstacksize;j++) {
+					if (closeOuters) {
+						for(int j=base;j<stackSize;j++) {
 							if(openouters[j]!=null) {
 								openouters[j].close();
 								openouters[j] = null;
@@ -1238,6 +1204,11 @@ public class VM {
 		
 							stack[j] = null;
 						}
+					}
+					else {
+					    for(int j=base;j<stackSize;j++) {
+					        stack[j] = null;
+					    }			    
 					}
 		
 					top = base;
@@ -1256,6 +1227,26 @@ public class VM {
 				 result : errorThrown;
 	}
 
+	
+	/**
+	 * Reads an array of values from the stack.
+	 * 
+	 * @param nargs
+	 * @param stack
+	 * @return the array of {@link LeoObject}'s, or null if nargs <= 0
+	 */
+	private LeoObject[] readArrayFromStack(int nargs, LeoObject[] stack) {
+	    LeoObject[] args = null;
+        if ( nargs > 0 ) {
+            args = new LeoObject[nargs];
+            for(int j = nargs - 1; j >= 0; j--) {
+                args[j] = stack[--top];
+            }
+        }
+        
+        return args;
+	}
+	
 	/**
 	 * Builds the stack trace
 	 * 
@@ -1318,7 +1309,7 @@ public class VM {
      * @param paramNames
      * @param nargs
      */
-    private void resolveNamedParameters(List<LeoObject> params, LeoObject[] args, int topArgs, LeoString[] paramNames, int nargs) {                   
+    private void resolveNamedParameters(List<LeoObject> params, LeoObject[] args, int topArgs, LeoObject[] paramNames, int nargs) {                   
         /* store stack arguments in a temporary location */
         int tmpTop = top;
         LeoObject[] tmp = stack;//new LeoObject[nargs];

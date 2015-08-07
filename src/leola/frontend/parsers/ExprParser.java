@@ -351,32 +351,12 @@ public class ExprParser extends StmtParser {
 	            token = currentToken();
 	            tokenType = token.getType();
 	            
-//	            if( prevToken != null ) {
-	            	prevToken = previousToken().getType();
-//	            }
-//	            else {
-//	            	prevToken = LeolaTokenType.END_OF_FILE;
-//	            }
-	            
-	            /* TODO Bug with following code:
-	              
-	              var x = def(a) {
-					    return a;
-					}
-					var a = [0];
-					x(a)[0] = "Hello" (needs a semi-colon)
-					println(a)
-	              
-	             */
-//	            if ( EXPR_END_SET.contains(prevToken) ) {
-//	            	System.out.println(prevToken);
-//	            	break;
-//	            }
+            	prevToken = previousToken().getType();
 	            
         	} while( ( CHAINED_OP.contains(tokenType) || ( IDENTIFIER.equals(tokenType) && ! EXPR_END_SET.contains(prevToken)) ) &&
         			!tokenType.equals(LeolaTokenType.END_OF_FILE));
+        }
 
-        }              
 
         // Loop over multiplicative operators.
         while (MULT_OPS.contains(tokenType)) {

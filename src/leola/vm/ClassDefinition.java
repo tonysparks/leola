@@ -10,7 +10,6 @@ import leola.vm.compiler.Outer;
 import leola.vm.types.LeoClass;
 import leola.vm.types.LeoObject;
 import leola.vm.types.LeoOuterObject;
-import leola.vm.types.LeoString;
 
 /**
  * Represents a class definition, all of the meta data required to create a {@link LeoClass}
@@ -20,11 +19,11 @@ import leola.vm.types.LeoString;
  */
 public class ClassDefinition {
 
-	private LeoString className;
+	private LeoObject className;
 	private ClassDefinition superClass;
-	private LeoString[] interfaces;
+	private LeoObject[] interfaces;
 	
-	private LeoString[] params;	
+	private LeoObject[] params;	
 	private LeoObject[] superParams;
 	private Bytecode body;
 	
@@ -44,8 +43,8 @@ public class ClassDefinition {
 	 * @param numberOfParams
 	 * @param body
 	 */
-	public ClassDefinition(LeoString className, ClassDefinition superClass, Scope declaredScope,
-			LeoString[] interfaces, LeoString[] params, LeoObject[] superParams, Bytecode body) {
+	public ClassDefinition(LeoObject className, ClassDefinition superClass, Scope declaredScope,
+			LeoObject[] interfaces, LeoObject[] params, LeoObject[] superParams, Bytecode body) {
 		super();
 		this.className = className;
 		this.superClass = superClass;
@@ -74,7 +73,7 @@ public class ClassDefinition {
 	/**
 	 * @return the className
 	 */
-	public LeoString getClassName() {
+	public LeoObject getClassName() {
 		return className;
 	}
 	/**
@@ -94,14 +93,14 @@ public class ClassDefinition {
 	/**
 	 * @return the interfaces
 	 */
-	public LeoString[] getInterfaceNames() {
+	public LeoObject[] getInterfaceNames() {
 		return interfaces;
 	}
 
 	/**
 	 * @return the params
 	 */
-	public LeoString[] getParameterNames() {
+	public LeoObject[] getParameterNames() {
 		return params;
 	}
 	/**

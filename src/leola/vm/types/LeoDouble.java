@@ -35,6 +35,16 @@ public class LeoDouble extends LeoObject {
 	
 	/**
 	 * Creates a {@link LeoDouble}
+	 * 
+	 * @param number
+	 * @return
+	 */
+	public static LeoDouble valueOf(Double number) {
+	    return valueOf(number.doubleValue());
+	}
+	
+	/**
+	 * Creates a {@link LeoDouble}
 	 * @param number
 	 * @return
 	 */
@@ -80,7 +90,9 @@ public class LeoDouble extends LeoObject {
 	 */
 	@Override
 	public int hashCode() {
-		return (int)this.number;
+//		return Double.hashCode(this.number);
+	    long bits = Double.doubleToLongBits(this.number);
+        return (int)(bits ^ (bits >>> 32));
 	}
 	
 	/**
@@ -90,12 +102,6 @@ public class LeoDouble extends LeoObject {
 		return number;
 	}
 
-	/**
-	 * @param number the number to set
-	 */
-//	public void setNumber(double number) {
-//		this.number = number;
-//	}
 
 	@Override
 	public int asInt() {
@@ -160,7 +166,13 @@ public class LeoDouble extends LeoObject {
 	 */
 	@Override
 	public Object getValue(Class<?> type) {
-		if(ClassUtil.inheritsFrom(type, LeoObject.class) ) {
+	    if ( ClassUtil.isType(type, ClassUtil.FLOAT) ){
+            return (float)this.number;
+        }
+        else if ( ClassUtil.isType(type, ClassUtil.DOUBLE) ){
+            return this.number;
+        }
+        else if(ClassUtil.inheritsFrom(type, LeoObject.class) ) {
 			return this;
 		}
 		else if ( ClassUtil.isType(type, ClassUtil.BYTE) ){
@@ -175,12 +187,7 @@ public class LeoDouble extends LeoObject {
 		else if ( ClassUtil.isType(type, ClassUtil.INT) ){
 			return (int)this.number;
 		}
-		else if ( ClassUtil.isType(type, ClassUtil.FLOAT) ){
-			return (float)this.number;
-		}
-		else if ( ClassUtil.isType(type, ClassUtil.DOUBLE) ){
-			return this.number;
-		}
+		
 		else if ( ClassUtil.isType(type, ClassUtil.LONG) ){
 			return (long)this.number;
 		}
@@ -444,7 +451,7 @@ public class LeoDouble extends LeoObject {
 	}
 	@Override
 	public LeoObject $bsl(long other) {
-		return new LeoLong(other << (int)this.number);
+		return LeoLong.valueOf(other << (int)this.number);
 	}
 
 	/* (non-Javadoc)
@@ -464,7 +471,7 @@ public class LeoDouble extends LeoObject {
 	}
 	@Override
 	public LeoObject $bsr(long other) {
-		return new LeoLong(other >> (int)this.number);
+		return LeoLong.valueOf(other >> (int)this.number);
 	}
 	
 	/* (non-Javadoc)
@@ -484,7 +491,7 @@ public class LeoDouble extends LeoObject {
 	}
 	@Override
 	public LeoObject $xor(long other) {
-		return new LeoLong(other ^ (int)this.number);
+		return LeoLong.valueOf(other ^ (int)this.number);
 	}
 
 	/* (non-Javadoc)
@@ -504,7 +511,7 @@ public class LeoDouble extends LeoObject {
 	}
 	@Override
 	public LeoObject $bor(long other) {
-		return new LeoLong(other | (int)this.number);
+		return LeoLong.valueOf(other | (int)this.number);
 	}
 
 	/* (non-Javadoc)
@@ -524,7 +531,7 @@ public class LeoDouble extends LeoObject {
 	}
 	@Override
 	public LeoObject $band(long other) {
-		return new LeoLong(other & (int)this.number);
+		return LeoLong.valueOf(other & (int)this.number);
 	}
 		
 	@Override

@@ -31,10 +31,6 @@ import leola.frontend.Parser;
 import leola.frontend.Scanner;
 import leola.frontend.Source;
 import leola.frontend.Token;
-import leola.frontend.events.ParserSummaryEvent;
-import leola.frontend.events.ParserSummaryListener;
-import leola.frontend.events.SourceLineEvent;
-import leola.frontend.events.SourceLineListener;
 import leola.frontend.events.SyntaxErrorEvent;
 import leola.frontend.events.SyntaxErrorListener;
 import leola.frontend.listener.EventDispatcher;
@@ -235,11 +231,6 @@ public class Leola {
 	 * The exception handler
 	 */
 	private ExceptionHandler exceptionHandler;
-
-	/**
-	 * print the parsing stats
-	 */
-	private boolean printSource;
 	
 	/**
 	 * @throws Exception
@@ -257,20 +248,12 @@ public class Leola {
 		this.eventDispatcher = new EventDispatcher();
 		this.exceptionHandler = new DefaultExceptionHandler();
 
-		SourceMessageListener sourceListener = new SourceMessageListener();
-		this.eventDispatcher.addEventListener(SourceLineEvent.class, sourceListener);
-
 		ParserMessageListener parserListener = new ParserMessageListener();
 		this.eventDispatcher.addEventListener(SyntaxErrorEvent.class, parserListener);
-		this.eventDispatcher.addEventListener(ParserSummaryEvent.class, parserListener);
-
+		
 		setIncludePath(args.getIncludeDirectories());
 		this.resourceLoader = new ResourceLoader(this);
-
 		
-		
-		this.printSource = false;
-
 		Scope globalScope = new Scope(null);
 		this.global = new LeoNamespace(globalScope, LeoString.valueOf(GLOBAL_SCOPE_NAME));
 		globalScope.getNamespaceDefinitions().storeNamespace(this.global);
@@ -670,6 +653,18 @@ public class Leola {
         put(scope.getScope(), reference, value);
     }
     
+    /**
+     * Depending on the configuration, this will return the active (if configured to
+     * do so, the {@link ThreadLocal} or simply just a shared instance) of {@link VM}.
+     * 
+     * @see Args#allowThreadLocal()
+     * 
+     * @return the active {@link VM}
+     */
+    public VM getActiveVM() {
+        return this.vm.get();
+    }
+    
 	/**
 	 * Gets a {@link LeoObject} by reference from the global {@link Scope}.
 	 *
@@ -790,7 +785,7 @@ public class Leola {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject function, LeoObject arg1) throws LeolaRuntimeException {
-		return function.call(this.vm.get(), arg1);
+		return function.call(arg1);
 	}
 
 	/**
@@ -803,7 +798,7 @@ public class Leola {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject function, LeoObject arg1, LeoObject arg2) throws LeolaRuntimeException {
-		return function.call(this.vm.get(), arg1, arg2);
+		return function.call(arg1, arg2);
 	}
 
 	/**
@@ -817,7 +812,7 @@ public class Leola {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject function, LeoObject arg1, LeoObject arg2, LeoObject arg3) throws LeolaRuntimeException {
-		return function.call(this.vm.get(), arg1, arg2, arg3);
+		return function.call(arg1, arg2, arg3);
 	}
 
 
@@ -833,7 +828,7 @@ public class Leola {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject function, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4) throws LeolaRuntimeException {
-		return function.call(this.vm.get(), arg1, arg2, arg3, arg4);
+		return function.call(arg1, arg2, arg3, arg4);
 	}
 
 
@@ -850,7 +845,7 @@ public class Leola {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject function, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4, LeoObject arg5) throws LeolaRuntimeException {
-		return function.call(this.vm.get(), arg1, arg2, arg3, arg4, arg5);
+		return function.call(arg1, arg2, arg3, arg4, arg5);
 	}
 
 	/**
@@ -862,7 +857,7 @@ public class Leola {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject function, LeoObject[] args) throws LeolaRuntimeException {
-		return function.call(this.vm.get(), args);
+		return function.call(args);
 	}
 
 	/**
@@ -873,7 +868,7 @@ public class Leola {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject function) throws LeolaRuntimeException {
-		return function.call(this.vm.get());
+		return function.call();
 	}
 
 
@@ -1134,52 +1129,11 @@ public class Leola {
         return program;
     }
 
-
-    /**
-     * Listener for source messages.
-     */
-    private class SourceMessageListener implements SourceLineListener {
-        
-        private static final String SOURCE_LINE_FORMAT = "%03d %s";
-        
-        /**
-         * Called by the source whenever it produces a message.
-         * @param message the message.
-         */
-        public void onEvent(leola.frontend.events.SourceLineEvent event)
-        {
-        	if ( printSource ) {
-	        	System.out.println(String.format(SOURCE_LINE_FORMAT,
-	                    event.getLineNumber(), event.getLine()));
-        	}
-        }
-    }
-
-    private static final String PARSER_SUMMARY_FORMAT =
-        "\n%,20d source lines." +
-        "\n%,20d syntax errors." +
-        "\n%,20.2f seconds total parsing time.\n";
-
     /**
      * Listener for parser messages.
      */
-    private class ParserMessageListener implements SyntaxErrorListener, ParserSummaryListener
-    {
-    	/* (non-Javadoc)
-    	 * @see leola.frontend.events.ParserSummaryListener#onEvent(leola.frontend.events.ParserSummaryEvent)
-    	 */
-        @Override
-    	public void onEvent(ParserSummaryEvent evnt) {
-    		if ( printSource ) {
-	            System.out.printf(PARSER_SUMMARY_FORMAT,
-	                    evnt.getTotalLines(), evnt.getErrorCount(),
-	                    evnt.getElapsedTime());
-    		}
-    	}
-
-    	/* (non-Javadoc)
-    	 * @see leola.frontend.events.SyntaxErrorListener#onEvent(leola.frontend.events.SyntaxErrorEvent)
-    	 */
+    private class ParserMessageListener implements SyntaxErrorListener {
+    	
         @Override
     	public void onEvent(SyntaxErrorEvent event) {
             int lineNumber = event.getLineNumber();

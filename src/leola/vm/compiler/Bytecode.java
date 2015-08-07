@@ -27,6 +27,11 @@ import leola.vm.types.LeoString;
  *
  */
 public class Bytecode {	
+    private static final String lineFormat2 = "%-12s %-16s \n";
+    private static final String lineFormat3 = "%-12s %-16s \t\t; %s \n";
+    private static final String lineFormat4 = "%-12s %-16s \t\t; %-6s (%s) \n";
+    private static final String Indent = "  ";
+    
 	public static final int MAGIC_NUMBER = 0x1E01A;
 	public static final int VERSION = 1;
 	
@@ -76,7 +81,7 @@ public class Bytecode {
 		this.pc = pc;
 		this.len = len;		
 	}
-	
+		
 	/**
 	 * denotes that this byte code contains variable arguments
 	 */
@@ -211,6 +216,9 @@ public class Bytecode {
 		return dump(sb, 0, this.pc, this.len);
 	}
 	
+	private static String quote(Object obj) {
+	    return "\"" + obj + "\"";
+	}
 	
 	/**
 	 * Dump the contents of the {@link Bytecode} into a {@link String}
@@ -222,34 +230,20 @@ public class Bytecode {
 	 * @return the {@link Bytecode} represented as a {@link String}
 	 */
 	private String dump(StringBuilder sb, int numTabs, int pc, int len) {
-		
-		for(int t = 0; t < numTabs; t++) sb.append("\t");
-		sb.append(".locals ").append(this.numLocals).append("\n");
+	    	    
+		for(int t = 0; t < numTabs; t++) sb.append(Indent);
+		//sb.append(".locals ").append(this.numLocals).append("\n");
+		sb.append(String.format(lineFormat2, ".locals", Integer.toString(this.numLocals)));
 		
 		for(int i = 0; i < this.numConstants; i++) {
-			for(int t = 0; t < numTabs; t++) sb.append("\t");
-			if(this.constants[i].isString())
-				sb.append(".const \"").append(this.constants[i]).append("\"\t;").append(i).append("\n");
-			else sb.append(".const ").append(this.constants[i]).append("\t;").append(i).append("\n");
+			for(int t = 0; t < numTabs; t++) sb.append(Indent);
+			if(this.constants[i].isString())				 
+			    sb.append(String.format(lineFormat3, ".const", quote(this.constants[i]), "[ index: " + i + "]") );
+			else 
+			    sb.append(String.format(lineFormat3, ".const", this.constants[i].toString(), "[ index: " + i + "]") );
 		}
 		
-		dumpRaw(this, sb, numTabs, this.instr, pc, len);
-		/*
-		if ( inner != null && inner.length > 0 ) {
-			sb.append("\n");
-			
-				
-			for(int i = 0; i < this.numInners; i++) {
-				Bytecode bc = this.inner[i];
-			
-				for(int t = 0; t < numTabs+1; t++) sb.append("\t");		
-				sb.append(".scope ").append(i).append("\n");
-				
-				bc.dump(sb, numTabs + 1, bc.pc, bc.len);
-				sb.append("\n");
-			}
-		}*/
-		
+		dumpRaw(this, sb, numTabs, this.instr, pc, len);		
 		return sb.toString();
 	}
 	
@@ -270,16 +264,16 @@ public class Bytecode {
 			int iopcode = Opcodes.OPCODE(code);
 			String opcode = Opcodes.op2str(iopcode);
 			
-			for(int t = 0; t < numTabs; t++) sb.append("\t");
+			for(int t = 0; t < numTabs; t++) sb.append(Indent);
 			switch(iopcode) {
 				case Opcodes.INVOKE: {
 					String arg1 = Integer.toString(Opcodes.ARG1(code));
 					String arg2 = Integer.toString(Opcodes.ARG2(code));
 					if( "0".equals(arg2)) {
-						sb.append(String.format("%-18s %-6s \t\t; %-6s ", opcode, arg1, i));
+						sb.append(String.format(lineFormat3, opcode, arg1, i));
 					}
 					else {
-						sb.append(String.format("%-18s %-6s %-6s \t; %-6s ", opcode, arg1, arg2, i));	
+						sb.append(String.format(lineFormat4, opcode, arg1, arg2, i));
 					}
 					break;
 				}
@@ -287,11 +281,10 @@ public class Bytecode {
 				case Opcodes.FUNC_DEF: {								
 					int inner = Opcodes.ARGx(code);
 					Bytecode bc = bytecode.inner[inner];
-					sb.append(String.format("%-18s %-6s \t; %-6s ", opcode, bc.numArgs, i));
+					sb.append(String.format(lineFormat3, opcode, bc.numArgs, i));
 					
 					visited.add(inner);
 					
-					sb.append("\n");					
 					bc.dump(sb, numTabs + 1, bc.pc, bc.len);
 					//for(int t = 0; t < numTabs; t++) sb.append("\t");
 					
@@ -300,16 +293,16 @@ public class Bytecode {
 					    if(Opcodes.xLOAD_LOCAL == pCode || 
 					       Opcodes.xLOAD_OUTER == pCode ) {
 					        
-					        for(int t = 0; t < numTabs + 1; t++) sb.append("\t");
+					        for(int t = 0; t < numTabs + 1; t++) sb.append(Indent);
 					        String argx = Integer.toString(Opcodes.ARGx(instr[i+1]));                                                        
-		                    sb.append(String.format("%-18s %-6s \t\t; %-6s \n", Opcodes.op2str(pCode), argx, i));
+					        sb.append(String.format(lineFormat3, Opcodes.op2str(pCode), argx, i));
 					        
 					        i++;
 					    }
 					    else break;
 					}
 					
-					for(int t = 0; t < numTabs; t++) sb.append("\t");
+					for(int t = 0; t < numTabs; t++) sb.append(Indent);
 					sb.append(".end\n");					               
 					               
 					break;
@@ -318,44 +311,115 @@ public class Bytecode {
 				    
 				    int numberOfInterfaces = Opcodes.ARGx(code);
                     int inner = bytecode.constants[Opcodes.ARGx(instr[i-1])].asInt();
-                    sb.append(String.format("%-18s %-6s \t; %-6s ", opcode, numberOfInterfaces, i));                                                           
+                    sb.append(String.format(lineFormat3, opcode, numberOfInterfaces, i));
                     visited.add(inner);
                     
                     Bytecode bc = bytecode.inner[inner];
-                    sb.append("\n");                    
                     bc.dump(sb, numTabs + 1, bc.pc, bc.len);
-                    for(int t = 0; t < numTabs; t++) sb.append("\t");
+                    for(int t = 0; t < numTabs; t++) sb.append(Indent);
                     sb.append(".end\n");
 					break;
 				}
+				case Opcodes.INIT_FINALLY:
+                case Opcodes.INIT_ON:
 				case Opcodes.IFEQ:
 				case Opcodes.JMP: {
 				    String argsx = Integer.toString(Opcodes.ARGsx(code));                                                     
-                    sb.append(String.format("%-18s %-6s \t\t; %-6s ", opcode, argsx, i));
+                    sb.append(String.format(lineFormat3, opcode, argsx, i));
 				    break;
-				}
+				}			
+				
+				case Opcodes.POP:
+				case Opcodes.DUP:
+				case Opcodes.OPPOP:
+				case Opcodes.SWAP:
+				
+				case Opcodes.LOAD_NULL:
+				case Opcodes.LOAD_TRUE:
+				case Opcodes.LOAD_FALSE:
+				    
+				case Opcodes.PARAM_END:
+				case Opcodes.IS_A:
+				
+				case Opcodes.BREAK:
+                case Opcodes.CONTINUE:
+                case Opcodes.YIELD:
+                case Opcodes.RET:
+				
+				case Opcodes.GET:
+                case Opcodes.SET:
+                    
+				case Opcodes.ADD:
+				case Opcodes.SUB:
+				case Opcodes.MUL:
+				case Opcodes.DIV:
+				case Opcodes.MOD:
+				case Opcodes.NEG:
+				case Opcodes.BSL:
+				case Opcodes.BSR:
+				case Opcodes.BNOT:
+				case Opcodes.XOR:
+				case Opcodes.LOR:
+				case Opcodes.LAND:
+				
+				case Opcodes.OR:
+				case Opcodes.AND:
+				case Opcodes.NOT:
+				    
+				case Opcodes.REQ:
+				case Opcodes.EQ:
+                case Opcodes.NEQ:
+                case Opcodes.GT:
+                case Opcodes.GTE:
+                case Opcodes.LT:
+				case Opcodes.LTE:
+				
+				case Opcodes.THROW:
+				case Opcodes.IDX:
+                case Opcodes.SIDX:
+				    
 				case Opcodes.END_BLOCK:
 				case Opcodes.END_FINALLY:
 				case Opcodes.END_ON: {				                                                 
-                    sb.append(String.format("%-18s %-6s \t\t; %-6s ", opcode, "", i));
+				    sb.append(String.format(lineFormat3, opcode, "", i));
 				    break;
 				}
 				case Opcodes.TAIL_CALL: {
-					String argx = Integer.toString(Opcodes.ARGx(code));														
-					sb.append(String.format("%-18s %-6s \t\t; %-6s ", opcode, argx, i));
+					String argx = Integer.toString(Opcodes.ARG1(code));														
+					sb.append(String.format(lineFormat3, opcode, argx, i));
 					break;
 				}
+				case Opcodes.STORE_LOCAL:
+				case Opcodes.LOAD_LOCAL: {
+				    if(bytecode.hasDebug()) {
+    				    String argx = Integer.toString(Opcodes.ARGx(code));                                                         
+    				    sb.append(String.format(lineFormat4, opcode, argx, i, bytecode.debugSymbols.getSymbol(Opcodes.ARGx(code), i)));
+				    }
+				    else {
+				        String argx = Integer.toString(Opcodes.ARGx(code));                                                         
+				        sb.append(String.format(lineFormat3, opcode, argx, i));
+				    }
+                    break;
+				}
+				case Opcodes.LOAD_CONST:
+				case Opcodes.LOAD_NAME:
+				case Opcodes.GET_GLOBAL:				
+				case Opcodes.SET_GLOBAL:
+				case Opcodes.GET_NAMESPACE: {
+				    String argx = Integer.toString(Opcodes.ARGx(code));                                                         
+				    sb.append(String.format(lineFormat4, opcode, argx, i, bytecode.constants[Opcodes.ARGx(code)]));
+                    break;
+				}
+				
 				default: {
 					String argx = Integer.toString(Opcodes.ARGx(code)); 														
-					sb.append(String.format("%-18s %-6s \t\t; %-6s ", opcode, argx, i));							
+					sb.append(String.format(lineFormat3, opcode, argx, i));
 				}
 			}
-			sb.append("\n");
 		}	
 				
 		if ( bytecode.inner != null && bytecode.inner.length > 0 ) {
 			sb.append("\n");
-			
 				
 			for(int i = 0; i < bytecode.numInners; i++) {
 				if(visited.contains(i)) {
@@ -364,12 +428,12 @@ public class Bytecode {
 				
 				Bytecode bc = bytecode.inner[i];
 			
-				for(int t = 0; t < numTabs; t++) sb.append("\t");		
+				for(int t = 0; t < numTabs; t++) sb.append(Indent);		
 				sb.append("; scope ").append(i).append("\n");
 				
 				bc.dump(sb, numTabs + 1, bc.pc, bc.len);
 				
-				for(int t = 0; t < numTabs; t++) sb.append("\t");		
+				for(int t = 0; t < numTabs; t++) sb.append(Indent);		
 				sb.append(".end ; scope ").append(i).append("\n");
 			}
 		}

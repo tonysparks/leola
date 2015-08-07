@@ -63,7 +63,7 @@ public class DebugLeolaLibrary implements LeolaLibrary {
 				LeoClass cls = f.as();
 				result = cls.getConstructor();
 				break;
-			}
+			}			
 			default:
                 throw new LeolaRuntimeException("Unsupported type!");
 		}
@@ -79,7 +79,7 @@ public class DebugLeolaLibrary implements LeolaLibrary {
 	public LeoObject asm(LeoObject asm) throws Exception {
 		Assembler assember = new Assembler();
 		Bytecode code = assember.compile(new BufferedReader(new StringReader(asm.toString())));
-		return new LeoFunction(runtime.getGlobalNamespace(), code);
+		return new LeoFunction(runtime, runtime.getGlobalNamespace(), code);
 	}
 	
 	/**

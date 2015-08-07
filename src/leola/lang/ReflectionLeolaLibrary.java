@@ -14,16 +14,20 @@ import java.util.List;
 
 import leola.vm.ClassDefinitions;
 import leola.vm.Leola;
+import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaIgnore;
 import leola.vm.lib.LeolaLibrary;
 import leola.vm.lib.LeolaMethod;
+import leola.vm.lib.LeolaMethodVarargs;
 import leola.vm.types.LeoArray;
+import leola.vm.types.LeoClass;
 import leola.vm.types.LeoNamespace;
 import leola.vm.types.LeoNativeClass;
 import leola.vm.types.LeoNativeFunction;
 import leola.vm.types.LeoNull;
 import leola.vm.types.LeoObject;
 import leola.vm.types.LeoString;
+import leola.vm.types.LeoClass.Metaclass;
 import leola.vm.util.ArrayUtil;
 import leola.vm.util.ClassUtil;
 
@@ -64,11 +68,12 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 	 * @param params
 	 * @return Null if not found, the instance if instantiated
 	 */
-	public LeoObject newInstance(LeoObject classname, LeoArray params) {
+	@LeolaMethodVarargs
+	public LeoObject newInstance(LeoObject classname, LeoObject ... params) {
 		LeoObject result = LeoNull.LEONULL;
 		ClassDefinitions defs = this.runtime.getGlobalNamespace().getScope().lookupClassDefinitions(classname);
 		if( defs != null) {
-			result = defs.newInstance(this.runtime, classname, params.toArray());
+			result = defs.newInstance(this.runtime, classname, params);
 		}
 		
 		return result;
@@ -285,14 +290,30 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 	 * 
 	 * @param interpreter
 	 * @param func
-	 * @param array
+	 * @param params
 	 * @return
 	 */
-	public final LeoObject call(LeoObject func, LeoArray array) {
-		LeoObject[] params = array.toArray();
-		LeoObject result = null;
-		this.runtime.execute(func, params);
+	@LeolaMethodVarargs
+	public final LeoObject call(LeoObject func, LeoObject ... params) {
+		LeoObject result = func.call(params);		
 		return result;
 	}	
+	
+	/**
+	 * Retrieves the {@link Metaclass} information from the supplied {@link LeoClass}
+	 * 
+	 * @param aClass
+	 * @return the {@link Metaclass}
+	 */
+	public Metaclass getMetaclass(LeoObject aClass) {
+	    if(aClass==null) return null;
+	    
+	    if(aClass.isClass()) {
+	        LeoClass leoClass = aClass.as();
+	        return new Metaclass(leoClass);
+	    }
+	    
+	    throw new LeolaRuntimeException(aClass + " is not of LeoClass type.");
+	}
 }
 

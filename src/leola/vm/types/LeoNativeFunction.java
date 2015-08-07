@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import leola.vm.VM;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
 import leola.vm.util.Pair;
@@ -73,6 +72,10 @@ public class LeoNativeFunction extends LeoObject {
 		this(overloads.get(0).getDeclaringClass(), instance, overloads.get(0).getName(), -1);
 		
 		this.overloads = overloads;
+		if(this.overloads.size()==1) {
+		    setMethod(this.overloads.get(0));
+		    this.overloads.clear();
+		}
 	}
 	
 	/**
@@ -128,75 +131,53 @@ public class LeoNativeFunction extends LeoObject {
 		this.method.setAccessible(true);
 	}
 	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#call(leola.vm.VM)
-	 */
 	@Override
-	public LeoObject call(VM vm) {
-		return call();
+	public LeoObject call() {
+		return nativeCall();
 	}
 	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#call(leola.vm.VM, leola.vm.types.LeoObject)
-	 */
 	@Override
-	public LeoObject call(VM vm, LeoObject arg1) {	
-		return call(arg1);
+	public LeoObject call(LeoObject arg1) {	
+		return nativeCall(arg1);
 	}
 	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#call(leola.vm.VM, leola.vm.types.LeoObject, leola.vm.types.LeoObject)
-	 */
 	@Override
-	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2) {	
-		return call(arg1, arg2);
+	public LeoObject call(LeoObject arg1, LeoObject arg2) {	
+		return nativeCall(arg1, arg2);
 	}
 	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#call(leola.vm.VM, leola.vm.types.LeoObject, leola.vm.types.LeoObject, leola.vm.types.LeoObject)
-	 */
 	@Override
-	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2, LeoObject arg3) {	
-		return call(arg1, arg2, arg3);
+	public LeoObject call(LeoObject arg1, LeoObject arg2, LeoObject arg3) {	
+		return nativeCall(arg1, arg2, arg3);
 	}
 	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#call(leola.vm.VM, leola.vm.types.LeoObject, leola.vm.types.LeoObject, leola.vm.types.LeoObject, leola.vm.types.LeoObject)
-	 */
 	@Override
-	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2,
+	public LeoObject call(LeoObject arg1, LeoObject arg2,
 			LeoObject arg3, LeoObject arg4) {	
-		return call(arg1, arg2, arg3, arg4);
+		return nativeCall(arg1, arg2, arg3, arg4);
 	}
 	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#call(leola.vm.VM, leola.vm.types.LeoObject, leola.vm.types.LeoObject, leola.vm.types.LeoObject, leola.vm.types.LeoObject, leola.vm.types.LeoObject)
-	 */
 	@Override
-	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2,
+	public LeoObject call(LeoObject arg1, LeoObject arg2,
 			LeoObject arg3, LeoObject arg4, LeoObject arg5) {	
-		return call(arg1, arg2, arg3, arg4, arg5);
+		return nativeCall(arg1, arg2, arg3, arg4, arg5);
 	}
 	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#call(leola.vm.VM, leola.vm.types.LeoObject[])
-	 */
 	@Override
-	public LeoObject call(VM vm, LeoObject[] args) {	
-		return call(args);
+	public LeoObject call(LeoObject[] args) {	
+		return nativeCall(args);
 	}
 	
 	/**
-	 * Invokes the function
+	 * Invokes the native function using Java reflection.
 	 * 
-	 * @param vm
 	 * @param args
-	 * @return
+	 * @return the result of the function invocation
 	 */	
-	public LeoObject call(LeoObject... args) {
+	public LeoObject nativeCall(LeoObject... args) {
 		Object result = null;
 		try {
-			if ( this.overloads != null ) {
+			if ( this.overloads != null && !this.overloads.isEmpty() ) {
 				for(Method m : this.overloads) {
 					if(args!=null) {
 						if ( m.getParameterTypes().length == args.length ) {

@@ -20,6 +20,7 @@ import leola.vm.Leola;
 import leola.vm.lib.LeolaIgnore;
 import leola.vm.lib.LeolaLibrary;
 import leola.vm.lib.LeolaMethod;
+import leola.vm.lib.LeolaMethodVarargs;
 import leola.vm.types.LeoArray;
 import leola.vm.types.LeoDouble;
 import leola.vm.types.LeoInteger;
@@ -185,21 +186,19 @@ public class LangLeolaLibrary implements LeolaLibrary {
 		return result;
 	}
 
-	public final void printf(Object x, LeoObject args) {
-		if( args.isArray() ) {
-			LeoArray array = args.as();
-			
-			int len = array.size();
-			Object[] params = new Object[len];						
-			for(int i = 0; i < len; i++) {
-				params[i] = array.get(i).getValue();
-			}
-			
-			System.out.printf(x.toString(), params);
-		}
-		else {
-			System.out.printf(x.toString(), args.getValue());
-		}
+	@LeolaMethodVarargs
+	public final void printf(Object x, LeoObject ... args) {
+	    if(args!=null) {
+            int len = args.length;
+            Object[] params = new Object[len];                      
+            for(int i = 0; i < len; i++) {
+                params[i] = args[i].getValue();
+            }
+            System.out.printf(x.toString(), params);
+        }
+        else {
+            System.out.printf(x.toString());
+        }
 	}
 	
 	/**

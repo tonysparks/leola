@@ -12,7 +12,6 @@ import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.types.LeoClass;
 import leola.vm.types.LeoNull;
 import leola.vm.types.LeoObject;
-import leola.vm.types.LeoString;
 
 /**
  * Stores the available class definitions
@@ -147,7 +146,7 @@ public class ClassDefinitions {
         LeoObject parentClass = LeoNull.LEONULL;
         if ( definition.hasParentClass() ) {
             
-            LeoString[] paramNames = definition.getParameterNames();
+            LeoObject[] paramNames = definition.getParameterNames();
             LeoObject[] superParams = definition.getSuperParameterNames(); 
             if ( superParams != null ) {
                 LeoObject[] clone = new LeoObject[superParams.length];

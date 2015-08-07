@@ -135,7 +135,10 @@ public class LeoInteger extends LeoObject {
 	 */
 	@Override
 	public Object getValue(Class<?> type) {
-		if(ClassUtil.inheritsFrom(type, LeoObject.class) ) {
+	    if ( ClassUtil.isType(type, ClassUtil.INT) ){
+	            return this.number;
+	    }
+	    else if(ClassUtil.inheritsFrom(type, LeoObject.class) ) {
 			return this;
 		}
 		else if ( ClassUtil.isType(type, ClassUtil.BYTE) ){
@@ -147,9 +150,6 @@ public class LeoInteger extends LeoObject {
 		else if ( ClassUtil.isType(type, ClassUtil.SHORT) ){
 			return (short)this.number;
 		}
-		else if ( ClassUtil.isType(type, ClassUtil.INT) ){
-			return this.number;
-		}
 		else if ( ClassUtil.isType(type, ClassUtil.FLOAT) ){
 			return (float)this.number;
 		}
@@ -160,7 +160,7 @@ public class LeoInteger extends LeoObject {
 			return (long)this.number;
 		}
 		else if ( ClassUtil.isType(type, ClassUtil.STRING) ){
-			return this.number + "";
+			return Integer.toString(this.number);
 		}
 		
 		return this.number;
@@ -293,7 +293,7 @@ public class LeoInteger extends LeoObject {
 	}
 	@Override
 	public LeoObject $add(long other) {
-		return new LeoLong(other + this.number);
+		return LeoLong.valueOf(other + this.number);
 	}
 
 	/* (non-Javadoc)
@@ -313,7 +313,7 @@ public class LeoInteger extends LeoObject {
 	}
 	@Override
 	public LeoObject $sub(long other) {
-		return new LeoLong(other - this.number);
+		return LeoLong.valueOf(other - this.number);
 	}
 	
 	/* (non-Javadoc)
@@ -333,7 +333,7 @@ public class LeoInteger extends LeoObject {
 	}
 	@Override
 	public LeoObject $mul(long other) {
-		return new LeoLong(other * this.number);
+		return LeoLong.valueOf(other * this.number);
 	}
 	
 	/* (non-Javadoc)
@@ -362,7 +362,7 @@ public class LeoInteger extends LeoObject {
 		if ( number == 0 ) {
 			throw new LeolaRuntimeException("Divide by zero error");
 		}
-		return new LeoLong(other / this.number);
+		return LeoLong.valueOf(other / this.number);
 	}
 	
 	/* (non-Javadoc)
@@ -391,7 +391,7 @@ public class LeoInteger extends LeoObject {
 		if ( number == 0 ) {
 			throw new LeolaRuntimeException("Divide by zero error");
 		}
-		return new LeoLong(other % this.number);
+		return LeoLong.valueOf(other % this.number);
 	}	
 
 	
@@ -422,7 +422,7 @@ public class LeoInteger extends LeoObject {
 	}
 	@Override
 	public LeoObject $bsl(long other) {
-		return new LeoLong(other << this.number);
+		return LeoLong.valueOf(other << this.number);
 	}
 
 	/* (non-Javadoc)
@@ -442,7 +442,7 @@ public class LeoInteger extends LeoObject {
 	}
 	@Override
 	public LeoObject $bsr(long other) {
-		return new LeoLong(other >> this.number);
+		return LeoLong.valueOf(other >> this.number);
 	}
 	
 	/* (non-Javadoc)
@@ -462,7 +462,7 @@ public class LeoInteger extends LeoObject {
 	}
 	@Override
 	public LeoObject $xor(long other) {
-		return new LeoLong(other ^ this.number);
+		return LeoLong.valueOf(other ^ this.number);
 	}
 	
 	/* (non-Javadoc)
@@ -482,7 +482,7 @@ public class LeoInteger extends LeoObject {
 	}
 	@Override
 	public LeoObject $bor(long other) {
-		return new LeoLong(other | this.number);
+		return LeoLong.valueOf(other | this.number);
 	}
 	
 	/* (non-Javadoc)
@@ -502,7 +502,7 @@ public class LeoInteger extends LeoObject {
 	}
 	@Override
 	public LeoObject $band(long other) {
-		return new LeoLong(other & this.number);
+		return LeoLong.valueOf(other & this.number);
 	}	
 	
 	@Override

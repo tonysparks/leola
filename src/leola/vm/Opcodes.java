@@ -168,11 +168,7 @@ public class Opcodes {
 	public static String op2str(int opcode) {
 		String op = "";
 		switch(opcode) {
-            /* stack operators */
-            case SHIFT: {   
-                op = "SHIFT";
-                break;
-            }
+            /* stack operators */            
             case POP:   {
                 op = "POP";                 
                 break;
@@ -184,17 +180,21 @@ public class Opcodes {
             case OPPOP: {
                 op = "OPPOP";                   
                 break;
-            }               
-            case MOV: {
-                op = "MOV";
+            }                           
+            case ROTL: {
+                op = "ROTL";
                 break;
             }
-            case MOVN: {
-                op = "MOVN";
+            case ROTR: {   
+                op = "ROTR";
                 break;
             }
             case SWAP: {
                 op = "SWAP";
+                break;
+            }
+            case SWAPN: {
+                op = "SWAPN";
                 break;
             }		
 		
@@ -491,14 +491,14 @@ public class Opcodes {
 	 */
 	public static final int
 	
-		/* stack operators */	
-		SHIFT  = 1,                   /* ARGx */
-		POP = 2,                      /*      */
-		DUP = 3,		              /*      */
-		OPPOP = 4,                    /*      */
-		MOV = 5,                      /*      */
-		MOVN = 6,                     /* ARGx */
-		SWAP = 7,                     /* ARGx */
+		/* stack operators */			
+		POP = 1,                      /*      */
+		DUP = 2,		              /*      */
+		OPPOP = 3,                    /*      */		
+		ROTL = 4,                     /* ARGx */
+		ROTR = 5,                     /* ARGx */
+		SWAP = 6,                     /*      */
+		SWAPN = 7,                    /* ARGx */
 		
 		/* loading of values */
 		LOAD_CONST = 8,               /* ARGx */
@@ -604,13 +604,13 @@ public class Opcodes {
 	static {	    
 
         /* stack operators */
-        opcodes.put("SHIFT", SHIFT);
         opcodes.put("POP", POP);        
         opcodes.put("DUP", DUP);
-        opcodes.put("OPPOP", OPPOP);        
-        opcodes.put("MOV", MOV);
-        opcodes.put("MOVN", MOVN);
+        opcodes.put("OPPOP", OPPOP);                
+        opcodes.put("ROTL", ROTL);
+        opcodes.put("ROTR", ROTR);
         opcodes.put("SWAP", SWAP);
+        opcodes.put("SWAPN", SWAPN);
 	            
         opcodes.put("LOAD_CONST", LOAD_CONST);
         opcodes.put("LOAD_LOCAL", LOAD_LOCAL);

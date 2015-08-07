@@ -415,11 +415,6 @@ public class Assembler {
 		});
 		
 		/* stack operators */
-		opcodes.put("SHIFT", new Opcode() {			
-			public void invoke(BytecodeEmitter asm, String...  args) {
-				asm.shift(Integer.parseInt(args[0]));
-			}
-		});
 		opcodes.put("POP", new Opcode() {			
 			public void invoke(BytecodeEmitter asm, String...  args) {
 				asm.pop();
@@ -440,19 +435,24 @@ public class Assembler {
 				asm.ret();
 			}
 		});
-		opcodes.put("MOV", new Opcode() {			
+		opcodes.put("ROTL", new Opcode() {			
 			public void invoke(BytecodeEmitter asm, String...  args) {
-				asm.mov();
+				asm.rotl(Integer.parseInt(args[0]));
 			}
 		});
-		opcodes.put("MOVN", new Opcode() {			
+		opcodes.put("ROTR", new Opcode() {          
+            public void invoke(BytecodeEmitter asm, String...  args) {
+                asm.rotr(Integer.parseInt(args[0]));
+            }
+        });
+        opcodes.put("SWAP", new Opcode() {          
+            public void invoke(BytecodeEmitter asm, String...  args) {
+                asm.swap();
+            }
+        });		
+		opcodes.put("SWAPN", new Opcode() {			
 			public void invoke(BytecodeEmitter asm, String...  args) {
-				asm.movn(Integer.parseInt(args[0]));
-			}
-		});
-		opcodes.put("SWAP", new Opcode() {			
-			public void invoke(BytecodeEmitter asm, String...  args) {
-				asm.swap(Integer.parseInt(args[0]));
+				asm.swapn(Integer.parseInt(args[0]));
 			}
 		});
 		opcodes.put("JMP", new Opcode() {			

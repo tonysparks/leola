@@ -28,6 +28,26 @@ public class LeoLong extends LeoObject {
 	private long number;
 
 	/**
+     * Converts the java long into a {@link LeoLong}
+     * 
+     * @param number
+     * @return
+     */
+    public static LeoLong valueOf(Long number) {
+        return new LeoLong(number);
+    }
+	
+	/**
+	 * Converts the java long into a {@link LeoLong}
+	 * 
+	 * @param number
+	 * @return
+	 */
+	public static LeoLong valueOf(long number) {
+	    return new LeoLong(number);
+	}
+	
+	/**
 	 * @param value
 	 */
 	public LeoLong(long number) {
@@ -112,7 +132,13 @@ public class LeoLong extends LeoObject {
 	 */
 	@Override
 	public Object getValue(Class<?> type) {
-		if(ClassUtil.inheritsFrom(type, LeoObject.class) ) {
+	    if ( ClassUtil.isType(type, ClassUtil.LONG) ){
+            return this.number;
+        }
+	    else if ( ClassUtil.isType(type, ClassUtil.INT) ){
+            return (int)this.number;
+        }
+	    else if(ClassUtil.inheritsFrom(type, LeoObject.class) ) {
 			return this;
 		}
 		else if ( ClassUtil.isType(type, ClassUtil.BYTE) ){
@@ -123,19 +149,13 @@ public class LeoLong extends LeoObject {
 		}
 		else if ( ClassUtil.isType(type, ClassUtil.SHORT) ){
 			return (short)this.number;
-		}
-		else if ( ClassUtil.isType(type, ClassUtil.INT) ){
-			return (int)this.number;
-		}
+		}		
 		else if ( ClassUtil.isType(type, ClassUtil.FLOAT) ){
 			return (float)this.number;
 		}
 		else if ( ClassUtil.isType(type, ClassUtil.DOUBLE) ){
 			return (double)this.number;
-		}
-		else if ( ClassUtil.isType(type, ClassUtil.LONG) ){
-			return this.number;
-		}
+		}		
 		else if ( ClassUtil.isType(type, ClassUtil.STRING) ){
 			return this.number + "";
 		}

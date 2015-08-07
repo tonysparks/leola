@@ -8,6 +8,7 @@ package leola.lang;
 import leola.vm.Leola;
 import leola.vm.lib.LeolaIgnore;
 import leola.vm.lib.LeolaLibrary;
+import leola.vm.lib.LeolaMethodVarargs;
 import leola.vm.types.LeoArray;
 import leola.vm.types.LeoNamespace;
 import leola.vm.types.LeoNull;
@@ -46,23 +47,21 @@ public class StringLeolaLibrary implements LeolaLibrary {
 		
 	}
 	
-	public LeoString printf(Object str, LeoArray args) {
+	@LeolaMethodVarargs
+	public LeoString printf(Object str, LeoObject ... args) {
 		LeoString result = null;
-		if( args.isArray() ) {
-			LeoArray array = args.as();
-			
-			int len = array.size();
-			Object[] params = new Object[len];						
-			for(int i = 0; i < len; i++) {
-				params[i] = array.get(i).getValue();
-			}
-			
-			result = LeoString.valueOf(String.format(str.toString(), params));
+		if(args!=null) {
+		    int len = args.length;
+            Object[] params = new Object[len];                      
+            for(int i = 0; i < len; i++) {
+                params[i] = args[i].getValue();
+            }
+		    result = LeoString.valueOf(String.format(str.toString(), params));
 		}
 		else {
-			result = LeoString.valueOf(String.format(str.toString(), args.getValue()));
+		    result = LeoString.valueOf(String.format(str.toString()));
 		}
-		
+			
 		return result;	
 	}
 	

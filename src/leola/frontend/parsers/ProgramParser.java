@@ -31,8 +31,8 @@ public class ProgramParser extends StmtParser {
 	public ASTNode parse(Token token) throws Exception {
 		ProgramStmt program = new ProgramStmt();
 
-		while (!(token instanceof EofToken)) {
-			StmtParser stmtParser = new StmtParser(this);
+		StmtParser stmtParser = new StmtParser(this);
+		while (!(token instanceof EofToken)) {			
 			ASTNode node = stmtParser.parse(token);
 			program.addChild(node);
 

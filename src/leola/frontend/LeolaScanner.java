@@ -90,7 +90,7 @@ public class LeolaScanner extends Scanner {
                 }
                 while ((!checkSequence(END_COMMENT)) && (currentChar != EOF));
 
-                // Found closing '}'?
+                // Found closing '*/'?
                 if ( checkSequence(END_COMMENT) ) {
                 	for(int i = 0; i < END_COMMENT.length(); i++) {
                 		currentChar = nextChar();  // consume the comment

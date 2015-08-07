@@ -44,8 +44,8 @@ import static leola.vm.Opcodes.LOR;
 import static leola.vm.Opcodes.LT;
 import static leola.vm.Opcodes.LTE;
 import static leola.vm.Opcodes.MOD;
-import static leola.vm.Opcodes.MOV;
-import static leola.vm.Opcodes.MOVN;
+import static leola.vm.Opcodes.SWAP;
+import static leola.vm.Opcodes.ROTL;
 import static leola.vm.Opcodes.MUL;
 import static leola.vm.Opcodes.NAMESPACE_DEF;
 import static leola.vm.Opcodes.NEG;
@@ -67,12 +67,12 @@ import static leola.vm.Opcodes.SET_ARG2;
 import static leola.vm.Opcodes.SET_ARGsx;
 import static leola.vm.Opcodes.SET_ARGx;
 import static leola.vm.Opcodes.SET_GLOBAL;
-import static leola.vm.Opcodes.SHIFT;
+import static leola.vm.Opcodes.ROTR;
 import static leola.vm.Opcodes.SIDX;
 import static leola.vm.Opcodes.STORE_LOCAL;
 import static leola.vm.Opcodes.STORE_OUTER;
 import static leola.vm.Opcodes.SUB;
-import static leola.vm.Opcodes.SWAP;
+import static leola.vm.Opcodes.SWAPN;
 import static leola.vm.Opcodes.TAIL_CALL;
 import static leola.vm.Opcodes.THROW;
 import static leola.vm.Opcodes.XOR;
@@ -86,16 +86,46 @@ import java.util.Stack;
 
 import leola.vm.Opcodes;
 import leola.vm.compiler.EmitterScope.ScopeType;
-import leola.vm.exceptions.LeolaRuntimeException;
+import leola.vm.types.LeoClass;
 import leola.vm.types.LeoDouble;
+import leola.vm.types.LeoFunction;
+import leola.vm.types.LeoGenerator;
 import leola.vm.types.LeoInteger;
 import leola.vm.types.LeoLong;
+import leola.vm.types.LeoNamespace;
 import leola.vm.types.LeoObject;
 import leola.vm.types.LeoString;
 import leola.vm.util.ArrayUtil;
 
 /**
- * Easily emit opcode codes via the assembler methods.
+ * Easily emit opcode codes via the assembler methods.  There are also some helper (non-opcode) methods here to ease the
+ * development of emitting instructions.
+ * 
+ * <p>
+ * When using the {@link BytecodeEmitter}, in general you will only need one instance to compile code as all the scope
+ * handling is abstracted away by the use of {@link BytecodeEmitter#start(ScopeType)} and {@link BytecodeEmitter#end()}
+ * methods.
+ * 
+ * <p>
+ * Example usage:
+ * <pre>
+ *    BytecodeEmitter em = new BytecodeEmitter();
+ *    
+ *    // start compiling using the global scope
+ *    em.start(ScopeType.GLOBAL_SCOPE);
+ *    {
+ *        em.funcdef(2, false);
+ *        {
+ *          // all instructions will be for the newly defined function scope
+ *          em.loadlocal(0);
+ *          em.loadlocal(1);
+ *          // ...
+ *          
+ *        }
+ *        em.end(); // pops the function definition scope, returning control to the parent scope (global scope)
+ *    } 
+ *    em.end(); // pops the global scope
+ * </pre>
  * 
  * @author Tony
  *
@@ -232,7 +262,13 @@ public class BytecodeEmitter {
     /**
      * The current active {@link BytecodeEmitter}.  {@link BytecodeEmitter} may contain
      * sub-scopes (aka {@link BytecodeEmitter} within {@link BytecodeEmitter}'s).  This 
-     * will return the current active one.
+     * will return the current active one.  The {@link BytecodeEmitter#start(ScopeType)} will always
+     * place <code>this</code> instance on the stack.
+     * 
+     * <p>
+     * Unless stated otherwise, all methods within the {@link BytecodeEmitter} will always take
+     * the <b>head</b> of the stack ( via {@link #peek()}).  That is, all operations invoked are operated on
+     * the current scoped {@link BytecodeEmitter}.
      * 
      * @return the current active {@link BytecodeEmitter}
      */
@@ -241,8 +277,13 @@ public class BytecodeEmitter {
     }   
 	
 	/**
-	 * Starts an assembler scope
+	 * Starts an assembler scope.  This is the equivalent of invoking:
 	 * 
+	 * <pre>
+	 *   start(scopeType, 0 false);
+	 * </pre>
+	 * 
+	 * @see BytecodeEmitter#start(ScopeType, int, boolean)
 	 * @param scopeType
 	 */
 	public void start(ScopeType scopeType) {
@@ -250,7 +291,33 @@ public class BytecodeEmitter {
 	}
     
     /**
-     * Starts an assembler scope
+     * Starts an assembler scope.  Any {@link Bytecode} to be generated must be contained within
+     * a scope.  The {@link BytecodeEmitter#start(ScopeType)} and {@link BytecodeEmitter#end()} coordinate the
+     * life cycle of the {@link Bytecode} scope.
+     * 
+     * <p>
+     * Scopes are created in {@link LeoNamespace}, {@link LeoClass}, {@link LeoFunction}, and {@link LeoGenerator}.  These
+     * scopes are not to be confused with the lexical-scopes ({@link BytecodeEmitter#markLexicalScope()} and {@link BytecodeEmitter#unmarkLexicalScope()});
+     * which a lexical-scope only accounts for the life cycle of a local variable as it pertains the the current scope.
+     * 
+     * <p>
+     * These assembler scopes can be embedded within other assembler scopes because Leola allows to define scoped objects within
+     * other scoped objects.  As an example:
+     * 
+     * <pre>
+     *   class ClassScope() {
+     *     var functionScope = def() {
+     *       var innerFunctionScope = def() {
+     *       }
+     *     }
+     *    }
+     * </pre>
+     * 
+     * <p>
+     * In the example code above, we have three scopes defined (<code>ClassScope</code>, <code>functionScope</code> and <code>innerFunctionScope</code>), 
+     * all contained within one parent scope of the global {@link LeoNamespace} scope.  Each subsequent scope is stored in within its parent scope.
+     * 
+     * 
      * 
      * @param scopeType the type of scope
      * @param numberOfArguments
@@ -270,7 +337,7 @@ public class BytecodeEmitter {
 
 	
 	/**
-	 * Ends a block of code, which will pop the current embedded {@link BytecodeEmitter} (if any).
+	 * Ends a scope, which will pop the current embedded {@link BytecodeEmitter} (if any).
 	 * 
 	 * @see BytecodeEmitter#start(ScopeType, int, boolean)
 	 */
@@ -402,7 +469,7 @@ public class BytecodeEmitter {
 	 * 
 	 * @param obj
 	 */
-	public void storeAndloadconst(LeoObject obj) {
+	public void addAndloadconst(LeoObject obj) {
 		Constants constants = getConstants();
 		int index = constants.store(obj);
 		loadconst(index);
@@ -414,8 +481,8 @@ public class BytecodeEmitter {
      * 
      * @param str
      */
-    public void storeAndloadconst(String str) {
-        storeAndloadconst(LeoString.valueOf(str));
+    public void addAndloadconst(String str) {
+        addAndloadconst(LeoString.valueOf(str));
     }
 	
     
@@ -423,10 +490,10 @@ public class BytecodeEmitter {
      * Stores the integer in the constants table and
      * emits a load instruction for it.
      * 
-     * @param obj
+     * @param i
      */
-	public void storeAndloadconst(int i) {
-		storeAndloadconst(LeoInteger.valueOf(i));
+	public void addAndloadconst(int i) {
+		addAndloadconst(LeoInteger.valueOf(i));
 	}
 	
 	
@@ -434,28 +501,32 @@ public class BytecodeEmitter {
      * Stores the double in the constants table and
      * emits a load instruction for it.
      * 
-     * @param obj
+     * @param i
      */
-	public void storeAndloadconst(double i) {
-		storeAndloadconst(LeoDouble.valueOf(i));
+	public void addAndloadconst(double i) {
+		addAndloadconst(LeoDouble.valueOf(i));
 	}
 	
 	
 	/**
      * Stores the long in the constants table and
-     * emits a load instruction for it.
+     * emits a <code>loadconst</code> instruction for it.
      * 
-     * @param obj
+     * @param i
      */
-	public void storeAndloadconst(long i) {
-		storeAndloadconst(new LeoLong(i));
+	public void addAndloadconst(long i) {
+		addAndloadconst(LeoLong.valueOf(i));
 	}
 		
 	/**
-	 * Loads the variable, either as a local, scoped or an {@link Outer}
+	 * Invokes a load instruction of the variable, either as a <code>loadlocal</code> or a <code>loadouter</code>.
 	 * 
-	 * @param ref
-	 * @return true if loaded, false otherwise
+	 * @see Outer
+	 * @see BytecodeEmitter#loadlocal(int)
+	 * @see BytecodeEmitter#loadouter(int)
+	 * @param ref the reference of the variable name to load
+	 * @return true if loaded to either as a local or an outer; false if it was not found in either the 
+	 * local storage or any parent scopes (i.e., Outer).
 	 */
 	public boolean load(String ref) {
 		boolean success = true;			
@@ -491,12 +562,35 @@ public class BytecodeEmitter {
 	public int addLocal(String reference) {
 	    return peek().localScope.addLocal(reference);
 	}
+
+	/**
+	 * Adds the reference to the {@link Locals} pool and calls 
+	 * invokes a {@link BytecodeEmitter#storelocal(int)}.
+	 * 
+	 * @see BytecodeEmitter#addLocal(String)
+	 * @see BytecodeEmitter#storelocal(int)
+	 * @param reference
+	 */
+	public void addAndstorelocal(String reference) {
+	    int index = addLocal(reference);
+	    storelocal(index);
+	}
 	
 	/**
-	 * Emits a store instruction.
+	 * Emits a store instruction.  Depending on the scope of the supplied reference, the
+	 * storage instruction will either be a <code>storelocal</code>, <code>storeouter</code> or a <code>setglobal</code>.
 	 * 
-	 * Stores a variable, either as a local, global or an {@link Outer}
+	 * <p>
+	 * <ol>
+	 *     <li>If the supplied reference is found in the current local storage, a <code>storelocal</code> instruction is emitted.</li>
+	 *     <li>If not in the local storage, it will check the parent scopes looking for an {@link OuterDesc}.  If an {@link OuterDesc} is found,
+	 *     a <code>storeouter</code> instruction is emitted.</li>
+	 *     <li>Finally, if the reference is not found in the parent scopes, a <code>setglobal</code> instruction is emitted.</li>
+	 * </ol>
 	 * 
+	 * @see BytecodeEmitter#storelocal(int)
+	 * @see BytecodeEmitter#storeouter(int)
+	 * @see BytecodeEmitter#setglobal(String)
 	 * @param ref the reference name of the variable
 	 */
 	public void store(String ref) {
@@ -719,8 +813,13 @@ public class BytecodeEmitter {
 	/**
 	 * Emits the LINE opcode.  Only enabled if the debug flags are set.  This marks
 	 * the line numbers in the Leola script with the associated byte code.
+	 * 
+	 * <p>
+	 * As an optimization, this will only emit the <code>line</code> instruction if the supplied
+	 * line number is greater than the last stored line number.  This helps prevent unnecessary
+	 * <code>line</code> instructions which would further impact performance.
 	 *  
-	 * @param line
+	 * @param line the line number in the Leola script code
 	 */
 	public void line(int line) {
 		if ( this.isDebug() ) {
@@ -783,12 +882,7 @@ public class BytecodeEmitter {
 		instr(LOAD_FALSE);
 		incrementMaxstackSize();
 	}
-	
-	public void shift(int index) {
-		instrx(SHIFT, index);
-	}
-	
-	
+		
 	public void pop() {
 		instr(POP);
 		decrementMaxstackSize();
@@ -840,18 +934,24 @@ public class BytecodeEmitter {
 	public void ret() {
 		instr(RET);
 	}
-	
-	public void mov() {
-		instr(MOV);
-	}
-	public void movn(int n) {
+		
+	public void rotl(int n) {
 		if ( n != 0 ) {
-			instrx(MOVN, n);
+			instrx(ROTL, n);
 		}
 	}
-	public void swap(int amount) {
+	
+    public void rotr(int index) {
+        instrx(ROTR, index);
+    }
+	
+    public void swap() {
+        instr(SWAP);
+    }
+    
+	public void swapn(int amount) {
 		if ( amount > 0 ) {
-			instrx(SWAP, amount);
+			instrx(SWAPN, amount);
 		}
 	}
 	
@@ -1162,12 +1262,11 @@ public class BytecodeEmitter {
 
 	
 	/**
-	 * Compiles the assembler into bytecode.
+	 * Compiles the assembler into {@link Bytecode}.
 	 * 
-	 * @return
-	 * @throws LeolaRuntimeException
+	 * @return the {@link Bytecode} object
 	 */
-	public Bytecode compile() throws LeolaRuntimeException {
+	public Bytecode compile() {
 
 		int [] code = localScope.getRawInstructions();
 		Bytecode bytecode = new Bytecode(code);

@@ -10,7 +10,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import leola.vm.exceptions.LeolaRuntimeException;
+import leola.vm.lib.LeolaMethod;
 
 
 /**
@@ -110,6 +113,169 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 		}
 		
 		return array;
+	}
+	
+	/**
+	 * Iterates through the array given the supplied bounds
+	 * 
+	 * <pre>
+	 *     [1,2,3,4].for(1,3,println)
+	 *     // prints 
+	 *     // 2
+	 *     // 3
+	 * </pre>
+	 * 
+	 * @param startIndex
+	 * @param endIndex
+	 * @param function
+	 */
+	@LeolaMethod(alias="for")
+	public void _for(int startIndex, int endIndex, LeoObject function) {	    
+        if ( startIndex < 0 || endIndex > size()) {
+            throw new LeolaRuntimeException("Invalid array index: " + startIndex + " to " + endIndex + "[Size of array: " + size() + "]");
+        }
+
+        for(int i = startIndex; i < endIndex; i++) {
+            LeoObject result = function.call(get(i)); 
+            if ( LeoObject.isTrue(result) ) {
+                break;
+            }
+        }
+	}
+	
+	
+	/**
+	 * Sorts the Array, it sorts it in place (meaning this will <b>not</b> allocate
+	 * a new array, but rather sort this instance of the array).
+	 * 
+	 * <pre>
+	 *    println( [1,5,2,87,324,4,2].sort(def(a,b) return a-b) )
+	 *    // prints:
+	 *    // [1,2,2,4,5,87,324]
+	 * 
+	 * @param function
+	 * @return this array sorted
+	 */
+	public LeoArray sort(final LeoObject function) {
+	    if(function != null) {
+            Arrays.sort(this.array, 0, this.size, new Comparator<LeoObject>() {                
+                @Override
+                public int compare(LeoObject o1, LeoObject o2) {
+                    LeoObject result = function.call(o1, o2);
+                    return result.asInt();
+                }
+            });
+        }
+	    else {
+	        Arrays.sort(this.array, 0, this.size);
+	    }
+	    
+	    return this;
+	}
+	
+	/**
+	 * Iterates through the array, invoking the supplied 
+	 * function object for each element
+	 * 
+	 * <pre>
+	 *   [1,2,3].foreach(println)
+	 *   // prints:
+	 *   // 1
+	 *   // 2
+	 *   // 3
+	 * </pre>
+	 * 
+	 * @param function
+	 */
+	public void foreach(LeoObject function) {
+	    if(function != null) {
+    	    for(int i = 0; i < this.size; i++) {
+    	        LeoObject obj = get(i);
+    	        LeoObject result = function.call(obj);
+    	        if(LeoObject.isTrue(result)) {
+    	            break;
+    	        }
+    	    }
+	    }
+	}
+	
+	/**
+	 * Filters the {@link LeoArray}
+	 * 
+	 * <pre>
+	 *     var evens = [1,2,3,4].filter(def(e) {
+	 *         return e % 2 == 0
+	 *     }) 
+	 *     println(evens) // prints, 2, 4
+	 * </pre>
+	 * 
+	 * @param function
+	 * @return a resulting {@link LeoArray}
+	 */
+	public LeoArray filter(LeoObject function) {
+	    if(function != null) {
+	        LeoArray array = new LeoArray();
+            for(int i = 0; i < this.size; i++) {
+                LeoObject obj = get(i);
+                if( LeoObject.isTrue(function.call(obj)) ) {
+                    array.add(obj);
+                }
+            }
+            return array;
+        }
+	    return this;
+	}
+	
+	
+	/**
+	 * Maps the supplied function to each element in the array.
+	 * 
+	 * <pre>
+	 *     var result = [1,2,3,4].map(def(e) return e*2)
+	 *     println(result) // 2, 4, 6, 8
+	 * </pre>
+	 * 
+	 * @param function
+	 * @return
+	 */
+	public LeoArray map(LeoObject function) {
+        if(function != null) {
+            LeoArray array = new LeoArray(this.size);
+            for(int i = 0; i < this.size; i++) {                
+                LeoObject obj = get(i);
+                LeoObject result = function.call(obj);
+                
+                array.add(result);
+            }
+            return array;
+        }
+        return this;
+    }
+	
+	
+	/**
+	 * Reduces all of the elements in this array into one value.
+	 * 
+	 * <pre>
+	 *     var sum = [1,2,3,4].reduce(def(p,n) return p+n)
+	 *     println(sum) // 10
+	 * </pre>
+	 * 
+	 * 
+	 * @param function
+	 * @return
+	 */
+	public LeoObject reduce(LeoObject function) {
+	    if(function != null && !isEmpty()) {
+            
+            LeoObject result = get(0);
+            for(int i = 1; i < this.size; i++) {            
+                LeoObject obj = get(i);
+                result = function.call(result, obj);
+            }
+            return result;
+        }
+        return LeoNull.LEONULL;
 	}
 	
 	/* (non-Javadoc)

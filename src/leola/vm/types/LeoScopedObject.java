@@ -119,7 +119,7 @@ public abstract class LeoScopedObject extends LeoOuterObject {
 	 */
 	@Override
 	public void setObject(LeoObject key, LeoObject value) {	
-		addProperty(key.toLeoString(), value);
+		addProperty(key, value);
 	}
 	
 	/* (non-Javadoc)

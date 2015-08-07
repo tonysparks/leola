@@ -135,7 +135,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 			Expr indexExpr = s.getElementIndex();	
 			
 			String reference = s.getVariableName();		
-			asm.storeAndloadconst(reference);
+			asm.addAndloadconst(reference);
 			asm.get();
 						
 			indexExpr.visit(this);
@@ -161,7 +161,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		asm.line(s.getLineNumber());
 		if(s.isMemberAccessChild()) {						
 			String reference = s.getVariableName();
-			asm.storeAndloadconst(reference);						
+			asm.addAndloadconst(reference);						
 			asm.get();						
 		}
 		else {						
@@ -222,7 +222,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		e.visit(this);
 		
 		if(s.isMemberAccessChild()) {
-			asm.mov();
+			asm.swap();
 			
 			Expr lhs = s.getLhsExpr();
 			if ( lhs != null ) {																
@@ -232,7 +232,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 				
 			}
 			else {				
-				asm.storeAndloadconst(s.getVarName());								
+				asm.addAndloadconst(s.getVarName());								
 				asm.set();
 			}			
 		}
@@ -414,13 +414,12 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 					ArrayAccessSetExpr setExpr = (ArrayAccessSetExpr)lhs;
 					
 					String reference = setExpr.getVariableName();
-					asm.storeAndloadconst(reference);
+					asm.addAndloadconst(reference);
 					asm.get();
 					
 					Expr indexExpr = setExpr.getElementIndex();
 					indexExpr.visit(this);
 					
-//					asm.get();
 					asm.idx();
 				}
 								
@@ -430,7 +429,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 				BinaryOp op = s.getBinaryOp();
 				visitBinaryExpression(op);
 				
-				asm.mov();
+				asm.swap();
 				lhs.visit(this);		
 		
 			}
@@ -439,16 +438,16 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 				asm.dup();
 				
 				String ref = s.getVarName();
-				asm.storeAndloadconst(ref);
+				asm.addAndloadconst(ref);
 				asm.get();
 								
 				Expr e = s.getExpr();
 				e.visit(this);
 				
 				visitBinaryExpression(s.getBinaryOp());
-				asm.mov();
+				asm.swap();
 												
-				asm.storeAndloadconst(ref);												
+				asm.addAndloadconst(ref);												
 				asm.set();
 								
 				//asm.dup(); /* account for OPPOP */
@@ -560,7 +559,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		
 		Expr lhs = s.getLhsExpr();
 		if ( lhs != null ) {
-			asm.mov();
+			asm.swap();
 			lhs.visit(this);
 		}		
 	}
@@ -573,32 +572,33 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		asm.line(s.getLineNumber());
 		
 		asm.dup();
-		
-		Expr valueExpr = s.getExpr();
-		valueExpr.visit(this);
-		
+
+        Expr valueExpr = s.getExpr();
+        valueExpr.visit(this);
 		
 		Expr lhs = s.getLhsExpr();
 		if ( lhs != null ) {
-			// TODO
-			if ( lhs instanceof ChainedArrayAccessSetExpr) {
-				asm.mov();
-				
-				ChainedArrayAccessSetExpr e = (ChainedArrayAccessSetExpr)lhs;
-				e.getElementIndex().visit(this);				
-				asm.dup();
-				asm.shift(4);
-//				asm.get();
-				asm.idx();
-				
-				visitBinaryExpression(s.getBinaryOp());
-				asm.shift(3);					
-//				asm.set();
-				asm.sidx();
+			// TODO -- This seems extremely whonkie!
+		    // Had to create new OPCODE (shift) to support
+		    // this.  Revisit to fix so that: 
+		    // a) we don't need this chained* non-sense
+		    // b) we don't need a 'shift' opcode
+			if ( lhs instanceof ChainedArrayAccessSetExpr) {							    
+			    asm.swap();
+                
+                ChainedArrayAccessSetExpr e = (ChainedArrayAccessSetExpr)lhs;
+                e.getElementIndex().visit(this);                
+                asm.dup();
+                asm.rotr(4);
+                asm.idx();
+                
+                asm.swap();
+                visitBinaryExpression(s.getBinaryOp());
+                asm.rotr(3);                   
+                asm.sidx();
 			}
 		}
-		else {
-		
+		else {	        	        
 			visitBinaryExpression(s.getBinaryOp());
 		}
 	}
@@ -641,7 +641,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 			nargs = params.length;
 		}
 		
-		asm.movn(nargs);
+		asm.rotl(nargs);
 		asm.invoke(nargs);
 	}
 
@@ -675,13 +675,13 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		
 				
 		// this class name
-		asm.storeAndloadconst(className);
+		asm.addAndloadconst(className);
 		
 		
 		// parent class name
 		String parentClassNAme = s.getParentClassName();
 		if ( parentClassNAme != null ) {			
-			asm.storeAndloadconst(parentClassNAme);
+			asm.addAndloadconst(parentClassNAme);
 		}
 		else {
 			asm.loadnull();
@@ -691,7 +691,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		String[] interfaces = s.getInterfaceNames();
 		if ( interfaces != null ) {
 			for(String i : interfaces) {				
-				asm.storeAndloadconst(i);
+				asm.addAndloadconst(i);
 			}
 		}
 		
@@ -699,10 +699,10 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		ParameterList params = s.getClassParameters();
 		if ( params != null ) {
 			for(String ref:params.getParameters()) {				
-				asm.storeAndloadconst(ref);
+				asm.addAndloadconst(ref);
 			}
 		}							
-		asm.storeAndloadconst(params!=null?params.size():0);
+		asm.addAndloadconst(params!=null?params.size():0);
 		
 		/*
 		 * NOTE: this places Constants in the parameters and
@@ -724,9 +724,9 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 				e.visit(this);
 			}
 		}
-		asm.storeAndloadconst(superParams!=null?superParams.length:0);
+		asm.addAndloadconst(superParams!=null?superParams.length:0);
 		
-		asm.storeAndloadconst(asm.getBytecodeIndex());		
+		asm.addAndloadconst(asm.getBytecodeIndex());		
 		asm.classdef(interfaces!=null?interfaces.length:0);
 		{			
 			Stmt body = s.getClassBodyStmt();
@@ -805,15 +805,14 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		asm.line(s.getLineNumber());
 				
 		String name = s.getName();		
-		asm.storeAndloadconst(name);
+		asm.addAndloadconst(name);
 		
 		asm.namespacedef();
 		{			
 			s.getStmt().visit(this);
 		}
 		asm.end();
-		int index = asm.addLocal(name);
-		asm.storelocal(index);						
+		asm.addAndstorelocal(name);						
 	}
 
 	/* (non-Javadoc)
@@ -833,14 +832,14 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 	public void visit(RealExpr s) throws EvalException {
 		asm.line(s.getLineNumber());
 
-		asm.storeAndloadconst(s.getValue());
+		asm.addAndloadconst(s.getValue());
 	}
 	
 	@Override
 	public void visit(IntegerExpr s) throws EvalException {
 		asm.line(s.getLineNumber());
 
-		asm.storeAndloadconst(s.getValue());
+		asm.addAndloadconst(s.getValue());
 	}
 
 	/* (non-Javadoc)
@@ -850,7 +849,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 	public void visit(LongExpr s) throws EvalException {
 		asm.line(s.getLineNumber());
 
-		asm.storeAndloadconst(s.getValue());		
+		asm.addAndloadconst(s.getValue());		
 	}
 	
 	/* (non-Javadoc)
@@ -879,14 +878,14 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 			lhs.visit(this);
 			
 			String type = s.getClassName();			
-			asm.storeAndloadconst(type);
+			asm.addAndloadconst(type);
 			
-			asm.mov();
+			asm.swap();
 		}
 		else {
 
 			String type = s.getClassName();			
-			asm.storeAndloadconst(type);
+			asm.addAndloadconst(type);
 			
 			Expr lhs = s.getLhsExpr();		
 			lhs.visit(this);
@@ -931,7 +930,6 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 	 */
 	@Override
 	public void visit(NamedParameterExpr s) throws EvalException {
-	    // TODO	    
 	    int index = asm.getConstants().store(s.getParameterName());
 	    
 	    asm.loadname(index);
@@ -1002,10 +1000,10 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		if ( s.isMemberAccessChild() ) {
 			/* Member access */
 			
-			asm.movn(nargs);
+			asm.rotl(nargs);
 			
 			String functionName = s.getFunctionName();
-			asm.storeAndloadconst(functionName);			
+			asm.addAndloadconst(functionName);			
 			asm.get(); 
 		}
 		else {
@@ -1076,7 +1074,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 				
 		String identifier = s.getIdentifier();
 		if ( identifier != null && (expr instanceof MemberAccessExpr && !(expr instanceof NamespaceAccessExpr))) {
-			asm.storeAndloadconst(identifier);
+			asm.addAndloadconst(identifier);
 			asm.get();
 		}
 			
@@ -1122,7 +1120,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		}
 		
 		String className = s.getClassName();		
-		asm.storeAndloadconst(className);
+		asm.addAndloadconst(className);
 		
 		asm.newobj(nargs);
 	}
@@ -1180,7 +1178,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 	public void visit(StringExpr s) throws EvalException {		
 		asm.line(s.getLineNumber());
 		
-		asm.storeAndloadconst(s.getValue());				
+		asm.addAndloadconst(s.getValue());				
 	}
 
 	/* (non-Javadoc)
@@ -1307,15 +1305,14 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		List<OnClause> onClauses = s.getOnClauses();				
 		for(OnClause clause : onClauses) {			
 			asm.dup();									
-			asm.storeAndloadconst(clause.getType());
-			asm.mov();
+			asm.addAndloadconst(clause.getType());
+			asm.swap();
 			asm.isa();			
 						
 			nextOnLabel = asm.ifeq();						
 			Stmt stmt = clause.getStmt();
 			asm.dup();
-			int index = asm.addLocal(clause.getIdentifier());
-			asm.storelocal(index);
+			asm.addAndstorelocal(clause.getIdentifier());
 			
 			stmt.visit(this);
 			
@@ -1428,15 +1425,14 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		List<OnClause> onClauses = s.getOnClauses();				
 		for(OnClause clause : onClauses) {			
 			asm.dup();									
-			asm.storeAndloadconst(clause.getType());
-			asm.mov();
+			asm.addAndloadconst(clause.getType());
+			asm.swap();
 			asm.isa();			
 						
 			nextOnLabel = asm.ifeq();						
 			Stmt stmt = clause.getStmt();
 			asm.dup();
-			int index = asm.addLocal(clause.getIdentifier());
-			asm.storelocal(index);
+			asm.addAndstorelocal(clause.getIdentifier());
 			
 			stmt.visit(this);
 			
@@ -1561,7 +1557,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 	 */
 	private void loadmember(ASTNode s, String ref, boolean checkConstantFirst, boolean loadconst) throws EvalException {				
 		if ( checkConstantFirst && s.hasFlag(ASTAttributes.IS_PROPERTY) ) {					
-			asm.storeAndloadconst(ref);
+			asm.addAndloadconst(ref);
 		}
 		else if ( ! asm.load(ref) ) {		
 			/* check and see if this is a map lookup */
@@ -1600,7 +1596,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 	public void visit(VarExpr s) throws EvalException {			
 		asm.line(s.getLineNumber());
 		if( s.isMemberAccessChild() ) {
-			asm.storeAndloadconst(s.getVarName());
+			asm.addAndloadconst(s.getVarName());
 			asm.get();
 		}
 		else {

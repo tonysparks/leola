@@ -5,13 +5,9 @@
 */
 package leola.vm.util;
 
-import static leola.vm.util.ClassUtil.BOOLEAN;
-import static leola.vm.util.ClassUtil.INTEGER;
-import static leola.vm.util.ClassUtil.LONG;
-import static leola.vm.util.ClassUtil.NUMBER;
-import static leola.vm.util.ClassUtil.STRING;
-
 import java.lang.reflect.Array;
+import java.util.HashMap;
+import java.util.Map;
 
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.types.LeoArray;
@@ -31,6 +27,127 @@ import leola.vm.types.LeoString;
  */
 public class LeoTypeConverter {
 
+    private static interface Converter {
+        LeoObject convert(Class<?> type, Object javaObj);
+    }
+    private static final Map<Class<?>, Converter> CONVERTERS = new HashMap<Class<?>, LeoTypeConverter.Converter>();
+    static {
+        CONVERTERS.put(null, new Converter() {           
+            @Override
+            public LeoObject convert(Class<?> type, Object javaObj) {
+                return LeoNull.LEONULL;
+            } 
+        });
+        
+        
+        Converter stringConverter = new Converter() {
+            
+            @Override
+            public LeoObject convert(Class<?> type, Object javaObj) {
+                return LeoString.valueOf(javaObj.toString());
+            }
+        };
+        CONVERTERS.put(String.class, stringConverter);
+        CONVERTERS.put(char.class, stringConverter);
+        CONVERTERS.put(Character.class, stringConverter);
+        
+        
+        // Boolean
+        Converter booleanConverter = new Converter() {
+            
+            @Override
+            public LeoObject convert(Class<?> type, Object javaObj) {
+                return ((Boolean)javaObj) ? LeoBoolean.LEOTRUE
+                                          : LeoBoolean.LEOFALSE;
+            }
+        };
+        CONVERTERS.put(boolean.class, booleanConverter);
+        CONVERTERS.put(Boolean.class, booleanConverter);
+
+        // Long
+        Converter longConverter = new Converter() {
+            
+            @Override
+            public LeoObject convert(Class<?> type, Object javaObj) {
+                return LeoLong.valueOf(((Number)javaObj).longValue());
+            }
+        };
+        CONVERTERS.put(long.class, longConverter);
+        CONVERTERS.put(Long.class, longConverter);
+        
+        // integer
+        Converter integerConverter = new Converter() {
+            
+            @Override
+            public LeoObject convert(Class<?> type, Object javaObj) {
+                return LeoInteger.valueOf(((Number)javaObj).intValue());
+            }
+        };
+        
+        CONVERTERS.put(byte.class, integerConverter);
+        CONVERTERS.put(Byte.class, integerConverter);
+        CONVERTERS.put(short.class, integerConverter);
+        CONVERTERS.put(Short.class, integerConverter);
+        CONVERTERS.put(int.class, integerConverter);
+        CONVERTERS.put(Integer.class, integerConverter);        
+        
+        
+
+        // Double
+        Converter doubleConverter = new Converter() {
+            
+            @Override
+            public LeoObject convert(Class<?> type, Object javaObj) {
+                return LeoDouble.valueOf(((Number)javaObj).doubleValue());
+            }
+        };
+        
+        CONVERTERS.put(double.class, doubleConverter);
+        CONVERTERS.put(Double.class, doubleConverter);
+        CONVERTERS.put(float.class, doubleConverter);
+        CONVERTERS.put(Float.class, doubleConverter);
+        CONVERTERS.put(Number.class, doubleConverter);
+        
+        
+        // LeoObject converter
+        CONVERTERS.put(LeoObject.class, new Converter() {
+            
+            @Override
+            public LeoObject convert(Class<?> type, Object javaObj) {
+                return (LeoObject) javaObj;
+            }
+        });
+    }   
+    
+    // Generic catch-all converter
+    private final static Converter objectConverter = new Converter() {
+        
+        @Override
+        public LeoObject convert(Class<?> type, Object javaObj) {
+            LeoObject result = null;
+            if ( ClassUtil.inheritsFrom(type, LeoObject.class)) {
+                result = (LeoObject)javaObj;
+            }
+            else if ( type.isArray() ) {
+                int len = Array.getLength(javaObj);
+                LeoArray array = new LeoArray(len);
+                for(int i = 0; i < len; i++) {
+                    Object obj = Array.get(javaObj, i);
+                    array.add(LeoObject.valueOf(obj));
+                }
+
+                result = array;
+            }
+            else {
+                result = new LeoNativeClass(type, javaObj);
+            }
+            
+            return (result);
+        }
+    };
+        
+     
+    
 	/**
 	 * Converts the supplied java object into a {@link LeoObject}.
 	 *
@@ -40,45 +157,14 @@ public class LeoTypeConverter {
 	 */
 	public static LeoObject convertToLeolaType(Object javaObj) /*throws EvalException*/ {
 		LeoObject result = null;
-		if ( javaObj == null ) {
-			result = LeoNull.LEONULL;
+		if(javaObj == null) {
+		    result = LeoNull.LEONULL;
 		}
 		else {
-			Class<?> type = javaObj.getClass();
-			if ( ClassUtil.isType(type, STRING) ) {
-				result = LeoString.valueOf(javaObj.toString());
-			}
-			else if ( ClassUtil.isType(type, BOOLEAN) ){
-				result = ((Boolean)javaObj) ? LeoBoolean.LEOTRUE
-											: LeoBoolean.LEOFALSE;
-			}
-			else if ( ClassUtil.isType(type, LONG)) {
-				result = new LeoLong(((Number)javaObj).longValue());
-			}
-			else if ( ClassUtil.isType(type, INTEGER)) {
-				result = LeoInteger.valueOf(((Number)javaObj).intValue());
-			}
-			else if ( ClassUtil.isType(type, NUMBER) ){
-
-				Double number = new Double( ((Number)javaObj).doubleValue() );
-				result = LeoDouble.valueOf(number);
-			}
-			else if ( ClassUtil.inheritsFrom(type, LeoObject.class)) {
-				result = (LeoObject)javaObj;
-			}
-			else if ( type.isArray() ) {
-				int len = Array.getLength(javaObj);
-				LeoArray array = new LeoArray(len);
-				for(int i = 0; i < len; i++) {
-					Object obj = Array.get(javaObj, i);
-					array.$add(convertToLeolaType(obj));
-				}
-
-				result = array;
-			}
-			else {
-				result = new LeoNativeClass(type, javaObj);
-			}
+		    Class<?> type = javaObj.getClass();
+		    Converter converter = CONVERTERS.get(type);
+		    result = (converter!=null) ? converter.convert(type, javaObj) 
+		                               : objectConverter.convert(type, javaObj);
 		}
 
 		return result;

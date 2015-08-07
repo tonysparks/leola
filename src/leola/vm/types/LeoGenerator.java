@@ -9,6 +9,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import leola.vm.Leola;
 import leola.vm.compiler.Bytecode;
 
 
@@ -49,8 +50,8 @@ public class LeoGenerator extends LeoFunction {
 	 * @param numberOfArgs
 	 * @param body
 	 */
-	public LeoGenerator(LeoObject env, Bytecode bytecode) {
-		super(LeoType.GENERATOR, env, bytecode);				
+	public LeoGenerator(Leola runtime, LeoObject env, Bytecode bytecode) {
+		super(runtime, LeoType.GENERATOR, env, bytecode);				
 		this.locals = new LeoObject[bytecode.numLocals];
 	}
 		
@@ -102,7 +103,7 @@ public class LeoGenerator extends LeoFunction {
 	 * @return the {@link LeoObject}
 	 * @throws IOException
 	 */
-	public static LeoGenerator read(LeoObject env, DataInput in) throws IOException {
+	public static LeoGenerator read(Leola runtime, LeoObject env, DataInput in) throws IOException {
 		Bytecode bytecode = Bytecode.read(env, in);
 		int nouters = in.readInt();
 		
@@ -111,7 +112,7 @@ public class LeoGenerator extends LeoFunction {
 			outers[i] = LeoObject.read(env, in);
 		}
 		
-		LeoGenerator function = new LeoGenerator(env, bytecode);	
+		LeoGenerator function = new LeoGenerator(runtime, env, bytecode);	
 		return function;
 	}
 }

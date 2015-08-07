@@ -19,7 +19,6 @@ import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ArrayUtil;
 
 
-
 /**
  * A Leola Map
  *
@@ -32,11 +31,6 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	/**
 	 */
 	public LeoMap() {
-//		super(LeoType.MAP);
-//		
-//		hashKeys = ArrayUtil.EMPTY_LEOOBJECTS;
-//		hashValues = ArrayUtil.EMPTY_LEOOBJECTS;
-//		hashEntries = 0;
 		this(8);
 	}
 
@@ -68,6 +62,95 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
         return getNativeMethod(this, this.mapApi, key);
     }
 	
+    
+    /**
+     * Iterates through the array, invoking the supplied 
+     * function object for each element
+     * 
+     * <pre>
+     *   var x = {x->1,y->2,z->3}.foreach(def(k,v) println(k + ":" + v))
+     *   // prints: 
+     *   // x : 1
+     *   // y : 2
+     *   // z : 3
+     *   
+     * </pre>
+     * 
+     * @param function
+     */
+    public void foreach(LeoObject function) {
+        if(function != null) {
+            for(int i = 0; i < this.bucketLength(); i++) {
+                LeoObject key = getKey(i);
+                if(key != null) {
+                    LeoObject value = getValue(i);
+                    LeoObject result = function.call(key, value);
+                    if(LeoObject.isTrue(result)) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Filters the {@link LeoArray}
+     * 
+     * <pre>
+     *     var evens = {x->1,y->2,z->3}.filter(def(k,v) {
+     *         return v % 2 == 0
+     *     }) 
+     *     println(evens) // prints, {y->2}
+     * </pre>
+     * 
+     * @param function
+     * @return a resulting {@link LeoArray}
+     */
+    public LeoMap filter(LeoObject function) {
+        if(function != null) {
+            LeoMap map = new LeoMap();
+            for(int i = 0; i < this.bucketLength(); i++) {
+                LeoObject key = getKey(i);
+                if(key != null) {
+                    LeoObject value = getValue(i);
+                    if( LeoObject.isTrue(function.call(key, value)) ) {
+                        map.put(key, value);
+                    }
+                }
+            }
+            return map;
+        }
+        return this;
+    }
+    
+    
+    /**
+     * Maps the supplied function to each element in the array.
+     * 
+     * <pre>
+     *     var result = [1,2,3,4].map(def(e) return e*2)
+     *     println(result) // 2, 4, 6, 8
+     * </pre>
+     * 
+     * @param function
+     * @return
+     */
+    public LeoMap map(LeoObject function) {
+        if(function != null) {
+            LeoMap map = new LeoMap();
+            for(int i = 0; i < this.bucketLength(); i++) {
+                LeoObject key = getKey(i);
+                if(key != null) {
+                    LeoObject value = getValue(i);
+                    value = function.call(key, value);
+                    map.put(key, value);                    
+                }
+            }
+            return map;
+        }
+        return this;
+    }
+    
 	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#isMap()
 	 */
@@ -204,13 +287,24 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	}
 	
 	/**
+	 * Determines if the supplied key is contained in the {@link LeoMap}
+	 * 
 	 * @param key
-	 * @return
+	 * @return true if the supplied key is contained in the map
 	 */
 	public boolean has(LeoObject key) {
 		return this.containsKey(key);
 	}
 
+	/**
+	 * Determines if the supplied value is contained in the {@link LeoMap}
+	 * 
+	 * @param value
+	 * @return true if the supplied value is contained in the map.
+	 */
+	public boolean hasValue(LeoObject value) {
+	    return containsValue(value);
+	}
 
 
 	public void putAll(LeoObject obj) {

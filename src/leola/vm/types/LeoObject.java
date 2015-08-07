@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 import leola.vm.Scope;
-import leola.vm.VM;
 import leola.vm.compiler.Outer;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
@@ -26,7 +25,7 @@ import leola.vm.util.LeoTypeConverter;
  * @author Tony
  *
  */
-public abstract class LeoObject {
+public abstract class LeoObject implements Comparable<LeoObject> {
 
 	public static final LeoString REQ = LeoString.valueOf("$req");
 	public static final LeoString EQ = LeoString.valueOf("$eq");
@@ -99,8 +98,11 @@ public abstract class LeoObject {
 		  , ERROR
 		;
 		  
+		/* Java instantiates a new array for each values() call */  
+		private static final LeoType[] values = values();
+		  
 		public static LeoType fromOrdinal(int ordinal) {
-			return values()[ordinal];
+			return values[ordinal];
 		}
 	}
 
@@ -560,86 +562,79 @@ public abstract class LeoObject {
 	/**
 	 * Invokes the function
 	 * 
-	 * @param vm
-	 * @return
+	 * @return the result of the function call
 	 */
-	public LeoObject call(VM vm) {
+	public LeoObject call() {
 		throw new LeolaRuntimeException(this + " is not a function.");
 	}
 	
 	/**
 	 * Invokes the function
 	 * 
-	 * @param vm
 	 * @param arg1
-	 * @return
+	 * @return the result of the function call
 	 */
-	public LeoObject call(VM vm, LeoObject arg1) {
+	public LeoObject call(LeoObject arg1) {
 		throw new LeolaRuntimeException(this + " is not a function.");		
 	}
 	
 	/**
 	 * Invokes the function
 	 * 
-	 * @param vm
 	 * @param arg1
 	 * @param arg2
-	 * @return
+	 * @return the result of the function call
 	 */
-	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2) {
+	public LeoObject call(LeoObject arg1, LeoObject arg2) {
 		throw new LeolaRuntimeException(this + " is not a function.");
 	}
 	
 	/**
 	 * Invokes the function
 	 * 
-	 * @param vm
 	 * @param arg1
 	 * @param arg2
 	 * @param arg3
-	 * @return
+	 * @return the result of the function call
 	 */
-	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2, LeoObject arg3) {
+	public LeoObject call(LeoObject arg1, LeoObject arg2, LeoObject arg3) {
 		throw new LeolaRuntimeException(this + " is not a function.");
 	}
 	
 	/**
 	 * Invokes the function
 	 * 
-	 * @param vm
 	 * @param arg1
 	 * @param arg2
 	 * @param arg3
 	 * @param arg4
-	 * @return
+	 * @return the result of the function call
 	 */
-	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4) {
+	public LeoObject call(LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4) {
 		throw new LeolaRuntimeException(this + " is not a function.");
 	}
 	
 	/**
 	 * Invokes the function
 	 * 
-	 * @param vm
 	 * @param arg1
 	 * @param arg2
 	 * @param arg3
 	 * @param arg4
 	 * @param arg5
-	 * @return
+	 * @return the result of the function call
 	 */
-	public LeoObject call(VM vm, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4, LeoObject arg5) {
+	public LeoObject call(LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4, LeoObject arg5) {
 		throw new LeolaRuntimeException(this + " is not a function.");
 	}
 	
 	/**
 	 * Invokes the function
 	 * 
-	 * @param vm
 	 * @param args
-	 * @return
+	 * @return the result of the function call
 	 */
-	public LeoObject call(VM vm, LeoObject[] args) {
+	public LeoObject call(LeoObject[] args) {
 		throw new LeolaRuntimeException(this + " is not a function.");
 	}
 
@@ -663,6 +658,20 @@ public abstract class LeoObject {
 	 */
 	@Override
 	public abstract LeoObject clone();
+	
+	
+	@Override
+	public int compareTo(LeoObject other) {
+	    if(this.$lt(other)) {
+	        return -1;
+	    }
+	    
+	    if(this.$gt(other)) {
+	        return 1;
+	    }
+	    
+	    return 0;
+	}
 	
 	/**
 	 * Writes this object out
@@ -761,7 +770,10 @@ public abstract class LeoObject {
             removeInterfaceMethods(methods);
 
             if (methods.isEmpty()) {
-                throw new LeolaRuntimeException("No method exists by the name: " + key);
+                methods = ClassUtil.getMethodsByAnnotationAlias(owner.getClass(), key.toString());
+                if(methods.isEmpty()) {
+                    throw new LeolaRuntimeException("No method exists by the name: " + key);
+                }
             }
 
             func = new LeoNativeFunction(methods, owner);

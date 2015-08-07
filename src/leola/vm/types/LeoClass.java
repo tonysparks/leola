@@ -8,13 +8,12 @@ package leola.vm.types;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 import leola.vm.ClassDefinition;
 import leola.vm.Leola;
+import leola.vm.Opcodes;
 import leola.vm.Scope;
 import leola.vm.compiler.Bytecode;
-import leola.vm.util.ClassUtil;
 
 /**
  * Represents an instance of a Class
@@ -40,7 +39,7 @@ public class LeoClass extends LeoScopedObject {
 			this.clss = clss;
 		}
 		
-		public LeoString className() {
+		public LeoObject className() {
 			return clss.className;
 		}
 		
@@ -73,19 +72,13 @@ public class LeoClass extends LeoScopedObject {
 		}
 	}
 	
-	/**
-	 * Metaclass method
-	 */
-	private static final Method METACLASS = ClassUtil.getMethodByName(LeoClass.class, "getMetaclass");
-	
 	private Leola runtime;
 	private Bytecode constructor;
 	
-	private LeoString className;
-	private LeoString[] paramNames;
+	private LeoObject className;
+	private LeoObject[] paramNames;
 	
 	private LeoObject superClass;	
-	private Metaclass metaclass;
 	
 	/**
 	 * @param runtime
@@ -125,33 +118,37 @@ public class LeoClass extends LeoScopedObject {
 			}
 		}
 		
-		addMethod(this, METACLASS, "metaclass");
-		
-		this.runtime.execute(this, this.constructor);
-		
-	}
-	
-	/**
-	 * @return the {@link Metaclass} associated with this instance
-	 */
-	public Metaclass getMetaclass() {
-		if(this.metaclass==null) {
-			this.metaclass = new Metaclass(this);
+		/**
+		 * The constructor may be an empty body, if it is,
+		 * no need to construct anything.
+		 * 
+		 * A class is empty if define as such:
+		 * class X();
+		 * class X() {}
+		 * 
+		 * The former actually produces a bytecode of LOAD_NULL, which
+		 * we have to also check.
+		 */
+		boolean isEmpty = this.constructor.len < 1 || 
+		                    (this.constructor.len < 2 && 
+		                     Opcodes.OPCODE(this.constructor.instr[0]) == Opcodes.LOAD_NULL);
+		if(!isEmpty) {
+		    this.runtime.execute(this, this.constructor);
 		}
-		return this.metaclass;
+		
 	}
-	
+		
 	/**
 	 * @return the paramNames
 	 */
-	public LeoString[] getParamNames() {
+	public LeoObject[] getParamNames() {
 		return paramNames;
 	}
 	
 	/**
 	 * @return the className
 	 */
-	public LeoString getClassName() {
+	public LeoObject getClassName() {
 		return className;
 	}
 	
