@@ -46,6 +46,9 @@ public class LeoError extends LeoObject {
 	public LeoError(String msg, int lineNumber) {
 		this(LeoString.valueOf(msg), lineNumber);
 	}
+	public LeoError(int lineNumber) {
+        this(LeoString.valueOf(""), lineNumber);
+    }
 	
 	public LeoError() {
 		this(LeoNull.LEONULL);

@@ -5,8 +5,13 @@
 */
 package leola.lang;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentMap;
 
 import leola.vm.Leola;
 import leola.vm.exceptions.LeolaRuntimeException;
@@ -43,7 +48,52 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 //		leola.eval(CollectionsLeolaLibrary.class.getResourceAsStream("collections.leola"));
 	}
 
+	/**
+     * Converts the optional supplied {@link LeoMap} into a {@link ConcurrentMap}.
+     * 
+     * @param map
+     * @return the {@link ConcurrentMap}
+     */
+    public ConcurrentMap<LeoObject, LeoObject> concurrentMap(LeoMap map) {
+        if(map != null && !map.isEmpty()) {
+            return new ConcurrentHashMap<LeoObject, LeoObject>(map);
+        }
+        
+        return new ConcurrentHashMap<LeoObject, LeoObject>();
+    }
 	
+    /**
+     * Creates a concurrent Deque data structure based off of the data in the {@link LeoArray}
+     * 
+     * @param array
+     * @return the concurrent data structure
+     */
+    public ConcurrentLinkedDeque<LeoObject> concurrentDeque(LeoArray array) {
+        if(array!=null && !array.isEmpty()) {
+            return new ConcurrentLinkedDeque<LeoObject>(array);
+        }
+        
+        return new ConcurrentLinkedDeque<LeoObject>();
+    }
+    
+    /**
+     * Creates a concurrent {@link Set} data structure based off of the data in the {@link LeoArray}
+     * 
+     * @param array
+     * @return the concurrent {@link Set} data structure
+     */
+    public Set<LeoObject> concurrentSet(LeoArray array) {
+        Set<LeoObject> set = Collections.newSetFromMap(new ConcurrentHashMap<LeoObject, Boolean>());
+        if(array!=null && !array.isEmpty()) {            
+            for(int i = 0; i < array.size(); i++) {
+                LeoObject v = array.get(i);
+                set.add(v);
+            }
+        }
+        
+        return set;
+    }
+    
 	/**
 	 * Repeats the function N times
 	 * 

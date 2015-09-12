@@ -266,6 +266,7 @@ public class Bytecode {
 			
 			for(int t = 0; t < numTabs; t++) sb.append(Indent);
 			switch(iopcode) {
+			    case Opcodes.END_BLOCK:
 				case Opcodes.INVOKE: {
 					String arg1 = Integer.toString(Opcodes.ARG1(code));
 					String arg2 = Integer.toString(Opcodes.ARG2(code));
@@ -319,9 +320,8 @@ public class Bytecode {
                     for(int t = 0; t < numTabs; t++) sb.append(Indent);
                     sb.append(".end\n");
 					break;
-				}
-				case Opcodes.INIT_FINALLY:
-                case Opcodes.INIT_ON:
+				}				
+                case Opcodes.INIT_BLOCK:
 				case Opcodes.IFEQ:
 				case Opcodes.JMP: {
 				    String argsx = Integer.toString(Opcodes.ARGsx(code));                                                     
@@ -341,8 +341,6 @@ public class Bytecode {
 				case Opcodes.PARAM_END:
 				case Opcodes.IS_A:
 				
-				case Opcodes.BREAK:
-                case Opcodes.CONTINUE:
                 case Opcodes.YIELD:
                 case Opcodes.RET:
 				
@@ -376,11 +374,7 @@ public class Bytecode {
 				
 				case Opcodes.THROW:
 				case Opcodes.IDX:
-                case Opcodes.SIDX:
-				    
-				case Opcodes.END_BLOCK:
-				case Opcodes.END_FINALLY:
-				case Opcodes.END_ON: {				                                                 
+                case Opcodes.SIDX: {				                                                 
 				    sb.append(String.format(lineFormat3, opcode, "", i));
 				    break;
 				}
@@ -401,6 +395,8 @@ public class Bytecode {
 				    }
                     break;
 				}
+				case Opcodes.GETK:
+				case Opcodes.SETK:
 				case Opcodes.LOAD_CONST:
 				case Opcodes.LOAD_NAME:
 				case Opcodes.GET_GLOBAL:				

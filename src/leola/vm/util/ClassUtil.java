@@ -138,7 +138,26 @@ public class ClassUtil {
         return result;
     }
 	
+    public static Method getMethodByAnnotationAlias(Class<?> aClass, String methodName) {        
+        try {
+            List<Method> superResult = getAllDeclaredMethods(aClass);
+            for(int i = 0; i < superResult.size(); i++) {
+                Method method = superResult.get(i);
+                
+                if ( method.isAnnotationPresent(LeolaMethod.class) ) {
+                    LeolaMethod methodAlias = method.getAnnotation(LeolaMethod.class);
+                    if(methodAlias.alias().equals(methodName)) {
+                        return method;
+                    }
+                }                
+            }
+        }
+        catch(Exception e) {
+        }
 
+        return null;
+    }
+    
 	public static Object invokeMethod(Method method, Object owner, LeoObject[] params) throws Exception {
 		Object result = null;
 		try {
@@ -292,7 +311,7 @@ public class ClassUtil {
 		
 		int startOfVarargs = -1;
 		boolean hasVarArgs = false;
-		if(method.isAnnotationPresent(LeolaMethodVarargs.class)) {
+		if(method.isAnnotationPresent(LeolaMethodVarargs.class) || method.isVarArgs()) {
 		    startOfVarargs = paramTypes.length - 1;
 		    hasVarArgs = true;
 		}

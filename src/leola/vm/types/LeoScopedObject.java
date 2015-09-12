@@ -130,6 +130,14 @@ public abstract class LeoScopedObject extends LeoOuterObject {
 		return getProperty(key);
 	}
 	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#hasObject(leola.vm.types.LeoObject)
+	 */
+	@Override
+	public boolean hasObject(LeoObject key) {	 
+	    return hasProperty(key);
+	}
+	
 	/**
 	 * Places the data member in this scope.  This is different than
 	 * {@link LeoScopedObject#setObject(LeoObject, LeoObject)} in that the latter

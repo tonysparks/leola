@@ -6,7 +6,7 @@
 package leola.frontend.parsers;
 
 import leola.ast.ASTNode;
-import leola.ast.OnStmt;
+import leola.ast.CatchStmt;
 import leola.ast.Stmt;
 import leola.ast.TryStmt;
 import leola.frontend.LeolaParser;
@@ -38,9 +38,9 @@ public class TryStmtParser extends StmtParser {
 		
 		boolean hasProperEnding = false;
 		
-		OnStmt onStmt = null;
-		if(currentToken().getType().equals(LeolaTokenType.ON)) {		
-			onStmt = (OnStmt)new OnStmtParser(this).parse(next);
+		CatchStmt onStmt = null;
+		if(currentToken().getType().equals(LeolaTokenType.CATCH)) {		
+			onStmt = (CatchStmt)new CatchStmtParser(this).parse(next);
 			hasProperEnding = true;
 		}
 		

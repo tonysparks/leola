@@ -339,6 +339,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 * Removes an object.
 	 * @param obj
 	 */
+	@LeolaMethod(alias="remove")
 	public boolean remove(LeoObject obj) {
 		return this._remove(obj);
 	}
@@ -390,6 +391,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 * @param i
 	 * @return
 	 */
+	@LeolaMethod(alias="get")
 	public LeoObject get(int i) {
 		return this.array[i];
 	}
@@ -465,6 +467,14 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	public LeoObject getObject(LeoObject key) {
 //		return get(key.asInt());
 	    return getNativeMethod(key);
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#hasObject(leola.vm.types.LeoObject)
+	 */
+	@Override
+	public boolean hasObject(LeoObject key) {	 
+	    return hasNativeMethod(this, key);
 	}
 	
 	/**
@@ -713,7 +723,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	/* (non-Javadoc)
 	 * @see java.util.List#contains(java.lang.Object)
 	 */
-	
+	@LeolaMethod(alias="contains")
 	public boolean contains(Object o) {
 		return this.has(LeoObject.valueOf(o));
 	}

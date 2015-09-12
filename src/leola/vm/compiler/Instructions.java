@@ -114,6 +114,16 @@ public class Instructions {
     }
     
     /**
+     * Check to see if the supplied index is a valid instruction
+     * 
+     * @param index
+     * @return true if valid, false otherwise
+     */
+    public boolean hasIndex(int index) {
+        return index >= 0 && index < this.count;
+    }
+    
+    /**
      * Get the instruction at the supplied index
      * @param index
      * @return the instruction
@@ -145,6 +155,30 @@ public class Instructions {
     }
     
     /**
+     * Removes the instructions starting from the startIndex and up to and 
+     * including the <code>startIndex + length</code>.
+     * 
+     * <pre>
+     *  // [0,1,2,3,4]
+     *   removeRange( 0, 0 ) // result: [1,2,3,4]
+     *   
+     *   // [0,1,2,3,4]
+     *   removeRange( 0, 2 ) // result: [3,4]
+     * </pre>
+     * 
+     * @param startIndex the starting index to start removing from
+     * @param length the number of instructions to remove from the starting index
+     */
+    public void removeRange(int startIndex, int length) {                
+        if(count > 0) {
+            for(int i = startIndex; i + length < count-1; i++) {
+                instructions[i] = instructions[i+length+1];
+            }
+            count -= length + 1;
+        }
+    }
+    
+    /**
      * @return the count
      */
     public int getCount() {
@@ -160,13 +194,17 @@ public class Instructions {
     
     /**
      * Truncates the underlying int[] to fit the {@link Instructions#getCount()} size.
+     * 
      * @return the truncated int[]
      */
     public int[] truncate() {
-        int[] result = new int[count];
-        System.arraycopy(instructions, 0, result, 0, count);
-        
-        return result;
+        if(count != this.instructions.length) {
+            int[] result = new int[count];
+            System.arraycopy(instructions, 0, result, 0, count);
+            
+            return result;
+        }
+        return this.instructions;
     }
 }
 

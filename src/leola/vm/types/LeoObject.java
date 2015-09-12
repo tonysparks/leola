@@ -15,6 +15,7 @@ import java.util.Map;
 import leola.vm.Scope;
 import leola.vm.compiler.Outer;
 import leola.vm.exceptions.LeolaRuntimeException;
+import leola.vm.lib.LeolaMethod;
 import leola.vm.util.ClassUtil;
 import leola.vm.util.LeoTypeConverter;
 
@@ -90,6 +91,7 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 		  , GENERATOR
 		  , FUNCTION
 		  , NATIVE_FUNCTION
+		  , USER_FUNCTION
 		  , ARRAY
 		  , MAP
 		  , CLASS
@@ -559,6 +561,27 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 		return getObject(LeoString.valueOf(key));
 	}
 	
+
+    /**
+     * Determines if the supplied key has an associated value 
+     * 
+     * @param key
+     * @return true if the supplied key has an associated value, otherwise false
+     */
+	public boolean hasObject(String key) {
+	    return hasObject(LeoString.valueOf(key));
+	}
+	
+	/**
+	 * Determines if the supplied key has an associated value 
+	 * 
+	 * @param key
+	 * @return true if the supplied key has an associated value, otherwise false
+	 */
+	public boolean hasObject(LeoObject key) {
+	    throw new LeolaRuntimeException(this + " is not a complex object");
+	}
+	
 	/**
 	 * Invokes the function
 	 * 
@@ -725,6 +748,7 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 			case NATIVE_CLASS: {
 				break;
 			}
+			case USER_FUNCTION:
 			case NATIVE_FUNCTION: {
 				break;				
 			}
@@ -753,6 +777,19 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 		return result;
 	}
 	
+	
+	/**
+	 * Determines if the supplied owner has a method by the supplied method name.
+	 * 
+	 * @param owner
+	 * @param methodName
+	 * @return true if the supplied object (owner) has a method by the supplied name
+	 */
+	protected static boolean hasNativeMethod(Object owner, LeoObject methodName) {
+	    List<Method> methods = ClassUtil.getMethodsByName(owner.getClass(), methodName.toString());
+        removeInterfaceMethods(methods);
+        return !methods.isEmpty();
+	}
 	
 	/**
 	 * Retrieve the native methods from the owner public method listings.  This will query the owner class
@@ -789,21 +826,33 @@ public abstract class LeoObject implements Comparable<LeoObject> {
      * @param methods
      */
     protected static void removeInterfaceMethods(List<Method> methods) {
-        for (int i = 0; i < methods.size(); i++) {
-            Method method = methods.get(i);
-            for (int j = 0; j < method.getParameterTypes().length; j++) {
-                Class<?> pType = method.getParameterTypes()[j];
-                if (pType.isPrimitive()) {
+        if(methods.size() > 1) {
+            for (int i = 0; i < methods.size(); i++) {
+                Method method = methods.get(i);
+                boolean isOverride = method.isAnnotationPresent(LeolaMethod.class) ||
+                                     method.isAnnotationPresent(Override.class);
+                
+                // if this method has the override or LeolaMethod
+                // annotations, this means it is our method that we want to
+                // use
+                if(isOverride) {
                     continue;
                 }
-
-                if (pType.equals(Object.class)) {
-                    methods.remove(i);
-                    i -= 1;
-                    break;
+                
+                for (int j = 0; j < method.getParameterTypes().length; j++) {
+                    Class<?> pType = method.getParameterTypes()[j];
+                    if (pType.isPrimitive()) {
+                        continue;
+                    }
+    
+                    if (pType.equals(Object.class)) {
+                        methods.remove(i);
+                        i -= 1;
+                        break;
+                    }
                 }
+    
             }
-
         }
     }
 }

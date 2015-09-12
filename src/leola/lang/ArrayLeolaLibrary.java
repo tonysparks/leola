@@ -35,6 +35,7 @@ public class ArrayLeolaLibrary implements LeolaLibrary {
 		this.runtime.putIntoNamespace(this, namespace);
 	}
 
+	
 	public void foreach(LeoArray array, LeoObject function) {		
 		int size = array.size();
 

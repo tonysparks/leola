@@ -223,6 +223,14 @@ public class LeoString extends LeoObject {
     public LeoObject getObject(LeoObject key) {
         return getNativeMethod(key);
     }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#hasObject(leola.vm.types.LeoObject)
+     */
+    @Override
+    public boolean hasObject(LeoObject key) {     
+        return hasNativeMethod(this, key);
+    }
 	
 	/**
 	 * Appends to this string.

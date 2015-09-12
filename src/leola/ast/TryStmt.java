@@ -16,17 +16,17 @@ import leola.frontend.EvalException;
 public class TryStmt extends Stmt {
 
 	private Stmt stmt;
-	private OnStmt onStmt;
+	private CatchStmt catchStmt;
 	private Stmt finallyStmt;
 
 	/**
 	 * @param stmt
-	 * @param onStmt
+	 * @param catchStmt
 	 * @param finallyStmt
 	 */
-	public TryStmt(Stmt stmt, OnStmt onStmt, Stmt finallyStmt) {
+	public TryStmt(Stmt stmt, CatchStmt catchStmt, Stmt finallyStmt) {
 		this.stmt = becomeParentOf(stmt);
-		this.onStmt = becomeParentOf(onStmt);
+		this.catchStmt = becomeParentOf(catchStmt);
 		this.finallyStmt = becomeParentOf(finallyStmt);
 	}
 
@@ -48,10 +48,10 @@ public class TryStmt extends Stmt {
 	}
 	
 	/**
-	 * @return the onStmt
+	 * @return the catchStmt
 	 */
-	public OnStmt getOnStmt() {
-		return onStmt;
+	public CatchStmt getCatchStmt() {
+		return catchStmt;
 	}
 	
 	/**

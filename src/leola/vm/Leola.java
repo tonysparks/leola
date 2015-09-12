@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import leola.ast.ASTNode;
@@ -354,6 +355,19 @@ public class Leola {
 	 */
 	public void setIncludePath(List<File> includeDirectories) {
 		this.includeDirectories = includeDirectories;
+	}
+	
+	/**
+	 * Adds a path to the paths to check for when include/require look
+	 * ups.
+	 * 
+	 * @param includeDirectory
+	 */
+	public void addIncludePath(File includeDirectory) {
+	    if(this.includeDirectories==null) {
+	        this.includeDirectories = new ArrayList<File>();
+	    }
+	    this.includeDirectories.add(includeDirectory);
 	}
 
 	/**

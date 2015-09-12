@@ -150,6 +150,9 @@ public class LeoBoolean extends LeoObject {
 		else if ( ClassUtil.isType(type, ClassUtil.STRING) ){
 			return Boolean.toString(isTrue());
 		}
+		else if(ClassUtil.inheritsFrom(type, LeoObject.class) ) {
+            return this;
+        }
 		
 		return isTrue();
 	}

@@ -34,6 +34,7 @@ public class MapLeolaLibrary implements LeolaLibrary {
 		this.runtime.putIntoNamespace(this, namespace);		
 	}
 	
+	
 	public void foreach(LeoMap map, LeoObject function) {
 
 		for(Map.Entry<LeoObject, LeoObject> entry : map.getMap().entrySet()) {

@@ -118,7 +118,7 @@ public abstract class ASTNode {
 	}
 	
 	/**
-	 * Sets the parent of the supplied not to this node
+	 * Sets the parent of the supplied node to this node
 	 * @param node
 	 * @return the node passed in
 	 */

@@ -268,6 +268,18 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	    return toNumber(x);
 	}
 	
+	/**
+	 * Synchronizes the supplied {@link LeoObject} function
+	 * 
+	 * @param function
+	 * @return the result of invoking the function
+	 */
+	@LeolaMethod(alias="synchronized")
+	public final LeoObject _synchronized(LeoObject function) {
+	    synchronized (function) {
+	        return function.call();
+        }
+	}
 	
 	/**
 	 * Converts the {@link Collection} into a {@link LeoArray}
@@ -290,11 +302,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 * @return the {@link LeoMap}
 	 */
 	public final LeoMap toMap(Map<Object, Object> map) {
-	    LeoMap leomap = new LeoMap();
-	    for(Map.Entry<Object, Object> entry : map.entrySet()) {
-	        leomap.put(LeoObject.valueOf(entry.getKey()), LeoObject.valueOf(entry.getKey()));
-	    }
-	    return leomap;
+	    return LeoMap.toMap(map);
 	}
 	
 

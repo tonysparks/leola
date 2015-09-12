@@ -8,7 +8,7 @@ package leola.frontend.parsers;
 import leola.ast.ASTNode;
 import leola.ast.Expr;
 import leola.ast.NamedParameterExpr;
-import leola.ast.OnStmt;
+import leola.ast.CatchStmt;
 import leola.frontend.LeolaParser;
 import leola.frontend.Token;
 
@@ -31,7 +31,7 @@ public class NamedParameterExprParser extends StmtParser {
 
 
     /**
-     * Parse the {@link OnStmt}
+     * Parse the {@link CatchStmt}
      * 
      * @param token the initial token.
      * @return the root node of the generated parse tree.

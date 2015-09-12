@@ -51,7 +51,6 @@ import leola.ast.IntegerExpr;
 import leola.ast.IsExpr;
 import leola.ast.LongExpr;
 import leola.ast.NullExpr;
-import leola.ast.OnExpr;
 import leola.ast.RealExpr;
 import leola.ast.StringExpr;
 import leola.ast.UnaryExpr;
@@ -230,26 +229,9 @@ public class ExprParser extends StmtParser {
 //
 //        }
         
-        /*
-         TODO - fix order of precedence with the ON statement:
-         
-         println(" For: " + (foreach(range(0,10), def(i) {
- 			throw ("Enough -- critical error!")
-		 }) on Error e println(e) ) 
-          
-        */
         token = currentToken();
         tokenType = token.getType();
-
-        if ( tokenType.equals(LeolaTokenType.ON)) {        
-        	OnExprParser onExprParser = new OnExprParser((Expr)rootNode, this);
-        	OnExpr onExpr = (OnExpr)onExprParser.parse(token);
-        	rootNode = onExpr;
-
-        	token = currentToken();
-            tokenType = token.getType();
-        } 
-        
+       
         return rootNode;
     }
 

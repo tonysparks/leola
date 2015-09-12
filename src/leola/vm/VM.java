@@ -8,7 +8,6 @@ package leola.vm;
 import static leola.vm.Opcodes.ADD;
 import static leola.vm.Opcodes.AND;
 import static leola.vm.Opcodes.ARG1;
-import static leola.vm.Opcodes.ARG2;
 import static leola.vm.Opcodes.ARGsx;
 import static leola.vm.Opcodes.ARGx;
 import static leola.vm.Opcodes.BNOT;
@@ -18,8 +17,6 @@ import static leola.vm.Opcodes.CLASS_DEF;
 import static leola.vm.Opcodes.DIV;
 import static leola.vm.Opcodes.DUP;
 import static leola.vm.Opcodes.END_BLOCK;
-import static leola.vm.Opcodes.END_FINALLY;
-import static leola.vm.Opcodes.END_ON;
 import static leola.vm.Opcodes.EQ;
 import static leola.vm.Opcodes.FUNC_DEF;
 import static leola.vm.Opcodes.GEN_DEF;
@@ -30,8 +27,7 @@ import static leola.vm.Opcodes.GT;
 import static leola.vm.Opcodes.GTE;
 import static leola.vm.Opcodes.IDX;
 import static leola.vm.Opcodes.IFEQ;
-import static leola.vm.Opcodes.INIT_FINALLY;
-import static leola.vm.Opcodes.INIT_ON;
+import static leola.vm.Opcodes.INIT_BLOCK;
 import static leola.vm.Opcodes.INVOKE;
 import static leola.vm.Opcodes.IS_A;
 import static leola.vm.Opcodes.JMP;
@@ -48,8 +44,6 @@ import static leola.vm.Opcodes.LOR;
 import static leola.vm.Opcodes.LT;
 import static leola.vm.Opcodes.LTE;
 import static leola.vm.Opcodes.MOD;
-import static leola.vm.Opcodes.SWAP;
-import static leola.vm.Opcodes.ROTL;
 import static leola.vm.Opcodes.MUL;
 import static leola.vm.Opcodes.NAMESPACE_DEF;
 import static leola.vm.Opcodes.NEG;
@@ -64,13 +58,15 @@ import static leola.vm.Opcodes.PARAM_END;
 import static leola.vm.Opcodes.POP;
 import static leola.vm.Opcodes.REQ;
 import static leola.vm.Opcodes.RET;
+import static leola.vm.Opcodes.ROTL;
+import static leola.vm.Opcodes.ROTR;
 import static leola.vm.Opcodes.SET;
 import static leola.vm.Opcodes.SET_GLOBAL;
-import static leola.vm.Opcodes.ROTR;
 import static leola.vm.Opcodes.SIDX;
 import static leola.vm.Opcodes.STORE_LOCAL;
 import static leola.vm.Opcodes.STORE_OUTER;
 import static leola.vm.Opcodes.SUB;
+import static leola.vm.Opcodes.SWAP;
 import static leola.vm.Opcodes.SWAPN;
 import static leola.vm.Opcodes.TAIL_CALL;
 import static leola.vm.Opcodes.THROW;
@@ -78,6 +74,7 @@ import static leola.vm.Opcodes.XOR;
 import static leola.vm.Opcodes.YIELD;
 import static leola.vm.Opcodes.xLOAD_LOCAL;
 import static leola.vm.Opcodes.xLOAD_OUTER;
+import static leola.vm.Opcodes.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,6 +82,7 @@ import java.util.Stack;
 
 import leola.vm.compiler.Bytecode;
 import leola.vm.compiler.Outer;
+import leola.vm.compiler.Outer.StackValue;
 import leola.vm.debug.DebugEvent;
 import leola.vm.debug.DebugListener;
 import leola.vm.exceptions.LeolaRuntimeException;
@@ -108,11 +106,11 @@ import leola.vm.util.ClassUtil;
  *
  */
 public class VM {
-
+    
 	/**
 	 * Maximum stack size
 	 */
-	public static final int DEFAULT_MAX_STACKSIZE = 1024 * 1024;
+	public static final int DEFAULT_STACKSIZE = 1024;//1024 * 1024;
 
 	/**
 	 * Runtime
@@ -129,6 +127,30 @@ public class VM {
 	private Outer[] openouters;
 	private int top;
 
+	/**
+	 * The maximum stack size
+	 */
+	private final int maxStackSize;
+	
+	/**
+	 * The stack value accounts for closures requesting a value off
+	 * of the stack and when the are finally 'closed' over.
+	 * 
+	 * We can't just use the VM.stack variable when closing over
+	 * the Outer because the VM.stack variable may be replaced
+	 * when the stack grows.
+	 */
+	private StackValue vmStackValue = new StackValue() {	    
+	    @Override
+	    public LeoObject getStackValue(int index) {
+	        return stack[index];
+	    }
+	    
+	    @Override
+	    public void setStackValue(int index, LeoObject value) {	     
+	        stack[index] = value;
+	    }
+	};
 	
 	/**
 	 * @param runtime the {@link Leola} runtime
@@ -137,8 +159,10 @@ public class VM {
 		this.runtime = runtime;
 		
 		int stackSize = runtime.getArgs().getStackSize();
-		stackSize = (stackSize <= 0) ? DEFAULT_MAX_STACKSIZE : stackSize;
+		stackSize = (stackSize <= 0) ? DEFAULT_STACKSIZE : stackSize;
 
+		this.maxStackSize = Math.max(runtime.getArgs().getMaxStackSize(), stackSize);
+		
 		this.stack = new LeoObject[stackSize];
 		this.openouters = new Outer[stackSize];
 		this.top = 0;		
@@ -166,7 +190,6 @@ public class VM {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject[] args) throws LeolaRuntimeException {
-//		LeoObject[] stack = new LeoObject[code.maxstacksize];
 		final int base = top;
 		prepareStack(code);
 		
@@ -188,7 +211,6 @@ public class VM {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1) throws LeolaRuntimeException {
-//		LeoObject[] stack = new LeoObject[code.maxstacksize];
 		final int base = top;
 		prepareStack(code);
 		
@@ -209,7 +231,6 @@ public class VM {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1, LeoObject arg2) throws LeolaRuntimeException {
-		//LeoObject[] stack = new LeoObject[code.maxstacksize];
 		final int base = top;
 		prepareStack(code);
 		
@@ -232,7 +253,6 @@ public class VM {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1, LeoObject arg2, LeoObject arg3) throws LeolaRuntimeException {
-		//LeoObject[] stack = new LeoObject[code.maxstacksize];
 		final int base = top;
 		prepareStack(code);
 		
@@ -257,7 +277,6 @@ public class VM {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4) throws LeolaRuntimeException {
-		//LeoObject[] stack = new LeoObject[code.maxstacksize];
 		final int base = top;
 		prepareStack(code);
 		
@@ -284,8 +303,6 @@ public class VM {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4, LeoObject arg5) throws LeolaRuntimeException {
-
-		//LeoObject[] stack = new LeoObject[code.maxstacksize];
 		final int base = top;
 		prepareStack(code);		
 		
@@ -307,12 +324,39 @@ public class VM {
 	 */
 	private void prepareStack(Bytecode code) {
 		final int base = top;
+		
+		growStackIfRequired(stack, base, code.maxstacksize);
+		
 		for(int i = 0; i < code.numArgs; i++) {
 			stack[base + i] = LeoNull.LEONULL;
 		}
 	}
 
-
+	/**
+	 * Checks to see if we should grow the stack
+	 * 
+	 * @param stack
+	 * @param base
+	 * @param neededSize
+	 * @return the new stack (if no growth was required, the supplied stack is returned).
+	 */
+	private void growStackIfRequired(LeoObject[] stack, int base, int neededSize) {
+	    final int requiredStackSize = base + neededSize;
+	    if ( requiredStackSize > this.maxStackSize) {
+	        throw new LeolaRuntimeException("Stack overflow, required stack size over maxStackSize: " + this.maxStackSize);
+	    }
+	    
+	    if( requiredStackSize > stack.length) {
+	        final int newStackSize = Math.min( stack.length + ((requiredStackSize-stack.length) << 1), this.maxStackSize);
+	        LeoObject[] newStack = new LeoObject[newStackSize];
+	        System.arraycopy(stack, 0, newStack, 0, base);
+	        this.stack = newStack;
+	        
+	        Outer[] newOuters = new Outer[newStack.length];
+	        System.arraycopy(openouters, 0, newOuters, 0, base);
+	        this.openouters = newOuters;
+	    }	    
+	}
 
 	/**
 	 * Executes the {@link Bytecode}
@@ -322,10 +366,6 @@ public class VM {
 	 * @throws LeolaRuntimeException
 	 */
 	private LeoObject executeStackframe(LeoObject env, Bytecode code, LeoObject[] stack, LeoObject callee, int base) throws LeolaRuntimeException {
-//		if(code.maxstacksize > stack.length-base) {
-//			throw new LeolaRuntimeException("VM stack overflow.");
-//		}
-
 		LeoObject result = LeoNull.LEONULL;
 		LeoObject errorThrown = LeoNull.LEONULL;
 
@@ -701,24 +741,21 @@ public class VM {
 								}
 							}
 	
-							/* if this has an ON block afterwards, it catches the
-							 * exception (if there is one)
-							 */
-							if( !c.isError() || ARG2(i) > 0 ) {
-								stack[top++] = c;
-							}
-							else {
+							stack[top++] = c;
+							
+							if( c.isError() )  {
+							    isReturnedSafely = false;
 								errorThrown = c;
-								result = c; 	/* throw this error */
-								pc = len; 		/* exit out of this function */
-								stack[top++] = c;
+								result = c; 	/* throw this error */ 
+								pc = len; 		/* exit out of this function */ 
+								
 								LeoError error = c.as();
 								if(error.getLineNumber() < 1) {
 									error.setLineNumber(lineNumber);
 									error.setSourceFile(code.getSourceFile());
 								}
 								else {
-									error.addStack(new LeoError("", lineNumber));
+									error.addStack(new LeoError(lineNumber));
 								}
 							}
 	
@@ -945,6 +982,14 @@ public class VM {
 	
 							continue;
 						}
+						case GETK: {
+						    int iname = ARGx(i);
+						    LeoObject obj = stack[--top];
+						    
+                            LeoObject value = obj.getObject(constants[iname]);
+                            stack[top++] = value;
+						    continue;
+						}
 						case SET: {
 	
 							LeoObject index = stack[--top];
@@ -954,6 +999,15 @@ public class VM {
 							obj.setObject(index, value);
 							stack[top++] = obj; /* make this an expression */
 							continue;
+						}
+						case SETK: {
+						    int iname = ARGx(i);
+                            LeoObject obj = stack[--top];
+                            LeoObject value = stack[--top];
+    
+                            obj.setObject(constants[iname], value);
+                            stack[top++] = obj; /* make this an expression */						    
+						    continue;
 						}
 						case GET_GLOBAL: {
 							int iname = ARGx(i);
@@ -974,43 +1028,67 @@ public class VM {
 							stack[top++] = ns;
 							
 							continue;
-						}
-						case INIT_FINALLY: {
+						}						
+						case INIT_BLOCK: {
+						    /*
+						     * Denote that we are entering a TRY
+						     * block that may contain a CATCH and/or FINALLY
+						     * blocks
+						     */
 							blockStack.add(ARGsx(i));
 							continue;
-						}
-						case INIT_ON: {
-							blockStack.add(ARGsx(i));
-							continue;
-						}
-						case END_ON: {
-							/* if we are safely exiting out of 
-							 * a function, go ahead and do so.
-							 */
-							if(isReturnedSafely) {
-								pc = len;
+						}						
+						case END_BLOCK: {						    							
+							int endType = ARG1(i);
+							switch(endType) {
+    							
+    							// if this is a start of a catch block
+    							// we can clear out the error states
+    							case 1: /* End of a Catch */ {
+    							    /*
+    							     * try
+    							     *   ..
+    							     * catch e
+    							     *   .. // since we are catching
+    							     *      // the exception, we need
+    							     *      // to clear out the error flags
+    							     *      // and denote we are safe to 
+    							     *      // return
+    							     */
+    							    
+    							    result = LeoNull.LEONULL;
+    							    errorThrown = LeoNull.LEONULL;
+    							    isReturnedSafely = true;
+    							    break;
+    							}
+    							case 2: /* End of a Finally */ {
+    
+    	                            /* if the result is an 
+    	                             * error, we need to bubble up the 
+    	                             * error.  This happens for:
+    	                             * 
+    	                             * try 
+    	                             *   ..
+    	                             * finally
+    	                             *   .. // the error is still present and
+    	                             *      // must be bubbled up
+    	                             */
+    	                            if(errorThrown.isError()) {
+    	                                pc = len;
+    	                            }    
+    	                            break;
+    							}
+    							default: {
+    							    /*
+    							     * We have reached the end of an
+    							     * INIT_BLOCK, which means
+    							     * we have passed either a 
+    							     * CATCH or FINALLY blocks
+    							     */
+    							    blockStack.pop();    
+    							}
 							}
-							else {
-								/* Otherwise we have caught an exception
-								 * and dealt with it, so lets clear it
-								 */								
-								errorThrown = LeoNull.LEONULL;								
-							}
-							continue;
-						}
-						case END_FINALLY: {
 							
-							/* if the result is an 
-							 * error, we need to bubble up the 
-							 * error
-							 */
-							if(isReturnedSafely || errorThrown.isError()) {
-								pc = len;
-							}							
-							continue;
-						}
-						case END_BLOCK: {
-							blockStack.pop();
 							continue;
 						}
 	
@@ -1373,7 +1451,7 @@ public class VM {
 					int bindex = base + index;
 					outers[j] = openouters[bindex] != null ?
 								openouters[bindex] :
-								(openouters[bindex] = new Outer(stack, bindex));
+								(openouters[bindex] = new Outer(vmStackValue, bindex));
 					closeOuters = true;
 					break;
 				}

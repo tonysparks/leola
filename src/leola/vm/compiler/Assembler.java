@@ -39,6 +39,7 @@ public class Assembler {
 	private static final LeoObject IGNORE = new LeoLong(0);	
 	
 	/**
+	 * The main entry point into the {@link Assembler}
 	 * 
 	 * @param args
 	 * @throws Exception
@@ -468,12 +469,7 @@ public class Assembler {
 		});
 		opcodes.put("INVOKE", new Opcode() {			
 			public void invoke(BytecodeEmitter asm, String...  args) {
-				if(args.length>1) {
-					asm.invoke(Integer.parseInt(args[0]), Integer.parseInt(args[0])>0);
-				}
-				else {
-					asm.invoke(Integer.parseInt(args[0]));
-				}
+				asm.invoke(Integer.parseInt(args[0]));
 			}
 		});
 		opcodes.put("TAIL_CALL", new Opcode() {			
@@ -573,6 +569,28 @@ public class Assembler {
 				asm.set();
 			}
 		});
+		opcodes.put("GETK", new Opcode() {         
+            public void invoke(BytecodeEmitter asm, String...  args) {
+                String argx = args[0];
+                if(argx.startsWith("\"")) {
+                    asm.getk(mergeString(args));
+                }
+                else {
+                    asm.getk(Integer.parseInt(argx));
+                }
+            }
+        });
+        opcodes.put("SETK", new Opcode() {           
+            public void invoke(BytecodeEmitter asm, String...  args) {
+                String argx = args[0];
+                if(argx.startsWith("\"")) {
+                    asm.setk(mergeString(args));
+                }
+                else {
+                    asm.setk(Integer.parseInt(argx));
+                }
+            }
+        });
 		opcodes.put("GET_GLOBAL", new Opcode() {			
 			public void invoke(BytecodeEmitter asm, String...  args) {
 				String arg1 = args[0];
@@ -726,21 +744,21 @@ public class Assembler {
                 }
             }
         });		
-        opcodes.put("INIT_ON", new Opcode() {          
+        opcodes.put("INIT_CATCH", new Opcode() {          
             public void invoke(BytecodeEmitter asm, String...  args) {
                 
                 String label = args[0];
                 try {
-                    asm.initon(Integer.parseInt(label)); 
+                    asm.initcatch(Integer.parseInt(label)); 
                 }
                 catch(NumberFormatException e) {
-                    asm.initon(label);
+                    asm.initcatch(label);
                 }
             }
         });
-        opcodes.put("END_ON", new Opcode() {          
+        opcodes.put("END_CATCH", new Opcode() {          
             public void invoke(BytecodeEmitter asm, String...  args) {
-                asm.endon();
+                asm.endcatch();
             }
         });        
         opcodes.put("END_FINALLY", new Opcode() {          

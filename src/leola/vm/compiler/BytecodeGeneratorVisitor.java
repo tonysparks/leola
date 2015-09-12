@@ -21,6 +21,7 @@ import leola.ast.BinaryExpr.BinaryOp;
 import leola.ast.BooleanExpr;
 import leola.ast.BreakStmt;
 import leola.ast.CaseExpr;
+import leola.ast.CatchStmt;
 import leola.ast.ChainedArrayAccessExpr;
 import leola.ast.ChainedArrayAccessSetExpr;
 import leola.ast.ChainedAssignmentExpr;
@@ -47,9 +48,6 @@ import leola.ast.NamespaceAccessExpr;
 import leola.ast.NamespaceStmt;
 import leola.ast.NewExpr;
 import leola.ast.NullExpr;
-import leola.ast.OnExpr;
-import leola.ast.OnExpr.OnClause;
-import leola.ast.OnStmt;
 import leola.ast.OwnableExpr;
 import leola.ast.ProgramStmt;
 import leola.ast.RealExpr;
@@ -134,9 +132,8 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		if(s.isMemberAccessChild()) {
 			Expr indexExpr = s.getElementIndex();	
 			
-			String reference = s.getVariableName();		
-			asm.addAndloadconst(reference);
-			asm.get();
+			String reference = s.getVariableName();					
+			asm.getk(reference);
 						
 			indexExpr.visit(this);
 			asm.idx();
@@ -161,8 +158,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		asm.line(s.getLineNumber());
 		if(s.isMemberAccessChild()) {						
 			String reference = s.getVariableName();
-			asm.addAndloadconst(reference);						
-			asm.get();						
+			asm.getk(reference);				
 		}
 		else {						
 			String reference = s.getVariableName();
@@ -232,8 +228,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 				
 			}
 			else {				
-				asm.addAndloadconst(s.getVarName());								
-				asm.set();
+				asm.setk(s.getVarName());
 			}			
 		}
 		else {						
@@ -414,8 +409,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 					ArrayAccessSetExpr setExpr = (ArrayAccessSetExpr)lhs;
 					
 					String reference = setExpr.getVariableName();
-					asm.addAndloadconst(reference);
-					asm.get();
+					asm.getk(reference);
 					
 					Expr indexExpr = setExpr.getElementIndex();
 					indexExpr.visit(this);
@@ -438,18 +432,15 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 				asm.dup();
 				
 				String ref = s.getVarName();
-				asm.addAndloadconst(ref);
-				asm.get();
+				asm.getk(ref);
 								
 				Expr e = s.getExpr();
 				e.visit(this);
 				
 				visitBinaryExpression(s.getBinaryOp());
-				asm.swap();
-												
-				asm.addAndloadconst(ref);												
-				asm.set();
-								
+				asm.swap();												
+				asm.setk(ref);			
+				
 				//asm.dup(); /* account for OPPOP */
 			}	
 		}
@@ -464,9 +455,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 					loadglobalmember(reference);
 										
 					Expr indexExpr = setExpr.getElementIndex();
-					indexExpr.visit(this);
-					
-//					asm.get();
+					indexExpr.visit(this);					
 					asm.idx();
 				}
 											
@@ -1003,8 +992,9 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 			asm.rotl(nargs);
 			
 			String functionName = s.getFunctionName();
-			asm.addAndloadconst(functionName);			
-			asm.get(); 
+//			asm.addAndloadconst(functionName);			
+//			asm.get(); 
+			asm.getk(functionName);
 		}
 		else {
 			/* global/free function */
@@ -1074,8 +1064,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 				
 		String identifier = s.getIdentifier();
 		if ( identifier != null && (expr instanceof MemberAccessExpr && !(expr instanceof NamespaceAccessExpr))) {
-			asm.addAndloadconst(identifier);
-			asm.get();
+		    asm.getk(identifier);
 		}
 			
 		expr.visit(this);							
@@ -1286,48 +1275,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		asm.label(endCase);
 	}
 	
-	/* (non-Javadoc)
-	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.OnExpr)
-	 */
-	@Override
-	public void visit(OnExpr s) throws EvalException {
-		asm.line(s.getLineNumber());
 		
-		Expr expr = s.getExpr();
-		expr.visit(this);
-		
-		String endOn = asm.nextLabelName();
-		String nextOnLabel = null;
-		
-		asm.on();	/* used as a marker, if the function doesn't have an on statement
-					   then it will bubble the exception */
-		
-		List<OnClause> onClauses = s.getOnClauses();				
-		for(OnClause clause : onClauses) {			
-			asm.dup();									
-			asm.addAndloadconst(clause.getType());
-			asm.swap();
-			asm.isa();			
-						
-			nextOnLabel = asm.ifeq();						
-			Stmt stmt = clause.getStmt();
-			asm.dup();
-			asm.addAndstorelocal(clause.getIdentifier());
-			
-			stmt.visit(this);
-			
-			if( stmt instanceof Expr) {
-				asm.oppop(); /* remove any pushed items */
-			}
-			
-			asm.jmp(endOn);		
-			asm.label(nextOnLabel);
-		}
-				
-		asm.label(endOn);			
-	}
-	
-	
 
 	/* (non-Javadoc)
 	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ThrowStmt)
@@ -1348,25 +1296,25 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 	public void visit(TryStmt s) throws EvalException {
 		asm.line(s.getLineNumber());
 		
-		boolean hasOn = s.getOnStmt() != null;
+		boolean hasCatch = s.getCatchStmt() != null;
 		boolean hasFinally = s.getFinallyStmt() != null;
 		
 		if(hasFinally) {
 			asm.initfinally();
 		}
 				
-		if(hasOn) {
-			asm.initon();
+		if(hasCatch) {
+			asm.initcatch();
 		}
 						
 		s.getStmt().visit(this);
 		
 		/* if the VM has made it this
 		 * far, go ahead and pop off
-		 * the ON block (if there is
+		 * the Catch block (if there is
 		 * one)
 		 */
-		if(hasOn) {
+		if(hasCatch) {
 			asm.endblock();
 		}
 		
@@ -1376,7 +1324,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		/*
 		 * If we have a finally block, 
 		 * jump to that, otherwise jump
-		 * over the ON clauses
+		 * over the Catch clause
 		 */
 		if(hasFinally) {			
 			finallyLabel = asm.jmp();
@@ -1386,16 +1334,16 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		}
 					
 		
-		if(hasOn) {
-			asm.markendon();
-			s.getOnStmt().visit(this);
-			asm.endon();
+		if(hasCatch) {
+			asm.taginitcatch();
+			s.getCatchStmt().visit(this);
+			asm.endcatch();
 		}
 						
 		if(hasFinally) {
 			asm.label(finallyLabel);
 			
-			asm.markendfinally();			
+			asm.taginitfinally();			
 			s.getFinallyStmt().visit(this);
 			asm.endfinally();	
 		}
@@ -1405,7 +1353,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 			 * There is no finally block and the 
 			 * VM made it without an Error being
 			 * thrown, so this lets us skip the
-			 * ON block
+			 * catch block
 			 */
 			asm.label(endLabel);					
 		}
@@ -1416,34 +1364,21 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.OnStmt)
 	 */
 	@Override
-	public void visit(OnStmt s) throws EvalException {
+	public void visit(CatchStmt s) throws EvalException {
 		asm.line(s.getLineNumber());
 				
-		String endOn = asm.nextLabelName();
-		String nextOnLabel = null;
-				
-		List<OnClause> onClauses = s.getOnClauses();				
-		for(OnClause clause : onClauses) {			
-			asm.dup();									
-			asm.addAndloadconst(clause.getType());
-			asm.swap();
-			asm.isa();			
-						
-			nextOnLabel = asm.ifeq();						
-			Stmt stmt = clause.getStmt();
-			asm.dup();
-			asm.addAndstorelocal(clause.getIdentifier());
-			
-			stmt.visit(this);
-			
-			if( stmt instanceof Expr) {
-				asm.oppop(); /* remove any pushed items */
-			}
-			
-			asm.jmp(endOn);		
-			asm.label(nextOnLabel);
+		String endOn = asm.nextLabelName();													
+		Stmt stmt = s.getBody();
+		//asm.dup();
+		asm.addAndstorelocal(s.getIdentifier());
+		
+		stmt.visit(this);
+		
+		if( stmt instanceof Expr) {
+			asm.oppop(); /* remove any pushed items */
 		}
-				
+		
+		asm.jmp(endOn);										
 		asm.label(endOn);		
 	}
 	
@@ -1596,8 +1531,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 	public void visit(VarExpr s) throws EvalException {			
 		asm.line(s.getLineNumber());
 		if( s.isMemberAccessChild() ) {
-			asm.addAndloadconst(s.getVarName());
-			asm.get();
+		    asm.getk(s.getVarName());
 		}
 		else {
 			String ref = s.getVarName();

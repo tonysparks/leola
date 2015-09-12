@@ -109,6 +109,50 @@ public class LeoNativeClass extends LeoObject {
 		return getMember(key);
 	}
 
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#hasObject(leola.vm.types.LeoObject)
+	 */
+	@Override
+	public boolean hasObject(LeoObject key) {	 
+	    return getMember(key) != null;
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#$sindex(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
+	 */
+	@Override
+	public void $sindex(LeoObject key, LeoObject other) {
+	    Method method = ClassUtil.getMethodByAnnotationAlias(nativeClass, "$sindex");
+	    if(method!=null) {
+	        try {
+                ClassUtil.invokeMethod(method, instance, new Object[] {key.getValue(), other.getValue()});
+            }
+            catch (Exception e) {
+                throw new LeolaRuntimeException(e);
+            }
+	    }
+	    else {
+	        super.$sindex(key, other);
+	    }
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#$index(leola.vm.types.LeoObject)
+	 */
+	@Override
+	public LeoObject $index(LeoObject other) {
+	    Method method = ClassUtil.getMethodByAnnotationAlias(nativeClass, "$index");
+        if(method!=null) {
+            try {
+                return LeoObject.valueOf( ClassUtil.invokeMethod(method, instance, new Object[] {other.getValue()}) );
+            }
+            catch (Exception e) {
+                throw new LeolaRuntimeException(e);
+            }
+        }        
+        return super.$index(other);        
+	}
+	
 
 	public LeoObject getMember(LeoObject member) {
 		String memberName = member.toString();
@@ -244,6 +288,7 @@ public class LeoNativeClass extends LeoObject {
 		return this.instance == other.getValue();
 	}
 	
+	
 	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#eq(leola.types.LeoObject)
 	 */
@@ -254,6 +299,23 @@ public class LeoNativeClass extends LeoObject {
 			return this.instance.equals(otherClass.instance);
 		}
 		return false;
+	}
+	
+	@Override
+	public int hashCode() {
+	    return this.instance.hashCode();
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+	    if(obj instanceof LeoObject) {
+	        return $eq((LeoObject)obj);
+	    }
+	    
+	    return this.instance.equals(obj);
 	}
 
 	/* (non-Javadoc)

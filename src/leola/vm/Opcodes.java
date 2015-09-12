@@ -298,15 +298,6 @@ public class Opcodes {
                 break;
             }            
             
-
-            case BREAK: {
-                op = "BREAK";
-                break;
-            }
-            case CONTINUE: {
-                op = "CONTINUE";
-                break;
-            }
             case YIELD: {
                 op = "YIELD";
                 break;
@@ -334,7 +325,15 @@ public class Opcodes {
 				op = "SET";
 				break;
 			}
-
+			case GETK: {
+                op = "GETK";
+                break;
+            }
+            case SETK: {
+                op = "SETK";
+                break;
+            }
+			
 			case GET_GLOBAL: {
 				op = "GET_GLOBAL";
 				break;
@@ -347,23 +346,11 @@ public class Opcodes {
 				op = "GET_NAMESPACE";
 				break;
 			}
-			
-            case INIT_FINALLY: {
-                op = "INIT_FINALLY";
+			            
+            case INIT_BLOCK: {
+                op = "INIT_BLOCK";
                 break;
-            }
-            case INIT_ON: {
-                op = "INIT_ON";
-                break;
-            }
-            case END_ON: {
-                op = "END_ON";
-                break;
-            }
-            case END_FINALLY: {
-                op = "END_FINALLY";
-                break;
-            }
+            }            
             case END_BLOCK: {
                 op = "END_BLOCK";
                 break;
@@ -539,64 +526,61 @@ public class Opcodes {
 		NAMESPACE_DEF = 29,           /* ARGx */
 				
 		/* statement branching */
-		BREAK = 30,                   /*      */
-		CONTINUE = 31,                /*      */
-		YIELD = 32,                   /*      */
-		RET = 33,                     /*      */
+		YIELD = 30,                   /*      */
+		RET = 31,                     /*      */
 				
 		/* method invocation */
-		INVOKE = 34,		          /* ARG1 ARG2 */  
-		TAIL_CALL = 35,		          /* ARG1 */
+		INVOKE = 32,		          /* ARG1 */  		
+		TAIL_CALL = 33,		          /* ARG1 */
 		
 		/* member access */
-		GET = 36,                     /*      */
-		SET = 37,                     /*      */
+		GET = 34,                     /*      */
+		SET = 35,                     /*      */
+		GETK = 79,                    /* ARGx */
+		SETK = 80,                    /* ARGx */
 		
-		GET_GLOBAL = 38,              /* ARGx */
-		SET_GLOBAL = 39,              /* ARGx */
+		GET_GLOBAL = 36,              /* ARGx */
+		SET_GLOBAL = 37,              /* ARGx */
 		
-		GET_NAMESPACE = 40,           /* ARGx */
+		GET_NAMESPACE = 38,           /* ARGx */
 		
-        /* Exception handling */
-        INIT_FINALLY = 41,            /* ARGsx*/
-        INIT_ON = 42,                 /* ARGsx*/
-        END_ON = 43,                  /*      */
-        END_FINALLY = 44,             /*      */
-        END_BLOCK = 45,               /*      */
-		THROW = 46,                   /*      */
+        /* Exception handling */        
+        INIT_BLOCK = 39,              /* ARGsx*/        
+        END_BLOCK = 40,               /* ARG1 (0=pop index;1=clear error;2=exit if error)*/
+		THROW = 41,                   /*      */
 						
 		/* arithmetic operators */
-		ADD = 47,                     /*      */
-		SUB = 48,                     /*      */
-		MUL = 49,                     /*      */
-		DIV = 50,                     /*      */
-		MOD = 51,                     /*      */
-		NEG = 52,                     /*      */
+		ADD = 42,                     /*      */
+		SUB = 43,                     /*      */
+		MUL = 44,                     /*      */
+		DIV = 45,                     /*      */
+		MOD = 46,                     /*      */
+		NEG = 47,                     /*      */
 	
-		BSL = 53,                     /*      */
-		BSR = 54,                     /*      */
-		BNOT = 55,                    /*      */
-		XOR = 56,                     /*      */
-		LOR = 57,                     /*      */
-		LAND = 58,                    /*      */
+		BSL = 48,                     /*      */
+		BSR = 49,                     /*      */
+		BNOT = 50,                    /*      */
+		XOR = 51,                     /*      */
+		LOR = 52,                     /*      */
+		LAND = 53,                    /*      */
 		
-		OR = 59,                      /*      */
-		AND = 60,                     /*      */
-		NOT = 61,                     /*      */
+		OR = 54,                      /*      */
+		AND = 55,                     /*      */
+		NOT = 56,                     /*      */
 		
-		REQ = 62,                     /*      */
-		EQ = 63,                      /*      */
-		NEQ = 64,                     /*      */
-		GT = 65,                      /*      */
-		GTE = 66,                     /*      */
-		LT = 67,                      /*      */
-		LTE = 68,                     /*      */
+		REQ = 57,                     /*      */
+		EQ = 58,                      /*      */
+		NEQ = 59,                     /*      */
+		GT = 60,                      /*      */
+		GTE = 61,                     /*      */
+		LT = 62,                      /*      */
+		LTE = 63,                     /*      */
 				
-		IDX = 69,                     /*      */
-		SIDX = 70,                    /*      */
+		IDX = 64,                     /*      */
+		SIDX = 65,                    /*      */
 		
 		/* debug */
-		LINE = 71                     /* ARGx */
+		LINE = 66                     /* ARGx */
 		;
 	
 	
@@ -642,8 +626,6 @@ public class Opcodes {
 		opcodes.put("CLASS_DEF", CLASS_DEF);
 		opcodes.put("NAMESPACE_DEF", NAMESPACE_DEF);
 		
-        opcodes.put("BREAK", BREAK);
-        opcodes.put("CONTINUE", CONTINUE);
         opcodes.put("YIELD", YIELD);
         opcodes.put("RET", RET);
         
@@ -655,16 +637,15 @@ public class Opcodes {
         /* object access */
         opcodes.put("GET", GET);
         opcodes.put("SET", SET);
+        opcodes.put("GETK", GETK);
+        opcodes.put("SETK", SETK);
         opcodes.put("GET_GLOBAL", GET_GLOBAL);
         opcodes.put("SET_GLOBAL", SET_GLOBAL);
         opcodes.put("GET_NAMESPACE", GET_NAMESPACE);        
 		
 		
-        /* exception handling */
-        opcodes.put("INIT_FINALLY", INIT_FINALLY);
-        opcodes.put("INIT_ON", INIT_ON);
-        opcodes.put("END_ON", END_ON);
-        opcodes.put("END_FINALLY", END_FINALLY);
+        /* exception handling */        
+        opcodes.put("INIT_BLOCK", INIT_BLOCK);                
         opcodes.put("END_BLOCK", END_BLOCK);		
 		opcodes.put("THROW", THROW);
 

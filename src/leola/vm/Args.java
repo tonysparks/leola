@@ -171,7 +171,7 @@ public class Args {
 		/**
 		 * The VM stack size.
 		 * 
-		 * Defaults to {@link VM#DEFAULT_MAX_STACKSIZE}
+		 * Defaults to {@link VM#DEFAULT_STACKSIZE}
 		 * 
 		 * @param stackSize
 		 * @return the {@link ArgsBuilder} for method chaining
@@ -179,6 +179,17 @@ public class Args {
 		public ArgsBuilder setStackSize(int stackSize) {
 			args.setStackSize(stackSize);
 			return this;
+		}
+		
+		/**
+		 * Sets the maximum stack size for this VM.
+		 * 
+		 * @param maxStackSize
+		 * @return the {@link ArgsBuilder} for method chaining
+		 */
+		public ArgsBuilder setMaxStackSize(int maxStackSize) {
+		    args.setMaxStackSize(maxStackSize);
+		    return this;
 		}
 		
 		/**
@@ -229,6 +240,7 @@ public class Args {
 	private String statement;
 	private LeoObject scriptArgs;
 	private int stackSize;
+	private int maxStackSize;	
 	private List<File> includeDirectories = new ArrayList<File>();
 	
 	/**
@@ -242,6 +254,7 @@ public class Args {
 		{ "s", "Does not include any libraries" },
 		{ "r", "Executes a supplied statement"	},
 		{ "x", "Sets the stack size. Ex. x=1024 "	},
+		{ "mx", "Sets the max stack size. Ex. mx=1000000" },
 		{ "t", "Disables allocating a VM per thread. "	},
 		{ "cp", "Path names to be included on include, require look ups.  Use a ';' as " +
 					"a path separater. \n\t\t Ex. \"cp=C:/My Documents/libs;C:/leola/libs\" " },
@@ -311,6 +324,10 @@ public class Args {
 				String value = arg.replace("x=", "");
 				pargs.stackSize = Integer.parseInt(value);
 			}
+			else if ( arg.startsWith("mx=") ) {
+                String value = arg.replace("mx=", "");
+                pargs.maxStackSize = Integer.parseInt(value);
+            }
 			else if ( arg.startsWith("r") ) {
 				pargs.isExecuteStatement = true;
 				pargs.statement = "";
@@ -345,6 +362,7 @@ public class Args {
 	 */
 	public Args() {
 		this.allowThreadLocals=true;
+		this.maxStackSize = Integer.MAX_VALUE;
 	}
 	
 	/**
@@ -497,6 +515,20 @@ public class Args {
 	public void setStackSize(int stackSize) {
 		this.stackSize = stackSize;
 	}
+	
+	/**
+     * @return the maxStackSize
+     */
+    public int getMaxStackSize() {
+        return maxStackSize;
+    }
+    
+    /**
+     * @param maxStackSize the maxStackSize to set
+     */
+    public void setMaxStackSize(int maxStackSize) {
+        this.maxStackSize = maxStackSize;
+    }
 
 	/**
 	 * @param includeDirectories the includeDirectories to set

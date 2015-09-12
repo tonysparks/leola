@@ -14,8 +14,6 @@ import static leola.vm.Opcodes.CLASS_DEF;
 import static leola.vm.Opcodes.DIV;
 import static leola.vm.Opcodes.DUP;
 import static leola.vm.Opcodes.END_BLOCK;
-import static leola.vm.Opcodes.END_FINALLY;
-import static leola.vm.Opcodes.END_ON;
 import static leola.vm.Opcodes.EQ;
 import static leola.vm.Opcodes.FUNC_DEF;
 import static leola.vm.Opcodes.GEN_DEF;
@@ -26,8 +24,7 @@ import static leola.vm.Opcodes.GT;
 import static leola.vm.Opcodes.GTE;
 import static leola.vm.Opcodes.IDX;
 import static leola.vm.Opcodes.IFEQ;
-import static leola.vm.Opcodes.INIT_FINALLY;
-import static leola.vm.Opcodes.INIT_ON;
+import static leola.vm.Opcodes.INIT_BLOCK;
 import static leola.vm.Opcodes.INVOKE;
 import static leola.vm.Opcodes.IS_A;
 import static leola.vm.Opcodes.JMP;
@@ -44,8 +41,6 @@ import static leola.vm.Opcodes.LOR;
 import static leola.vm.Opcodes.LT;
 import static leola.vm.Opcodes.LTE;
 import static leola.vm.Opcodes.MOD;
-import static leola.vm.Opcodes.SWAP;
-import static leola.vm.Opcodes.ROTL;
 import static leola.vm.Opcodes.MUL;
 import static leola.vm.Opcodes.NAMESPACE_DEF;
 import static leola.vm.Opcodes.NEG;
@@ -61,17 +56,18 @@ import static leola.vm.Opcodes.PARAM_END;
 import static leola.vm.Opcodes.POP;
 import static leola.vm.Opcodes.REQ;
 import static leola.vm.Opcodes.RET;
+import static leola.vm.Opcodes.ROTL;
+import static leola.vm.Opcodes.ROTR;
 import static leola.vm.Opcodes.SET;
 import static leola.vm.Opcodes.SET_ARG1;
-import static leola.vm.Opcodes.SET_ARG2;
 import static leola.vm.Opcodes.SET_ARGsx;
 import static leola.vm.Opcodes.SET_ARGx;
 import static leola.vm.Opcodes.SET_GLOBAL;
-import static leola.vm.Opcodes.ROTR;
 import static leola.vm.Opcodes.SIDX;
 import static leola.vm.Opcodes.STORE_LOCAL;
 import static leola.vm.Opcodes.STORE_OUTER;
 import static leola.vm.Opcodes.SUB;
+import static leola.vm.Opcodes.SWAP;
 import static leola.vm.Opcodes.SWAPN;
 import static leola.vm.Opcodes.TAIL_CALL;
 import static leola.vm.Opcodes.THROW;
@@ -79,7 +75,7 @@ import static leola.vm.Opcodes.XOR;
 import static leola.vm.Opcodes.YIELD;
 import static leola.vm.Opcodes.xLOAD_LOCAL;
 import static leola.vm.Opcodes.xLOAD_OUTER;
-
+import static leola.vm.Opcodes.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -342,7 +338,7 @@ public class BytecodeEmitter {
 	 * @see BytecodeEmitter#start(ScopeType, int, boolean)
 	 */
 	public BytecodeEmitter end() {	
-		
+	    
 		/* reconcile the labels */
 		reconcileLabels();
 		
@@ -461,7 +457,16 @@ public class BytecodeEmitter {
 		return null;
 	}
 	
-	
+	/**
+	 * Stores the {@link LeoObject} in the constant table.
+	 * 
+	 * @param obj
+	 * @return the index at which the constant is stored.
+	 */
+	public int addConst(LeoObject obj) {
+	    Constants constants = getConstants();
+	    return constants.store(obj);
+	}
 
 	/**
 	 * Stores the {@link LeoObject} in the constants table and
@@ -470,8 +475,7 @@ public class BytecodeEmitter {
 	 * @param obj
 	 */
 	public void addAndloadconst(LeoObject obj) {
-		Constants constants = getConstants();
-		int index = constants.store(obj);
+		int index = addConst(obj);
 		loadconst(index);
 	}
 	
@@ -650,14 +654,6 @@ public class BytecodeEmitter {
 		return instrs.peekLast();
 	}
 	
-	/**
-	 * Replaces the last instruction with the supplied instruction
-	 * @param instr
-	 */
-	private void setInstr(int instr) {
-	    Instructions instrs = peek().localScope.getInstructions();
-	    instrs.setLast(instr);
-	}
 	
 	
 	/**
@@ -708,18 +704,7 @@ public class BytecodeEmitter {
 	private void instr1(int opcode, int arg1) {
 		instr(SET_ARG1(opcode, arg1));
 	}
-	
-	/**
-	 * Outputs an instruction with 2 arguments
-	 * 
-	 * @param opcode
-	 * @param arg1
-	 * @param arg2
-	 */
-	private void instr2(int opcode, int arg1, int arg2) {		
-		instr(SET_ARG2(SET_ARG1(opcode, arg1), arg2));
-	}
-	
+			
 	/**
 	 * Marks a Label, so it can be eventually calculated for a jmp delta
 	 * 
@@ -824,10 +809,17 @@ public class BytecodeEmitter {
 	public void line(int line) {
 		if ( this.isDebug() ) {
 			if ( line != peek().localScope.getCurrentLineNumber() && line != 0 
-				&& (getInstructionCount() > 0 && OPCODE(peekInstr()) != LINE )) {
-				peek().localScope.setCurrentLineNumber(line);
+				&& (getInstructionCount() > 0 )) {
 				
-				instrx(LINE, line);
+			    peek().localScope.setCurrentLineNumber(line);
+				if ( OPCODE(peekInstr()) != LINE  ) {
+				    instrx(LINE, line);
+				}
+				else {
+				    // replace the last instruction (which is a LINE)
+				    // with the updated line number
+				    getInstructions().setLast(SET_ARGx(LINE, line));
+				}
 			}
 		}
 	}
@@ -919,14 +911,7 @@ public class BytecodeEmitter {
 		instr(DUP);
 		incrementMaxstackSize();
 	}
-	
-	public void on() {
-		int instr = peekInstr();
-		if ( OPCODE(instr) == INVOKE ) {
-			setInstr(SET_ARG2(instr, 1));			
-		}
-	}
-	
+			
 	public void yield() {
 		instr(YIELD);
 	}
@@ -1011,7 +996,26 @@ public class BytecodeEmitter {
 	}
 	public void set() {
 		instr(SET);
-		decrementMaxstackSize();
+		decrementMaxstackSize(2);
+	}
+	public void getk(int constIndex) {
+	    instrx(GETK, constIndex);
+	    decrementMaxstackSize();
+	}
+	public void getk(String stringconst) {
+	    int index = getConstants().store(stringconst);
+        instrx(GETK, index);
+        decrementMaxstackSize();
+    }
+	
+	public void setk(int constIndex) {
+	    instrx(SETK, constIndex);
+	    decrementMaxstackSize();
+	}
+	public void setk(String stringconst) {
+	    int index = getConstants().store(stringconst);
+	    instrx(SETK, index);
+        decrementMaxstackSize();
 	}
 	
 	public void getnamespace(String stringconst) {
@@ -1096,11 +1100,7 @@ public class BytecodeEmitter {
 		instr1(INVOKE, numberOfArgs);				
 		decrementMaxstackSize(numberOfArgs);
 	}
-	public void invoke(int numberOfArgs, boolean onClause) {
-		instr2(INVOKE, numberOfArgs, onClause ? 1 : 0);				
-		decrementMaxstackSize(numberOfArgs);
-	}
-
+	
 	public void throw_() {
 		instr(THROW);
 		incrementMaxstackSize();
@@ -1110,54 +1110,54 @@ public class BytecodeEmitter {
 	    peek().localScope.activateBlocks(getInstructionCount());
 		
 		// this will be populated with the correct offset
-		instrsx(INIT_FINALLY, 0); 
+		instrsx(INIT_BLOCK, 0); 
 		
 	}
 	public void initfinally(int offset) {
 	    peek().localScope.activateBlocks();
-	    instrsx(INIT_FINALLY, offset);
+	    instrsx(INIT_BLOCK, offset);
 	}
 	public void initfinally(String label) {
 	    peek().localScope.activateBlocks();        
-        markLabel(INIT_FINALLY, label);
+        markLabel(INIT_BLOCK, label);
     }
 	
-	public void initon() {
+	public void initcatch() {
 	    peek().localScope.activateBlocks(getInstructionCount());
 		// this will be populated with the correct offset
-		instrsx(INIT_ON, 0); 		
+		instrsx(INIT_BLOCK, 0); 		
 	}
 	
-	public void initon(int offset) {
+	public void initcatch(int offset) {
 	    peek().localScope.activateBlocks();
-        instrsx(INIT_ON, offset); 
+        instrsx(INIT_BLOCK, offset); 
 	}
-	public void initon(String label) {
+	public void initcatch(String label) {
 	    peek().localScope.activateBlocks();
-        markLabel(INIT_ON, label);
+        markLabel(INIT_BLOCK, label);
     }
 	
 	public void endfinally() {				
-		instr(END_FINALLY);
+		instr1(END_BLOCK, 2);
 	}
-	public void markendfinally() {
+	public void taginitfinally() {
 		int startPC = peek().localScope.popBlock();
-		getInstructions().set(startPC, SET_ARGsx(INIT_FINALLY, getInstructionCount()));
-		instr(END_BLOCK);
+		getInstructions().set(startPC, SET_ARGsx(INIT_BLOCK, getInstructionCount()));
+		instr1(END_BLOCK, 0);
 	}
 	
-	public void markendon() {
+	public void taginitcatch() {
 	    int startPC = peek().localScope.popBlock();
-		getInstructions().set(startPC, SET_ARGsx(INIT_ON, getInstructionCount()));
-		instr(END_BLOCK);
+		getInstructions().set(startPC, SET_ARGsx(INIT_BLOCK, getInstructionCount()));
+		instr1(END_BLOCK, 1);
 	}
 	
-	public void endon() {			
-		instr(END_ON);
+	public void endcatch() {			
+	    instr1(END_BLOCK, 0);
 	}
 	
 	public void endblock() {
-		instr(END_BLOCK);
+		instr1(END_BLOCK, 0);
 	}
 	
 	

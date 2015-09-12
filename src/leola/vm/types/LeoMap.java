@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import leola.vm.exceptions.LeolaRuntimeException;
+import leola.vm.lib.LeolaMethod;
 import leola.vm.util.ArrayUtil;
 
 
@@ -26,7 +27,20 @@ import leola.vm.util.ArrayUtil;
  *
  */
 public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
-	
+
+    /**
+     * Converts the java {@link Map} into a {@link LeoMap}
+     * @param jMap
+     * @return the {@link LeoMap}
+     */
+    public static LeoMap toMap(Map<?,?> jMap) {
+        LeoMap result = new LeoMap();
+        for(Map.Entry<?, ?> entry : jMap.entrySet()) {
+            result.put(LeoObject.valueOf(entry.getKey()), LeoObject.valueOf(entry.getValue()));
+        }
+        
+        return result;
+    }
 
 	/**
 	 */
@@ -284,6 +298,14 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	    else {
 	        return getNativeMethod(key);
 	    }
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#hasObject(leola.vm.types.LeoObject)
+	 */
+	@Override
+	public boolean hasObject(LeoObject key) {	 
+	    return containsKey(key) || hasNativeMethod(this, key);
 	}
 	
 	/**
@@ -707,7 +729,7 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#isEmpty()
-	 */
+	 */	
 	@Override
 	public boolean isEmpty() {
 		return this.hashEntries == 0;
@@ -716,8 +738,13 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	/* (non-Javadoc)
 	 * @see java.util.Map#containsKey(java.lang.Object)
 	 */
+	@LeolaMethod(alias="containsKey")
 	@Override
 	public boolean containsKey(Object key) {
+	    if(key instanceof String) {
+	        key = LeoString.valueOf(key.toString());
+	    }
+	    
 		int slot = hashFindSlot((LeoObject)key);		
 		return this.hashValues[slot] != null;
 	}
@@ -735,6 +762,7 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	/* (non-Javadoc)
 	 * @see java.util.Map#containsValue(java.lang.Object)
 	 */
+	@LeolaMethod(alias="containsValue")
 	@Override
 	public boolean containsValue(Object value) {
 		LeoObject val = (LeoObject)value;
@@ -751,8 +779,13 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	/* (non-Javadoc)
 	 * @see java.util.Map#get(java.lang.Object)
 	 */
+	@LeolaMethod(alias="get")
 	@Override
 	public LeoObject get(Object key) {
+	    if(key instanceof String) {
+            key = LeoString.valueOf(key.toString());
+        }
+	    
 		return hashget((LeoObject)key);
 	}
 	
@@ -788,8 +821,13 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	/* (non-Javadoc)
 	 * @see java.util.Map#remove(java.lang.Object)
 	 */
+	@LeolaMethod(alias="remove")
 	@Override
 	public LeoObject remove(Object key) {
+	    if(key instanceof String) {
+            key = LeoString.valueOf(key.toString());
+        }
+	    
 		return this.hashRemove((LeoObject)key);		
 	}
 
@@ -806,6 +844,7 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	/* (non-Javadoc)
 	 * @see java.util.Map#putAll(java.util.Map)
 	 */
+	@LeolaMethod(alias="putAll")
 	@Override
 	public void putAll(Map<? extends LeoObject, ? extends LeoObject> m) {
 		for(Map.Entry<? extends LeoObject, ? extends LeoObject> entry : m.entrySet()) {
