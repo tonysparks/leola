@@ -405,6 +405,22 @@ public class Leola {
 	}
 	
 	/**
+	 * If this {@link Leola} instance was started from the command-line or was supplied
+	 * a script via the {@link Args#getFileName()}, this will return said script as a {@link File}.
+	 * 
+	 * @return the execution script that was used for this {@link Leola} instance.  This may return
+	 * null, if no script was used.
+	 */
+	public File getExecutionScript() {
+	    String executionScript = this.args.getFileName();
+	    if(executionScript!=null) {
+	        return new File(executionScript);
+	    }
+	    
+	    return null;
+	}
+	
+	/**
      * Determines if the supplied {@link File} has the Leola script
      * file extension.
      * 
