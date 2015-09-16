@@ -53,6 +53,14 @@ public class LeoNull extends LeoObject {
 	public boolean isTrue() {
 		return false;
 	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#isNull()
+	 */
+	@Override
+	public boolean isNull() {	 
+	    return true;
+	}
 
 	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#eq(leola.types.LeoObject)

@@ -152,6 +152,10 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 		return null;
 	}
 
+	public boolean isNull() {
+	    return false;
+	}
+	
 	public boolean isNumber() {
 		return false;
 	}
@@ -175,6 +179,10 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	public boolean isClass() {
 		return false;
 	}
+	public boolean isNativeClass() {
+	    return false;
+	}
+	
 	public boolean isGenerator() {
 		return false;
 	}

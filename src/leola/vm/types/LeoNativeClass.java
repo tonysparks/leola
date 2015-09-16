@@ -92,7 +92,23 @@ public class LeoNativeClass extends LeoObject {
 
 		return result;
 	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#isClass()
+	 */
+	@Override
+	public boolean isClass() {
+	    return true;
+	}
 
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#isNativeClass()
+	 */
+	@Override
+	public boolean isNativeClass() {
+	    return true;
+	}
+	
 	/* (non-Javadoc)
 	 * @see leola.vm.types.LeoObject#setObject(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
 	 */

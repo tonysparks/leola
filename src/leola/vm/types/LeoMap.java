@@ -208,6 +208,9 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 				if(key.isString() ) {
 					sb.append("\"").append(key).append("\"");
 				}
+				else if(key.isNull()) {
+	                sb.append("null");
+	            }
 				else {
 					sb.append(key);
 				}
@@ -220,6 +223,9 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 					if(val.isString()) {
 						sb.append("\"").append(val).append("\"");
 					}
+					else if(val.isNull()) {
+		                sb.append("null");
+		            }
 					else {
 						sb.append(val);
 					}

@@ -300,7 +300,17 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
         StringBuilder b = new StringBuilder();
         b.append('[');
         for (int i = 0; ; i++) {
-            b.append(this.array[i].toString());
+            LeoObject v = this.array[i];
+            if(v.isString()) {
+                b.append("\"").append(this.array[i].toString()).append("\"");
+            }
+            else if(v.isNull()) {
+                b.append("null");
+            }
+            else {
+                b.append(this.array[i].toString());
+            }
+            
             if (i == iMax)
             	return b.append(']').toString();
             b.append(", ");
