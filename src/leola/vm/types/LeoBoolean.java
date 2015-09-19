@@ -52,6 +52,11 @@ public class LeoBoolean extends LeoObject {
 		return value ? 1231 : 1237;
 	}
 	
+	@Override
+	public boolean isBoolean() {
+		return true;
+	}
+	
 	/**
 	 * @return true if this is an instance of True
 	 */
