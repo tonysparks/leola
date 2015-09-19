@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>leola</groupId>
 	<artifactId>leola</artifactId>
-	<version>0.9.5-SNAPSHOT</version>
+	<version>0.9.5</version>
 
 	<description>
         The Leola Programming Language.  It is an embeddable (or standalone) scripting language for the JVM.
@@ -18,9 +18,30 @@
 		<connection>https://github.com/tonysparks/leola.git</connection>
 		<url>https://github.com/tonysparks/leola</url>
 	</scm>
+	<developers>
+		<developer>
+			<name>Tony Sparks</name>
+			<email>anthony.sparks31@gmail.com</email>
+			<organization>Myself</organization>
+			<organizationUrl>https://github.com/tonysparks/</organizationUrl>
+		</developer>
+	</developers>
 	<inceptionYear>2010</inceptionYear>
 	<name>The Leola Programming Language</name>
 	<url>https://github.com/tonysparks/leola</url>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<additionalparam>-Xdoclint:none</additionalparam>
+	</properties>
+
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>
@@ -30,6 +51,57 @@
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.6</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.3</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
 				</configuration>
 			</plugin>
 		</plugins>
