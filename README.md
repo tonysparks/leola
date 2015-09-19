@@ -299,4 +299,16 @@ How to run
 java -jar leola.jar "./your_script.leola"
 ````
 
+Maven
+=====
+
+You can download the latest version of Leola by using these Maven coordinates:
+```
+<dependency>
+  <groupId>leola</groupId>
+  <artifactId>leola</artifactId>
+  <version>0.9.5</version>
+</dependency>
+```
+
 More to come..
