@@ -256,8 +256,8 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 * @return a long representation
 	 */
 	public final long toLong(Object x) {
-	    String str = x.toString();
-	    return Long.parseLong(str);
+	    Number number = toNumber(x);
+	    return number.longValue();
 	}
 	
 	/**
