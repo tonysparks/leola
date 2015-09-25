@@ -8,6 +8,7 @@ package leola.lang;
 import java.util.Map;
 
 import leola.vm.Leola;
+import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaIgnore;
 import leola.vm.lib.LeolaLibrary;
 import leola.vm.types.LeoMap;
@@ -29,7 +30,7 @@ public class MapLeolaLibrary implements LeolaLibrary {
 	 */
 	@Override
 	@LeolaIgnore
-	public void init(Leola runtime, LeoNamespace namespace) throws Exception {
+	public void init(Leola runtime, LeoNamespace namespace) throws LeolaRuntimeException {
 		this.runtime = runtime;
 		this.runtime.putIntoNamespace(this, namespace);		
 	}

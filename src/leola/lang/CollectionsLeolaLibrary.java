@@ -42,7 +42,7 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 	 * @see leola.frontend.LeolaLibrary#init(leola.frontend.Leola)
 	 */
 	@LeolaIgnore
-	public void init(Leola leola, LeoNamespace namespace) throws Exception {
+	public void init(Leola leola, LeoNamespace namespace) throws LeolaRuntimeException {
 		this.runtime = leola;
 		runtime.putIntoNamespace(this, namespace);
 //		leola.eval(CollectionsLeolaLibrary.class.getResourceAsStream("collections.leola"));

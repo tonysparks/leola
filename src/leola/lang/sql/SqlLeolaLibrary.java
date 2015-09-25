@@ -8,6 +8,7 @@ package leola.lang.sql;
 import java.sql.DriverManager;
 
 import leola.vm.Leola;
+import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaIgnore;
 import leola.vm.lib.LeolaLibrary;
 import leola.vm.types.LeoNamespace;
@@ -28,7 +29,7 @@ public class SqlLeolaLibrary implements LeolaLibrary {
 	 */
 	@Override
 	@LeolaIgnore
-	public void init(Leola leola, LeoNamespace namespace) throws Exception {
+	public void init(Leola leola, LeoNamespace namespace) throws LeolaRuntimeException {
 		this.runtime = leola;
 		this.runtime.putIntoNamespace(this, namespace);
 	}

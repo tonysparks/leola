@@ -57,6 +57,21 @@ public class LeoBoolean extends LeoObject {
 		return true;
 	}
 	
+   @Override
+    public int asInt() {
+        return (isTrue()) ? 1 : 0;
+    }
+
+    @Override
+    public double asDouble() {
+        return (isTrue()) ? 1.0 : 0.0;
+    }
+    
+    @Override
+    public long asLong() {
+        return (isTrue()) ? 1L : 0L;
+    }
+	
 	/**
 	 * @return true if this is an instance of True
 	 */

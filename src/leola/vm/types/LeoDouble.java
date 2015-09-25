@@ -107,23 +107,33 @@ public class LeoDouble extends LeoObject {
 	public int asInt() {
 	    return (int)this.number;
 	}
-
+	
+	@Override
+	public double asDouble() {	 
+	    return this.number;
+	}
+	
+    @Override
+    public long asLong() {
+        return (long)this.number;
+    }
+    
+	@Override
 	public float asFloat() {
 	    return (float)this.number;
 	}
 
+	@Override
 	public byte asByte() {
 	    return (byte)this.number;
 	}
 
+	@Override
 	public short asShort() {
 	    return (short)this.number;
 	}
 
-	public long asLong() {
-	    return (long)this.number;
-	}
-
+	@Override
 	public char asChar() {
 		return (char)this.number;
 	}

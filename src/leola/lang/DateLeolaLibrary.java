@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import leola.vm.Leola;
+import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaIgnore;
 import leola.vm.lib.LeolaLibrary;
 import leola.vm.types.LeoNamespace;
@@ -34,7 +35,7 @@ public class DateLeolaLibrary implements LeolaLibrary {
 	 * @see leola.frontend.LeolaLibrary#init(leola.frontend.Leola)
 	 */
 	@LeolaIgnore
-	public void init(Leola runtime, LeoNamespace namespace) throws Exception {		
+	public void init(Leola runtime, LeoNamespace namespace) throws LeolaRuntimeException {		
 		this.runtime = runtime;	
 		this.runtime.putIntoNamespace(this, namespace);		
 	}

@@ -39,7 +39,7 @@ public class DebugLeolaLibrary implements LeolaLibrary {
 	 * @see leola.frontend.LeolaLibrary#init(leola.frontend.Leola)
 	 */
 	@LeolaIgnore
-	public void init(Leola runtime, LeoNamespace namespace) throws Exception {						
+	public void init(Leola runtime, LeoNamespace namespace) throws LeolaRuntimeException {						
 		this.runtime = runtime;	
 		this.runtime.putIntoNamespace(this, namespace);
 	}

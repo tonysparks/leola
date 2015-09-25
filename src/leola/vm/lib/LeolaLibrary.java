@@ -6,6 +6,7 @@
 package leola.vm.lib;
 
 import leola.vm.Leola;
+import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.types.LeoNamespace;
 
 /**
@@ -19,9 +20,9 @@ public interface LeolaLibrary {
 	 * Initializes the library.
 	 * 
 	 * @param leola
-	 * @throws Exception
+	 * @throws LeolaRuntimeException
 	 */
 	@LeolaIgnore
-	public void init(Leola leola, LeoNamespace namespace) throws Exception;
+	public void init(Leola leola, LeoNamespace namespace) throws LeolaRuntimeException;
 }
 

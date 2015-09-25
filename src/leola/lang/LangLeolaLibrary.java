@@ -17,6 +17,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import leola.vm.Leola;
+import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaIgnore;
 import leola.vm.lib.LeolaLibrary;
 import leola.vm.lib.LeolaMethod;
@@ -49,7 +50,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 * @see leola.frontend.LeolaLibrary#init(leola.frontend.Leola)
 	 */
 	@LeolaIgnore
-	public void init(Leola runtime, LeoNamespace namespace) throws Exception {
+	public void init(Leola runtime, LeoNamespace namespace) throws LeolaRuntimeException {
 		this.runtime = runtime;			
 		runtime.putIntoNamespace(this, namespace);
 	}

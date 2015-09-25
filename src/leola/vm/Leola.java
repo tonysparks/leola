@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -95,6 +96,7 @@ public class Leola {
 	 * Runs the {@link Leola} runtime as a stand alone application
 	 *
 	 * @param args
+	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
 
@@ -114,10 +116,10 @@ public class Leola {
 			}
 			catch(ParseException e) {
 			    // the exception handlers will display this
-			}
+			}			
 			catch(LeolaRuntimeException e) {
 			    System.err.println(e.getLeoError());    
-			}
+			}			
 		}
 
 	}
@@ -236,15 +238,15 @@ public class Leola {
 	/**
 	 * @throws Exception
 	 */
-	public Leola() throws Exception {
+	public Leola() throws LeolaRuntimeException {
 		this(new Args());
 	}
 
 	/**
 	 * @param args
-	 * @throws Exception
+	 * @throws LeolaRuntimeException
 	 */
-	public Leola(Args args) throws Exception {
+	public Leola(Args args) throws LeolaRuntimeException {
 		this.args = args;
 		this.eventDispatcher = new EventDispatcher();
 		this.exceptionHandler = new DefaultExceptionHandler();
@@ -539,9 +541,9 @@ public class Leola {
 	 * Loads a {@link LeolaLibrary} into the global {@link Scope}
 	 *
 	 * @param lib
-	 * @throws Exception
+	 * @throws LeolaRuntimeException
 	 */
-	public void loadLibrary(LeolaLibrary lib) throws Exception {
+	public void loadLibrary(LeolaLibrary lib) throws LeolaRuntimeException {
 		checkIfSandboxed(lib.getClass());
 		
 		lib.init(this, this.global);
@@ -552,9 +554,9 @@ public class Leola {
 	 * 
 	 * @param lib
 	 * @param namespace
-	 * @throws Exception
+	 * @throws LeolaRuntimeException
 	 */
-	public void loadLibrary(LeolaLibrary lib, String namespace) throws Exception {
+	public void loadLibrary(LeolaLibrary lib, String namespace) throws LeolaRuntimeException {
 		checkIfSandboxed(lib.getClass());
 		
 		LeoNamespace ns = getOrCreateNamespace(namespace);
@@ -565,9 +567,9 @@ public class Leola {
 	 * Loads a {@link LeolaLibrary}.
 	 *
 	 * @param lib
-	 * @throws Exception
+	 * @throws LeolaRuntimeException
 	 */
-	public void loadLibrary(LeolaLibrary lib, LeoNamespace namespace) throws Exception {
+	public void loadLibrary(LeolaLibrary lib, LeoNamespace namespace) throws LeolaRuntimeException {
 		checkIfSandboxed(lib.getClass());
 		
 		lib.init(this, namespace);
@@ -578,9 +580,9 @@ public class Leola {
 	 *
 	 * @param lib
 	 * @param namespace
-	 * @throws Exception
+	 * @throws LeolaRuntimeException
 	 */
-	public LeoNamespace putIntoNamespace(Object lib, String namespace) throws Exception {
+	public LeoNamespace putIntoNamespace(Object lib, String namespace) throws LeolaRuntimeException {
 		Scope nsScope = null;
 
 		LeoNamespace ns = getNamespace(namespace);
@@ -603,9 +605,9 @@ public class Leola {
 	 *
 	 * @param lib
 	 * @param namespace
-	 * @throws Exception
+	 * @throws LeolaRuntimeException
 	 */
-	public LeoNamespace putIntoNamespace(Object lib, LeoNamespace namespace) throws Exception {
+	public LeoNamespace putIntoNamespace(Object lib, LeoNamespace namespace) throws LeolaRuntimeException {
 		Scope nsScope = namespace.getScope();
 		loadNatives(nsScope, lib);
 		return namespace;
@@ -615,40 +617,54 @@ public class Leola {
 	 * Loads a {@link LeolaLibrary}.
 	 *
 	 * @param libClass
-	 * @throws Exception
+	 * @throws LeolaRuntimeException
 	 */
-	public void loadLibrary(Class<?> libClass, LeoNamespace namespace) throws Exception {
+	public void loadLibrary(Class<?> libClass, LeoNamespace namespace) throws LeolaRuntimeException {
 		checkIfSandboxed(libClass);
+
+		try {
+            LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
+            loadLibrary(lib, namespace);
+        }
+        catch (InstantiationException | IllegalAccessException e) {
+            throw new LeolaRuntimeException(e);
+        }
 		
-		LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
-		loadLibrary(lib, namespace);
 	}
 
 	/**
 	 * Loads a {@link LeolaLibrary}.
 	 *
 	 * @param libClass
-	 * @throws Exception
+	 * @throws LeolaRuntimeException
 	 */
-	public void loadLibrary(Class<?> libClass, String namespace) throws Exception {
+	public void loadLibrary(Class<?> libClass, String namespace) throws LeolaRuntimeException {
 		checkIfSandboxed(libClass);
-		
-		LeoNamespace ns = getOrCreateNamespace(namespace);
-		LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
-		loadLibrary(lib, ns);
+    	try {	
+    		LeoNamespace ns = getOrCreateNamespace(namespace);
+    		LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
+    		loadLibrary(lib, ns);
+        }
+        catch (InstantiationException | IllegalAccessException e) {
+            throw new LeolaRuntimeException(e);
+        }
 	}
 
 	/**
 	 * Loads a {@link LeolaLibrary}.
 	 *
 	 * @param libClass
-	 * @throws Exception
+	 * @throws LeolaRuntimeException
 	 */
-	public void loadLibrary(Class<?> libClass) throws Exception {
+	public void loadLibrary(Class<?> libClass) throws LeolaRuntimeException {
 		checkIfSandboxed(libClass);
-		
-		LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
-		loadLibrary(lib);
+    	try {	
+    		LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
+    		loadLibrary(lib);
+        }
+        catch (InstantiationException | IllegalAccessException e) {
+            throw new LeolaRuntimeException(e);
+        }
 	}
 
 	/**
@@ -1023,7 +1039,7 @@ public class Leola {
 	 * @param bytecode
 	 * @throws Exception
 	 */
-	public void write(File scriptFile, Bytecode bytecode) throws Exception {
+	public void write(File scriptFile, Bytecode bytecode) throws IOException {
         FileOutputStream fStream = null;
         try {
             fStream = new FileOutputStream(scriptFile);
@@ -1046,9 +1062,9 @@ public class Leola {
 	 * 
 	 * @param oStream
 	 * @param bytecode
-	 * @throws Exception
+	 * @throws IOException
 	 */
-	public void write(OutputStream oStream, Bytecode bytecode) throws Exception {
+	public void write(OutputStream oStream, Bytecode bytecode) throws IOException {
 
         try {
             DataOutput output = new DataOutputStream(oStream);

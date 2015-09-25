@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaLibrary;
 import leola.vm.types.LeoArray;
 import leola.vm.types.LeoObject;
@@ -290,9 +291,9 @@ public class Args {
 	 * Parses the argument list
 	 * @param args
 	 * @return
-	 * @throws Exception
+	 * @throws LeolaRuntimeException
 	 */
-	public static Args parse(String ... args) throws Exception {
+	public static Args parse(String ... args) throws LeolaRuntimeException {
 		Args pargs = new Args();
 		
 		int startProgramArgs = 0;

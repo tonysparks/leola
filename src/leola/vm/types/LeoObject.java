@@ -299,6 +299,48 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	}
 	
 	/**
+	 * @return this object represented as a Long
+	 */
+	public long asLong() {
+	    throw new LeolaRuntimeException("Not a valid long");
+	}
+	
+	/**
+	 * @return this object represented as a Double
+	 */
+	public double asDouble() {
+	    throw new LeolaRuntimeException("Not a valid double");
+	}
+	
+	/**
+	 * @return this object represented as a Float
+	 */
+	public float asFloat() {
+	    return (float)asDouble();
+    }
+
+	/**
+     * @return this object represented as a Byte
+     */
+    public byte asByte() {
+        return (byte)asInt();
+    }
+
+    /**
+     * @return this object represented as a Short
+     */
+    public short asShort() {
+        return (short)asInt();
+    }
+
+    /**
+     * @return this object represented as a Character
+     */
+    public char asChar() {
+        return (char)asInt();
+    }
+	
+	/**
 	 * Determines if the two objects are equal.
 	 *
 	 * @param left

@@ -15,6 +15,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 import leola.vm.Leola;
+import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaIgnore;
 import leola.vm.lib.LeolaLibrary;
 import leola.vm.types.LeoArray;
@@ -38,7 +39,7 @@ public class SystemLeolaLibrary implements LeolaLibrary {
 	 * @see leola.frontend.LeolaLibrary#init(leola.frontend.Leola)
 	 */
 	@LeolaIgnore
-	public void init(Leola runtime, LeoNamespace namespace) throws Exception {		
+	public void init(Leola runtime, LeoNamespace namespace) throws LeolaRuntimeException {		
 		this.runtime = runtime;
 		this.random = new Random();
 		this.runtime.putIntoNamespace(this, namespace);		

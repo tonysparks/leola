@@ -21,13 +21,13 @@ import leola.vm.lib.LeolaMethod;
 import leola.vm.lib.LeolaMethodVarargs;
 import leola.vm.types.LeoArray;
 import leola.vm.types.LeoClass;
+import leola.vm.types.LeoClass.Metaclass;
 import leola.vm.types.LeoNamespace;
 import leola.vm.types.LeoNativeClass;
 import leola.vm.types.LeoNativeFunction;
 import leola.vm.types.LeoNull;
 import leola.vm.types.LeoObject;
 import leola.vm.types.LeoString;
-import leola.vm.types.LeoClass.Metaclass;
 import leola.vm.util.ArrayUtil;
 import leola.vm.util.ClassUtil;
 
@@ -48,7 +48,7 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 	 * @see leola.frontend.LeolaLibrary#init(leola.frontend.Leola)
 	 */
 	@LeolaIgnore
-	public void init(Leola runtime, LeoNamespace namespace) throws Exception {
+	public void init(Leola runtime, LeoNamespace namespace) throws LeolaRuntimeException {
 		this.runtime = runtime;	
 		this.runtime.putIntoNamespace(this, namespace);
 	}

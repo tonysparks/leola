@@ -67,34 +67,37 @@ public class LeoInteger extends LeoObject {
 		return number;
 	}
 
-	/**
-	 * @param number the number to set
-	 */
-//	public void setNumber(double number) {
-//		this.number = number;
-//	}
-
 	@Override
 	public int asInt() {
 	    return this.number;
 	}
 
+	@Override
+	public double asDouble() {
+        return (double)this.number;
+    }
+	
+	@Override
+	public long asLong() {
+        return (long)this.number;
+    }
+	
+	@Override
 	public float asFloat() {
 	    return (float)this.number;
 	}
 
+	@Override
 	public byte asByte() {
 	    return (byte)this.number;
 	}
 
+	@Override
 	public short asShort() {
 	    return (short)this.number;
 	}
-
-	public long asLong() {
-	    return (long)this.number;
-	}
-
+	
+	@Override
 	public char asChar() {
 		return (char)this.number;
 	}
