@@ -43,6 +43,7 @@
 	</properties>
 
 	<build>
+		<finalName>leola</finalName>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>
 			<plugin>
