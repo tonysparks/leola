@@ -168,6 +168,19 @@ println(total) // 56
 
 ````
 
+Exception Handling
+=====
+Leola uses Exceptions much like Javascript, Java, etc.
+
+````javascript
+try {
+  throw "Some Error"
+}
+catch(e) {
+  println(e) // prints 'Some Error'
+}
+````
+
 Generators
 =====
 
