@@ -10,6 +10,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,13 @@ import leola.vm.util.ArrayUtil;
 
 
 /**
- * A Leola Map
+ * A {@link Map} data structure.  All contents of the map must be  {@link LeoObject}, that is both the keys and
+ * values.
+ * 
+ * <p>
+ * This implements all optional methods of the {@link Map} interface.  This implementation attempts to reduce the
+ * amount of allocations by storing keys in an array, and their corresponding values in another array.  That is,
+ * this implementation is <b>not</b> like that of {@link HashMap}.
  *
  * @author Tony
  *
@@ -29,11 +36,12 @@ import leola.vm.util.ArrayUtil;
 public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 
     /**
-     * Converts the java {@link Map} into a {@link LeoMap}
+     * Converts the java {@link Map} into a {@link LeoMap}.
+     * 
      * @param jMap
      * @return the {@link LeoMap}
      */
-    public static LeoMap toMap(Map<?,?> jMap) {
+    public static LeoMap toMap(Map<?, ?> jMap) {
         LeoMap result = new LeoMap();
         for(Map.Entry<?, ?> entry : jMap.entrySet()) {
             result.put(LeoObject.valueOf(entry.getKey()), LeoObject.valueOf(entry.getValue()));
@@ -42,6 +50,19 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
         return result;
     }
 
+    /**
+     * A convenience method that creates a new {@link LeoMap}, inserting the key/value pair.
+     * 
+     * @param key the key of an entry
+     * @param value the value of an entry
+     * @return the newly created {@link LeoMap}.
+     */
+    public static LeoMap newLeoMap(Object key, Object value) {
+        LeoMap result = new LeoMap();
+        result.put(LeoObject.valueOf(key), LeoObject.valueOf(value));
+        return result;
+    }
+    
 	/**
 	 */
 	public LeoMap() {
@@ -334,8 +355,8 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	    return containsValue(value);
 	}
 
-
-	public void putAll(LeoObject obj) {
+	
+	public void putAllEntries(LeoObject obj) {
 		if ( obj.isOfType(LeoType.MAP)) {
 			LeoMap map = obj.as();
 			this.putAll((Map<LeoObject, LeoObject>)map);
@@ -343,7 +364,7 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 		
 	}
 
-	public void removeAll(LeoObject obj) {
+	public void removeAllEntries(LeoObject obj) {
 		if ( obj.isOfType(LeoType.MAP)) {
 			LeoMap map = obj.as();
 			for(LeoObject key : map.keySet()) {
@@ -356,7 +377,7 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	
 
 	/**
-	 * @return
+	 * @return true if empty; false otherwise
 	 */
 	public boolean empty() {
 		return this.isEmpty();
@@ -494,7 +515,7 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	protected int hashEntries;
 		
 	
-	public void presize(int nhash) {
+	protected void presize(int nhash) {
 		if ( nhash >= 0 && nhash < MIN_HASH_CAPACITY )
 			nhash = MIN_HASH_CAPACITY;
 		
@@ -513,6 +534,14 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 		return LeoNull.LEONULL;
 	}
 	
+	/**
+	 * Returns the value associated with the key.  If the key is not found, a Java
+	 * <code>null</code> is returned.
+	 * 
+	 * @param key 
+	 * @return Returns the value associated with the key.  If the key is not found, a Java
+     * <code>null</code> is returned.
+	 */
 	public LeoObject getWithJNull(LeoObject key) {
 		if ( hashEntries > 0 ) {
 			LeoObject v = hashValues[hashFindSlot(key)];
@@ -529,7 +558,7 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 
 	
 	/** caller must ensure key is not nil */
-	public void rawset( LeoObject key, LeoObject value ) {	
+	protected void rawset( LeoObject key, LeoObject value ) {	
 		hashset( key, value );
 	}
 
@@ -543,8 +572,33 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 		LeoObject obj = get(LeoString.valueOf(key));
 		return obj != null ? obj.asInt() : 0;
 	}
-	
 
+	public long getLong(String key) {
+        LeoObject obj = get(LeoString.valueOf(key));
+        return obj != null ? obj.asLong() : 0;
+    }
+
+    public double getDouble(String key) {
+        LeoObject obj = get(LeoString.valueOf(key));
+        return obj != null ? obj.asDouble() : 0;
+    }
+    
+    public LeoMap getMap(String key) {
+        LeoObject obj = get(LeoString.valueOf(key));
+        return obj != null ? ((LeoMap)obj.as()) : null;
+    }
+    
+    public LeoArray getArray(String key) {
+        LeoObject obj = get(LeoString.valueOf(key));
+        return obj != null ? ((LeoArray)obj.as()) : null;
+    }   
+    
+    public boolean getBoolean(String key) {
+        LeoObject obj = get(LeoString.valueOf(key));
+        return LeoObject.isTrue(obj);
+    }
+
+    
 	public int length() {
 		return this.hashEntries;
 	}
@@ -554,10 +608,10 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	}
 
 	private void error(String error) {
-		throw new LeolaRuntimeException(error);
+		throw new LeolaRuntimeException("LeoMapHashError: " + error);
 	}
 
-	public int nexti( LeoObject key ) {
+	protected int nexti( LeoObject key ) {
 		int i = 0;
 		do {
 			// find current key index
@@ -588,12 +642,12 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 		return hashValues[index];
 	}
 	
-	public LeoObject nextKey(LeoObject key) {
+	protected LeoObject nextKey(LeoObject key) {
 		int i = nexti(key);
 		return hashKeys[i];
 	}
 	
-	public LeoObject nextValue(LeoObject key) {
+	protected LeoObject nextValue(LeoObject key) {
 		int i = nexti(key);
 		return hashValues[i];
 	}	
@@ -601,10 +655,11 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 
 	/**
 	 * Set a hashtable value
+	 * 
 	 * @param key key to set
 	 * @param value value to set
 	 */
-	public LeoObject hashset(LeoObject key, LeoObject value) {
+	protected LeoObject hashset(LeoObject key, LeoObject value) {
 		LeoObject r = LeoNull.LEONULL;
 		/*if ( value == LeoNull.LEONULL )
 			r = hashRemove(key);
@@ -633,7 +688,7 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	 * @param key key to look for
 	 * @return slot to use
 	 */
-	public int hashFindSlot(LeoObject key) {		
+	protected int hashFindSlot(LeoObject key) {		
 		int i = ( key.hashCode() & 0x7FFFFFFF ) % hashKeys.length;
 		
 		// This loop is guaranteed to terminate as long as we never allow the
@@ -941,7 +996,10 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 		 */
 		@Override
 		public LeoObject setValue(LeoObject value) {
-			return null;
+		    LeoObject oldVal = this.val;
+		    put(key, value);
+		    this.val = value;
+			return oldVal;
 		}
 		
 	}

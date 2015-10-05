@@ -9,7 +9,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
 
 
@@ -352,21 +351,21 @@ public class LeoLong extends LeoObject {
 	@Override
 	public LeoObject $div(double other) {
 		if ( number == 0 ) {
-			throw new LeolaRuntimeException("Divide by zero error");
+		    throwDivideByZeroError();
 		}
 		return LeoDouble.valueOf(other / this.number);
 	}
 	@Override
 	public LeoObject $div(int other) {
 		if ( number == 0 ) {
-			throw new LeolaRuntimeException("Divide by zero error");
+		    throwDivideByZeroError();
 		}
 		return new LeoLong(other / this.number);
 	}
 	@Override
 	public LeoObject $div(long other) {
 		if ( number == 0 ) {
-			throw new LeolaRuntimeException("Divide by zero error");
+		    throwDivideByZeroError();
 		}
 		return new LeoLong(other / this.number);
 	}
@@ -381,21 +380,21 @@ public class LeoLong extends LeoObject {
 	@Override
 	public LeoObject $mod(double other) {
 		if ( number == 0 ) {
-			throw new LeolaRuntimeException("Divide by zero error");
+		    throwDivideByZeroError();
 		}
 		return LeoDouble.valueOf(other % this.number);
 	}
 	@Override
 	public LeoObject $mod(int other) {
 		if ( number == 0 ) {
-			throw new LeolaRuntimeException("Divide by zero error");
+		    throwDivideByZeroError();
 		}
 		return new LeoLong(other % this.number);
 	}
 	@Override
 	public LeoObject $mod(long other) {
 		if ( number == 0 ) {
-			throw new LeolaRuntimeException("Divide by zero error");
+		    throwDivideByZeroError();
 		}
 		return new LeoLong(other % this.number);
 	}	

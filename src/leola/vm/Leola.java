@@ -257,10 +257,6 @@ public class Leola {
 		setIncludePath(args.getIncludeDirectories());
 		this.resourceLoader = new ResourceLoader(this);
 		
-		Scope globalScope = new Scope(null);
-		this.global = new LeoNamespace(globalScope, LeoString.valueOf(GLOBAL_SCOPE_NAME));
-		globalScope.getNamespaceDefinitions().storeNamespace(this.global);
-
 		if(args.allowThreadLocal()) {
 			this.vm = new VMReference() {				
 				private ThreadLocal<VM> vm = new ThreadLocal<VM>() {		
@@ -289,34 +285,50 @@ public class Leola {
 			};
 		}		
 		
-		put("$args", args.getScriptArgs());
-		put("this", this.global);
-
-		/* allow default system libraries to be loaded */
-		boolean isSandboxed = args.isSandboxed();
-		args.setSandboxed(false);
-		
-		try {
-			loadLibrary(new LangLeolaLibrary());
-			loadLibrary(new StringLeolaLibrary(), "str");
-			loadLibrary(new MapLeolaLibrary(), "map");
-			loadLibrary(new ArrayLeolaLibrary(), "array");
-			loadLibrary(new DateLeolaLibrary(), "date");
-			loadLibrary(new CollectionsLeolaLibrary());
+		Scope globalScope = new Scope(null);
+        this.global = new LeoNamespace(globalScope, LeoString.valueOf(GLOBAL_SCOPE_NAME));
+        reset();
+	}
 	
-			
-			// AUX libraries
-			if ( ! args.isBarebones() && !isSandboxed) {
-				loadLibrary(new IOLeolaLibrary(), "io");
-				loadLibrary(new SqlLeolaLibrary(), "db");
-				loadLibrary(new SystemLeolaLibrary(), "sys");
-				loadLibrary(new DebugLeolaLibrary(), "debug");
-				loadLibrary(new ReflectionLeolaLibrary(), "reflect");			
-			}
-		}
-		finally {
-			args.setSandboxed(isSandboxed);
-		}
+	
+	/**
+	 * <b>Use with extreme caution!</b>
+	 * 
+	 * <p>
+	 * This will clear out all allocated objects, effectively resetting the {@link Leola} to its initial state.
+	 */
+	public void reset() {
+	    this.resourceLoader.clearCache();
+	    this.global.getScope().clear();
+	    this.global.getNamespaceDefinitions().storeNamespace(this.global);
+	    
+        put("$args", args.getScriptArgs());
+        put("this", this.global);
+
+        /* allow default system libraries to be loaded */
+        boolean isSandboxed = args.isSandboxed();
+        args.setSandboxed(false);
+
+        try {
+            loadLibrary(new LangLeolaLibrary());
+            loadLibrary(new StringLeolaLibrary(), "str");
+            loadLibrary(new MapLeolaLibrary(), "map");
+            loadLibrary(new ArrayLeolaLibrary(), "array");
+            loadLibrary(new DateLeolaLibrary(), "date");
+            loadLibrary(new CollectionsLeolaLibrary());
+
+            // AUX libraries
+            if (!args.isBarebones() && !isSandboxed) {
+                loadLibrary(new IOLeolaLibrary(), "io");
+                loadLibrary(new SqlLeolaLibrary(), "db");
+                loadLibrary(new SystemLeolaLibrary(), "sys");
+                loadLibrary(new DebugLeolaLibrary(), "debug");
+                loadLibrary(new ReflectionLeolaLibrary(), "reflect");
+            }
+        }
+        finally {
+            args.setSandboxed(isSandboxed);
+        }
 	}
 	
 	/**

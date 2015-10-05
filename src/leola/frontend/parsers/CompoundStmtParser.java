@@ -30,6 +30,7 @@ public class CompoundStmtParser extends StmtParser {
 	 */
 	@Override
 	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
         token = nextToken();  // consume the {
 
         // Create the COMPOUND node.
@@ -41,7 +42,7 @@ public class CompoundStmtParser extends StmtParser {
         							, LeolaTokenType.RIGHT_BRACE
         							, LeolaErrorCode.MISSING_RIGHT_BRACE);
 
-        setLineNumber(compoundNode, currentToken());
+        setLineNumber(compoundNode, startingToken);
         return compoundNode;
 	}
 

@@ -35,6 +35,7 @@ public class ClassDefStmtParser extends StmtParser {
 	 */
 	@Override
 	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
 		token = this.nextToken(); // eat the CLASS token
 		
 		LeolaTokenType type = token.getType();
@@ -102,7 +103,7 @@ public class ClassDefStmtParser extends StmtParser {
 		ClassDeclStmt classDefStmt = new ClassDeclStmt(className, classParams, classBodyStmt
 													 , parentClassName, parentClassParams, interfaceNames);
 		
-		setLineNumber(classDefStmt, currentToken());
+		setLineNumber(classDefStmt, startingToken);
 		
 		return classDefStmt;
 	}

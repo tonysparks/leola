@@ -71,7 +71,7 @@ public class LeoNamespace extends LeoScopedObject {
 		Class<?> nClass = jObject.getClass();
 		List<Method> methods = ClassUtil.getAllDeclaredMethods(nClass);
 		for(Method m: methods) {
-			LeoNativeFunction func = new LeoNativeFunction(nClass, jObject, LeoString.valueOf(m.getName()), m.getParameterTypes().length);
+			LeoNativeFunction func = new LeoNativeFunction(m, jObject);
 			if(m.isAnnotationPresent(LeolaMethod.class)) {
 				scope.storeObject(m.getAnnotation(LeolaMethod.class).alias(), func);
 			}

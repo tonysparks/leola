@@ -30,8 +30,10 @@ public class VarDeclStmtParser extends StmtParser {
 	 * @see leola.frontend.parsers.StmtParser#parse(leola.frontend.Token)
 	 */
 	@Override
-	public ASTNode parse(Token t) throws Exception {
-		Token token = nextToken(); // consume VAR token
+	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
+		token = nextToken(); // consume VAR token
+		
 		
 		/* get the identifier */		
 		LeolaTokenType type = token.getType(); 
@@ -52,7 +54,7 @@ public class VarDeclStmtParser extends StmtParser {
 		
 		ASTNode varDecl = new VarDeclStmt(varName, value);		
 		
-		setLineNumber(varDecl, currentToken());
+		setLineNumber(varDecl, startingToken);
 		return varDecl;
 	}
 }

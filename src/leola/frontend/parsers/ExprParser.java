@@ -584,7 +584,7 @@ public class ExprParser extends StmtParser {
     		break;
     	}
 
-    	setLineNumber(result, currentToken());
+    	setLineNumber(result, token);
     	return (result);
     }
 
@@ -648,7 +648,7 @@ public class ExprParser extends StmtParser {
     		break;
     	}
 
-    	setLineNumber(result, currentToken());
+    	setLineNumber(result, token);
     	return (result);
     }
 

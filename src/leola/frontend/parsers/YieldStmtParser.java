@@ -29,12 +29,13 @@ public class YieldStmtParser extends StmtParser {
 	 */
 	@Override
 	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
 		Token next = nextToken(); // eat the YIELD keyword
 		ExprParser retExpr = new ExprParser(this);
 		Expr expr = (Expr)retExpr.parse(next);
 		
 		YieldStmt retStmt = new YieldStmt(expr);
-		setLineNumber(retStmt, currentToken());
+		setLineNumber(retStmt, startingToken);
 		return retStmt;
 	}
 

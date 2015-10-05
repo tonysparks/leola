@@ -56,6 +56,7 @@ public class CaseExprParser extends StmtParser {
 	 */
 	@Override
 	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
 		token = nextToken();  // consume the CASE
 
 		Expr conditionNode = null;
@@ -135,7 +136,7 @@ public class CaseExprParser extends StmtParser {
         }
 
         CaseExpr caseExpr = new CaseExpr(conditionNode, whenExprs, elseExpr);
-        setLineNumber(caseExpr, currentToken());
+        setLineNumber(caseExpr, startingToken);
 
         return caseExpr;
 	}

@@ -39,6 +39,9 @@ public class LeoError extends LeoObject {
 		this(message, -1);
 	}
 	
+	public LeoError(Exception e) {
+	    this(e.getMessage());
+	}
 	
 	public LeoError(String msg) {
 		this(LeoString.valueOf(msg));
@@ -106,17 +109,20 @@ public class LeoError extends LeoObject {
 	 */
 	@Override
 	public String toString() {
-//		return (lineNumber > 0) ? "Error on line: " + lineNumber + "\n\t>>>" + this.message.toString()
-//				: this.message.toString();
 		final String INDENT = "   ";
 		StringBuilder sb = new StringBuilder();
+		sb.append("Error");
 		
 		if(this.sourceFile!=null) {
-			sb.append("<").append(this.sourceFile).append("> ");
+			sb.append(" <").append(this.sourceFile).append("> ");
 		}
 		
-		if(lineNumber > 0) sb.append("Error: root cause on line: ").append(lineNumber);
-		else sb.append("Error: root cause: ");
+		/*if(lineNumber > 0) sb.append("Error: root cause on line: ").append(lineNumber);
+		else sb.append("Error: root cause: ");*/
+		
+		if(lineNumber > 0) {
+		    sb.append("@ line: ").append(lineNumber);
+		}
 		
 		sb.append(" >> ").append(this.message);
 		sb.append("\n");
@@ -154,7 +160,7 @@ public class LeoError extends LeoObject {
 	 */
 	@Override
 	public boolean $eq(LeoObject other) {
-		return false;
+		return this==other;
 	}
 
 	/* (non-Javadoc)

@@ -21,6 +21,7 @@ import static leola.vm.Opcodes.EQ;
 import static leola.vm.Opcodes.FUNC_DEF;
 import static leola.vm.Opcodes.GEN_DEF;
 import static leola.vm.Opcodes.GET;
+import static leola.vm.Opcodes.GETK;
 import static leola.vm.Opcodes.GET_GLOBAL;
 import static leola.vm.Opcodes.GET_NAMESPACE;
 import static leola.vm.Opcodes.GT;
@@ -61,6 +62,7 @@ import static leola.vm.Opcodes.RET;
 import static leola.vm.Opcodes.ROTL;
 import static leola.vm.Opcodes.ROTR;
 import static leola.vm.Opcodes.SET;
+import static leola.vm.Opcodes.SETK;
 import static leola.vm.Opcodes.SET_GLOBAL;
 import static leola.vm.Opcodes.SIDX;
 import static leola.vm.Opcodes.STORE_LOCAL;
@@ -74,7 +76,6 @@ import static leola.vm.Opcodes.XOR;
 import static leola.vm.Opcodes.YIELD;
 import static leola.vm.Opcodes.xLOAD_LOCAL;
 import static leola.vm.Opcodes.xLOAD_OUTER;
-import static leola.vm.Opcodes.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -343,7 +344,7 @@ public class VM {
 	private void growStackIfRequired(LeoObject[] stack, int base, int neededSize) {
 	    final int requiredStackSize = base + neededSize;
 	    if ( requiredStackSize > this.maxStackSize) {
-	        throw new LeolaRuntimeException("Stack overflow, required stack size over maxStackSize: " + this.maxStackSize);
+	        error("Stack overflow, required stack size over maxStackSize '" + this.maxStackSize + "'");
 	    }
 	    
 	    if( requiredStackSize > stack.length) {
@@ -777,7 +778,7 @@ public class VM {
 									instance = ClassUtil.newNativeInstance(className.toString(), args);
 								}
 								else {
-									throw new LeolaRuntimeException("Unable to instantiate native Java classes in Sandboxed mode: " + className.toString());
+									error("Unable to instantiate native Java classes ('"+ className +"') in Sandboxed mode.");
 								}
 							}
 							else {
@@ -843,7 +844,7 @@ public class VM {
 							}
 							
 							Outer[] outers = ns.getOuters();
-							if (outers(outers, calleeouters, openouters, stack, namespacecode.numOuters, base, pc, code, lineNumber)) {
+							if (outers(outers, calleeouters, openouters, namespacecode.numOuters, base, pc, code)) {
 							    closeOuters = true;
 							}
 							pc += namespacecode.numOuters;
@@ -859,7 +860,7 @@ public class VM {
 							LeoGenerator fun = new LeoGenerator(this.runtime, scopedObj, bytecode.clone());
 	
 							Outer[] outers = fun.getOuters();
-							if (outers(outers, calleeouters, openouters, stack, bytecode.numOuters, base, pc, code, lineNumber)) {
+							if (outers(outers, calleeouters, openouters, bytecode.numOuters, base, pc, code)) {
                                 closeOuters = true;
                             }
 							pc += bytecode.numOuters;
@@ -873,7 +874,7 @@ public class VM {
 							LeoFunction fun = new LeoFunction(this.runtime, scopedObj, bytecode);
 	
 							Outer[] outers = fun.getOuters();							
-							if (outers(outers, calleeouters, openouters, stack, bytecode.numOuters, base, pc, code, lineNumber)) {
+							if (outers(outers, calleeouters, openouters, bytecode.numOuters, base, pc, code)) {
                                 closeOuters = true;
                             }
 							pc += bytecode.numOuters;
@@ -918,7 +919,7 @@ public class VM {
 							defs.storeClass(className, classDefinition);
 	
 							Outer[] outers = classDefinition.getOuters();
-							if( outers(outers, calleeouters, openouters, stack, body.numOuters, base, pc, code, lineNumber)) {
+							if( outers(outers, calleeouters, openouters, body.numOuters, base, pc, code)) {
                                 closeOuters = true;
                             }
 							pc += body.numOuters;
@@ -945,7 +946,7 @@ public class VM {
 							isReturnedSafely = false; 
 							
 							LeoObject str = stack[--top];							
-							errorThrown = buildStackTrace(errorThrown, str, lineNumber);
+							errorThrown = buildStackTrace(code, errorThrown, str, lineNumber);
 	
 							stack[top++] = errorThrown;
 							
@@ -1012,6 +1013,10 @@ public class VM {
 						case GET_GLOBAL: {
 							int iname = ARGx(i);
 							LeoObject member = scope.getObject(constants[iname]);
+							if(member==null) {
+							    scopedObj.throwAttributeError(constants[iname]);
+							}
+							
 							stack[top++] = member;
 	
 							continue;
@@ -1247,7 +1252,7 @@ public class VM {
 							continue;
 						}
 						default: {
-							error(lineNumber, "Unknown bytecode: " + Integer.toHexString(i) + " Opcode: " + opcode);
+							error("Unknown opcode '" + opcode + "' found for the Bytecode '" + Integer.toHexString(i) + "'");
 						}
 					}
 				}
@@ -1260,7 +1265,7 @@ public class VM {
 				/**
 				 * Return the error
 				 */
-				errorThrown = buildStackTrace(errorThrown, e, lineNumber);								
+				errorThrown = buildStackTrace(code, errorThrown, e, lineNumber);								
 				
 				stack[top++] = errorThrown;
 				pc = len; 		/* exit out of this function */
@@ -1326,15 +1331,22 @@ public class VM {
 	}
 	
 	/**
-	 * Builds the stack trace
+	 * Builds the stack trace based off of the current stack trace and error message.
 	 * 
-	 * @param errorThrown
-	 * @param message
-	 * @return
+	 * @param code the current bytecode being executed
+	 * @param errorThrown the current error thrown (if any)
+	 * @param message the Error message and/or Exception
+	 * @return the error thrown 
 	 */
-	private LeoObject buildStackTrace(LeoObject errorThrown, Object message, int lineNumber) {
+	private LeoObject buildStackTrace(Bytecode code, LeoObject errorThrown, Object message, int lineNumber) {
 		
-		LeoError error = new LeoError(message.toString(), lineNumber);
+	    LeoError error = (message instanceof LeolaRuntimeException) ?
+	                        ((LeolaRuntimeException)message).getLeoError()
+	                            : new LeoError(message.toString());
+	    
+	    error.setSourceFile(code.getSourceFile());
+	    error.setLineNumber(lineNumber);
+	    
 		if(errorThrown.isError()) {
 			LeoError parentError = errorThrown.as();
 			parentError.addStack(error);
@@ -1342,6 +1354,7 @@ public class VM {
 		else {
 			errorThrown = error;
 		}
+	    
 		
 		return errorThrown;
 	}
@@ -1351,16 +1364,12 @@ public class VM {
 	 *
 	 * @param errorMsg
 	 */
-	private void error(int lineNumber, String errorMsg) {
+	private void error(String errorMsg) {
 		if(errorMsg==null) {
 			errorMsg = "";
 		}
-
-		if ( lineNumber > -1) {
-			throw new LeolaRuntimeException("Error on line: " + lineNumber + "\n>>>" + errorMsg);
-		}
-
-		throw new LeolaRuntimeException(errorMsg);
+		
+		throw new LeolaRuntimeException("ExecutionError: " + errorMsg);
 	}
 
 	
@@ -1420,20 +1429,18 @@ public class VM {
 	 * @param outers
 	 * @param calleeouters
 	 * @param openouters
-	 * @param stack
 	 * @param numOuters
 	 * @param base
 	 * @param pc
 	 * @param code
-	 * @param lineNumber
-	 * @return
+	 * @return true if there where Outers created that should be closed over once we leave the function
+	 * scope
 	 */
-	private boolean outers(Outer[] outers, Outer[] calleeouters, Outer[] openouters, LeoObject[] stack, 
+	private boolean outers(Outer[] outers, Outer[] calleeouters, Outer[] openouters, 
 	                    int numOuters, 
 	                    int base, 
 	                    int pc, 
-	                    Bytecode code, 	                     
-	                    int lineNumber) {
+	                    Bytecode code) {
 	    
 		boolean closeOuters = false;
 		for(int j = 0; j < numOuters; j++) {
@@ -1456,7 +1463,7 @@ public class VM {
 					break;
 				}
 				default: {
-					error(lineNumber, "Invalid Opcode for Outer: " + opCode);
+					error("Outer opcode '" + opCode +"' is invalid");
 				}
 			}
 		}

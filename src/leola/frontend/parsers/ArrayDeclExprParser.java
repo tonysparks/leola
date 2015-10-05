@@ -34,7 +34,7 @@ public class ArrayDeclExprParser extends ExprParser {
 		Expr[] elements = ParserUtils.parseArrayDeclaration(this, token);
 		
 		ArrayDeclExpr expr = new ArrayDeclExpr(elements);
-		setLineNumber(expr, currentToken());
+		setLineNumber(expr, token);
 		
 		return expr;
 	}

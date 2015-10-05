@@ -28,10 +28,11 @@ public class NamespaceAccessParser extends ExprParser {
 	 * @see leola.frontend.parsers.ExprParser#parse(leola.frontend.Token)
 	 */
 	@Override
-	public ASTNode parse(Token tok) throws Exception {
-		String parentName = tok.getText();
+	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
+		String parentName = token.getText();
 
-		Token token = nextToken(); // eat the COLON
+		token = nextToken(); // eat the COLON
 
 		ASTNode node = parseIdentifier(token);
 		OwnableExpr expr = (OwnableExpr)node;
@@ -43,7 +44,7 @@ public class NamespaceAccessParser extends ExprParser {
 		    expr.setParent(false);
 		}
 		
-		setLineNumber(memExpr, currentToken());
+		setLineNumber(memExpr, startingToken);
 		return memExpr;
 	}
 

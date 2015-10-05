@@ -29,6 +29,7 @@ public class MemberAccessParser extends ExprParser {
 	 */
 	@Override
 	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
 		String parentName = token.getText();
 
 		token = nextToken(); // eat the DOT
@@ -41,7 +42,7 @@ public class MemberAccessParser extends ExprParser {
 		expr.setOwner(parentName);
 		expr.setParent(false);
 		
-		setLineNumber(memExpr, currentToken());
+		setLineNumber(memExpr, startingToken);
 		return memExpr;
 	}
 

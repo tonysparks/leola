@@ -34,6 +34,15 @@ public class ClassDefinitions {
 	}
 	
 	/**
+	 * Removes all {@link ClassDefinition}'s.  Use this method with care.
+	 */
+	public void clearDefinitions() {
+	    if(hasDefinitions()) {
+	        this.classDefinitions.clear();
+	    }
+	}
+	
+	/**
 	 * @return the classDefinitions
 	 */
 	public Map<LeoObject, ClassDefinition> getClassDefinitions() {
@@ -86,7 +95,7 @@ public class ClassDefinitions {
 	 */
 	public ClassDefinition getDefinition(LeoObject className) {
 	    if ( ! getClassDefinitions().containsKey(className)) {
-            throw new LeolaRuntimeException("No class found for: " + className);
+            throw new LeolaRuntimeException("NoClassDefinitionError: No class found for: " + className);
         }               
 	    
 		return getClassDefinitions().get(className);

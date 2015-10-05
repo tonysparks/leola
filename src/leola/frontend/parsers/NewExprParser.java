@@ -31,6 +31,7 @@ public class NewExprParser extends FuncInvocationParser {
 	 */
 	@Override
 	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
 		token = nextToken(); // eat the NEW
 
 		/* Native classes include '.', so we must continue until a '(' */
@@ -38,7 +39,7 @@ public class NewExprParser extends FuncInvocationParser {
 
 		Expr[] params = ParserUtils.parseArgumentExpressions(this, token);
 		NewExpr expr = new NewExpr(className, params);
-		setLineNumber(expr, currentToken());
+		setLineNumber(expr, startingToken);
 		return expr;
 	}
 

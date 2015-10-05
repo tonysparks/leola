@@ -901,8 +901,6 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		ParameterList parameters = s.getParameters();
 		asm.gendef(parameters.size(), parameters.isVarargs());
 		{
-			asm.line(s.getLineNumber());
-						
 			for(String name : parameters.getParameters()) {
 				asm.addLocal(name);
 			}
@@ -936,8 +934,6 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		ParameterList parameters = s.getParameters();
 		asm.funcdef(parameters.size(), parameters.isVarargs());
 		{
-			asm.line(s.getLineNumber());
-						
 			for(String name : parameters.getParameters()) {
 				asm.addLocal(name);
 			}
@@ -992,8 +988,6 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 			asm.rotl(nargs);
 			
 			String functionName = s.getFunctionName();
-//			asm.addAndloadconst(functionName);			
-//			asm.get(); 
 			asm.getk(functionName);
 		}
 		else {
@@ -1413,7 +1407,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 	 */
 	@Override
 	public void visit(VarDeclStmt s) throws EvalException {
-		//asm.line(s.getLineNumber());
+		asm.line(s.getLineNumber());
 		
 		String ref = s.getVarName();
 		Expr expr = s.getValue();

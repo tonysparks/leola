@@ -46,6 +46,7 @@ public class ChainedAssignmentExprParser extends ExprParser {
     public ASTNode parse(Token token)
         throws Exception
     {
+        Token startingToken = token;
 
     	// the left hand side (array or map) expr
     	Expr lhsExpr = null;
@@ -70,7 +71,7 @@ public class ChainedAssignmentExprParser extends ExprParser {
 
         // Create the ASSIGN node.
         ChainedAssignmentExpr assignNode = new ChainedAssignmentExpr(lhsExpr, exprNode);
-        setLineNumber(assignNode, currentToken());
+        setLineNumber(assignNode, startingToken);
 
         return assignNode;
     }

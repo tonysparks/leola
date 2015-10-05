@@ -43,10 +43,11 @@ public class WhileStmtParser extends StmtParser {
      * @throws Exception if an error occurred.
      */
     @Override
-	public ASTNode parse(Token tok)
+	public ASTNode parse(Token token)
         throws Exception
     {
-        Token token = nextToken();  // consume the WHILE
+        Token startingToken = token;
+        token = nextToken();  // consume the WHILE
 
         // Parse the expression.
         // The NOT node adopts the expression subtree as its only child.
@@ -69,7 +70,7 @@ public class WhileStmtParser extends StmtParser {
         Stmt stmt = (Stmt)statementParser.parse(token);
 
         WhileStmt whileStmt = new WhileStmt(exprNode, stmt);
-        setLineNumber(whileStmt, currentToken());
+        setLineNumber(whileStmt, startingToken);
         return whileStmt;
     }
 }

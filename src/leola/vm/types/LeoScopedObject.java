@@ -186,7 +186,7 @@ public abstract class LeoScopedObject extends LeoOuterObject {
 	public LeoObject getProperty(LeoObject member) {
 		LeoObject result = this.scope.getObjectNoGlobal(member);
 		if(result == null) {
-			result = LeoNull.LEONULL;
+		    throwAttributeError(member);
 		}
 		return result;
 	}

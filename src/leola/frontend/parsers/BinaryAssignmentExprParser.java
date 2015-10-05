@@ -51,7 +51,8 @@ public class BinaryAssignmentExprParser extends ExprParser {
 	public ASTNode parse(Token token)
         throws Exception
     {
-
+        Token startingToken = token;
+        
         // Parse the target variable.
     	String varName = token.getText();
 
@@ -88,7 +89,7 @@ public class BinaryAssignmentExprParser extends ExprParser {
 
         // Create the ASSIGN node.
         BinaryAssignmentExpr assignNode = new BinaryAssignmentExpr(varName, lhsExpr, exprNode, binaryOp);
-        setLineNumber(assignNode, currentToken());
+        setLineNumber(assignNode, startingToken);
 
         return assignNode;
     }

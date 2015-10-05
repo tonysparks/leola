@@ -30,6 +30,7 @@ public class ChainedMemberAccessParser extends ExprParser {
 	 */
 	@Override
 	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
 		token = nextToken(); // eat the DOT
 		
 		String parentName = null;
@@ -45,7 +46,7 @@ public class ChainedMemberAccessParser extends ExprParser {
 		Expr expr = (Expr)parseIdentifier(token);
 				
 		ChainedMemberAccessExpr memExpr = new ChainedMemberAccessExpr(parentName, expr);
-		setLineNumber(memExpr, currentToken());
+		setLineNumber(memExpr, startingToken);
 		return memExpr;
 	}
 			

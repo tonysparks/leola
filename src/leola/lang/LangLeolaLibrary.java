@@ -145,9 +145,14 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 * @throws Exception
 	 */
 	@LeolaMethod(alias="import")
-	public final void __import(String className) throws Exception {
+	public final void __import(String className, String namespace) throws Exception {
 		runtime.errorIfSandboxed();
-		runtime.loadStatics(Class.forName(className));
+		if(namespace != null && !namespace.equals("")) {
+		    runtime.loadStatics(runtime.getOrCreateNamespace(namespace), Class.forName(className));
+		}
+		else {
+		    runtime.loadStatics(Class.forName(className));
+		}
 	}
 
 		
@@ -284,15 +289,12 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	
 	/**
 	 * Converts the {@link Collection} into a {@link LeoArray}
+	 * 
 	 * @param list
 	 * @return the {@link LeoArray}
 	 */
 	public final LeoArray toArray(Collection<Object> list) {
-	    LeoArray array = new LeoArray(list.size());
-	    for(Object o : list) {
-	        array.add(LeoObject.valueOf(o));
-	    }
-	    return array;
+	    return LeoArray.toArray(list);
 	}
 	
 	

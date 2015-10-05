@@ -8,11 +8,11 @@ package leola.vm.types;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
-import leola.vm.util.Pair;
 
 
 /**
@@ -26,57 +26,47 @@ public class LeoNativeFunction extends LeoObject {
 	/**
 	 * Arguments
 	 */
-	private int numberOfArgs;
+	private final int numberOfArgs;
 
-	private Class<?> clss;
-	private Object instance;
-	private LeoObject methodName;
+	private final Class<?> clss;
+	private final Object instance;
+	private final LeoObject methodName;
 
-	private Method method;
-
-	private List<Method> overloads;
-	
+	private final List<Method> overloads;
 	
 	/**
-	 * @param clss
+	 * @param overloads
 	 * @param instance
-	 * @param methodName
-	 * @param numberOfArgs
 	 */
-	public LeoNativeFunction(Class<?> clss, Object instance, String methodName, int numberOfArgs) {
-	    this(clss, instance, LeoString.valueOf(methodName), numberOfArgs);
-	}
-	
-	/**
-	 * @param clss
-	 * @param instance
-	 * @param methodName
-	 * @param numberOfArgs
-	 */
-	public LeoNativeFunction(Class<?> clss, Object instance, LeoObject methodName, int numberOfArgs) {
+	public LeoNativeFunction(List<Method> overloads, Object instance) {
 		super(LeoType.NATIVE_FUNCTION);
 		
-		this.clss = clss;
+		if(overloads.isEmpty()) {
+		    LeoObject.throwNativeMethodError("No native Java methods defined");
+		}
+		
+		Method base = overloads.get(0);
+		
+		this.clss = base.getDeclaringClass();
+		this.methodName = LeoString.valueOf(base.getName());
+		
 		this.instance = instance;
-		this.methodName = methodName;
-		this.numberOfArgs = numberOfArgs;		
-	}
-	
-	public LeoNativeFunction(Method method, Object instance) {
-		this(method.getDeclaringClass(), instance, method.getName(), method.getParameterTypes().length);
-		
-		setMethod(method);
-	}
-	
-	public LeoNativeFunction(List<Method> overloads, Object instance) {
-		this(overloads.get(0).getDeclaringClass(), instance, overloads.get(0).getName(), -1);
-		
 		this.overloads = overloads;
-		if(this.overloads.size()==1) {
-		    setMethod(this.overloads.get(0));
-		    this.overloads.clear();
+		if(overloads.size() > 1) {
+		    this.numberOfArgs = -1;
+		}
+		else {
+		    this.numberOfArgs = base.getParameterTypes().length;
 		}
 	}
+	    
+	/**
+	 * @param method
+	 * @param instance
+	 */
+    public LeoNativeFunction(Method method, Object instance) {
+        this(Arrays.asList(method), instance);      
+    }
 	
 	/**
 	 * @return the clss
@@ -121,14 +111,6 @@ public class LeoNativeFunction extends LeoObject {
 	 */
 	public int getNumberOfArgs() {
 		return numberOfArgs;
-	}
-
-	/**
-	 * @param method the method to set
-	 */
-	public void setMethod(Method method) {
-		this.method = method;
-		this.method.setAccessible(true);
 	}
 	
 	@Override
@@ -176,39 +158,14 @@ public class LeoNativeFunction extends LeoObject {
 	 */	
 	public LeoObject nativeCall(LeoObject... args) {
 		Object result = null;
-		try {
-			if ( this.overloads != null && !this.overloads.isEmpty() ) {
-				for(Method m : this.overloads) {
-					if(args!=null) {
-						if ( m.getParameterTypes().length == args.length ) {
-							result = ClassUtil.invokeMethod(m, this.instance, args);
-							break;
-						}
-					}
-					else {
-						if ( m.getParameterTypes().length == 0 ) {
-							result = ClassUtil.invokeMethod(m, this.instance, args);
-							break;
-						}
-					}
-				}
-			}
-			else if ( this.method == null ) {						
-				Pair<Method, Object> pairResult = ClassUtil.invokeMethod(this.clss, this.methodName.toString(), this.instance, args);
-								
-				setMethod(pairResult.getFirst());
-				result = pairResult.getSecond();
-				
-			}
-			else {			
-				result = ClassUtil.invokeMethod(this.method, this.instance, args);			
-			}
+		try {		    
+		    result = ClassUtil.invokeMethod(this.overloads, this.instance, args);			
 		} 
 		catch(LeolaRuntimeException e) {
 			return e.getLeoError();
 		}
 		catch (Exception e) {
-			return new LeoError(e.getMessage()); 
+			return new LeoError(e); 
 		}
 		
 		return LeoObject.valueOf(result);

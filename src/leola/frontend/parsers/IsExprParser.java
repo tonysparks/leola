@@ -44,7 +44,7 @@ public class IsExprParser extends ExprParser {
     public ASTNode parse(Token token)
         throws Exception
     {
-
+	    Token startingToken = token;
 		String varName = token.getText();
 		
 		/**
@@ -69,7 +69,7 @@ public class IsExprParser extends ExprParser {
 
         // Create the IS node.
     	IsExpr isExpr = new IsExpr(varName, lhsExpr, className);
-        setLineNumber(isExpr, currentToken());
+        setLineNumber(isExpr, startingToken);
 
         return isExpr;
     }

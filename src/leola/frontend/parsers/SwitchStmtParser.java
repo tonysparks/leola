@@ -61,6 +61,7 @@ public class SwitchStmtParser extends StmtParser {
 	 */
 	@Override
 	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
 		token = nextToken();  // consume the SWITCH
 
 		Expr conditionNode = null;
@@ -139,7 +140,7 @@ public class SwitchStmtParser extends StmtParser {
         }
 
         SwitchStmt switchStmt = new SwitchStmt(conditionNode, whenStmts, elseStmt);
-        setLineNumber(switchStmt, currentToken());
+        setLineNumber(switchStmt, startingToken);
 
         return switchStmt;
 	}

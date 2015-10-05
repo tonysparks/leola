@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.util.ClassUtil;
@@ -34,6 +35,17 @@ public class LeoNativeClass extends LeoObject {
 	 * The instance of the native class
 	 */
 	private Object instance;
+	
+	   /**
+     * Adds ability to reference the public API of this class
+     */
+    private Map<LeoObject, LeoObject> arrayApi; 
+    private LeoObject getNativeMember(LeoObject key) {
+        if(this.arrayApi == null) {
+            this.arrayApi = new LeoMap();
+        }
+        return getNativeMember(this.nativeClass, this.instance, this.arrayApi, key);
+    }
 	
 	/**
 	 */
@@ -169,35 +181,15 @@ public class LeoNativeClass extends LeoObject {
         return super.$index(other);        
 	}
 	
-
+	/**
+	 * Attempt to retrieve a native member of the supplied Java class.  This will first check
+	 * the public methods, short of that, it will then check the public data members.
+	 * 
+	 * @param member
+	 * @return the member if found.
+	 */
 	public LeoObject getMember(LeoObject member) {
-		String memberName = member.toString();
-
-		LeoObject result = null;
-		List<Method> methods = getMethods(memberName);
-		if ( methods.isEmpty() ) {
-			Field field = getField(memberName);
-			if ( field != null ) {
-				try {
-					Object value = field.get(getInstance());
-					result = LeoObject.valueOf(value);
-				}
-				catch(Exception e) {
-					throw new LeolaRuntimeException("Unable to access: " + member, e);
-				}
-			}
-		}
-		else {
-			if (methods.size() > 1) {
-				result = new LeoNativeFunction(methods, getInstance());
-			}
-			else {
-				Method m = methods.get(0);
-				result = new LeoNativeFunction(m, getInstance());
-			}
-		}
-		
-
+		LeoObject result = getNativeMember(member);
 		return result;
 	}
 
@@ -217,11 +209,11 @@ public class LeoNativeClass extends LeoObject {
 				field.set(getInstance(), value.getValue(field.getType()));
 			}
 			catch(Exception e) {
-				throw new LeolaRuntimeException("Unable to set access: " + member, e);
+			    throwAttributeAccessError(nativeClass, member);
 			}
 		}
 		else {
-			throw new LeolaRuntimeException("Unable to set access: " + member);
+		    throwAttributeError(nativeClass, member);
 		}
 	}
 
@@ -238,14 +230,7 @@ public class LeoNativeClass extends LeoObject {
 	 * @return returns the field if found, if not found null
 	 */
 	public Field getField(String fieldName) {
-		Field field = null;
-		try {
-			field = ClassUtil.getInheritedField(nativeClass, fieldName);
-			//field = this.nativeClass.getField(fieldName);
-			//field.setAccessible(true);
-		}
-		catch(Throwable e) {}
-
+		Field field = ClassUtil.getInheritedField(nativeClass, fieldName);
 		return field;
 	}
 
@@ -254,19 +239,9 @@ public class LeoNativeClass extends LeoObject {
 	 * @return all methods defined by the supplied methodName
 	 */
 	public List<Method> getMethods(String methodName) {
-		List<Method> meth =
-			ClassUtil.getMethodsByName(nativeClass, methodName);
+		List<Method> meth = ClassUtil.getMethodsByName(nativeClass, methodName);
 		return meth;
 	}
-
-	/**
-	 * @param nativeClass the nativeClass to set
-	 */
-	public void setNativeClass(Class<?> nativeClass) {
-		this.nativeClass = nativeClass;
-	}
-
-
 
 	/**
 	 * @return the instance
@@ -274,8 +249,6 @@ public class LeoNativeClass extends LeoObject {
 	public Object getInstance() {
 		return instance;
 	}
-
-
 
 	/**
 	 * @param instance the instance to set

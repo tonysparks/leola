@@ -29,6 +29,7 @@ public class FuncDefExprParser extends ExprParser {
 	 */
 	@Override
 	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
 		Token next = this.nextToken(); // eat the DEF token					
 		
 		/* parse the parameter listings */		
@@ -39,7 +40,7 @@ public class FuncDefExprParser extends ExprParser {
 		Stmt body = (Stmt)parser.parse(currentToken());
 		
 		FuncDefExpr defExpr = new FuncDefExpr(body, parameters);
-		setLineNumber(defExpr, currentToken());
+		setLineNumber(defExpr, startingToken);
 		return defExpr;		
 	}
 }

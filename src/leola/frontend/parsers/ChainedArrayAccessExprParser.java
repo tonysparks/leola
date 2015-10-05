@@ -81,7 +81,7 @@ public class ChainedArrayAccessExprParser extends ExprParser {
         	expr = new ChainedArrayAccessExpr(index);
         }
 
-		setLineNumber(expr, currentToken());
+		setLineNumber(expr, firstToken);
 
 		return expr;
 	}

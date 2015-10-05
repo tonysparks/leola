@@ -60,10 +60,10 @@ public class MapLeolaLibrary implements LeolaLibrary {
 		return map.has(key);
 	}
 	public void putAll(LeoMap map, LeoObject values) {
-		map.putAll(values);
+		map.putAllEntries(values);
 	}
 	public void removeAll(LeoMap map, LeoObject values) {
-		map.removeAll(values);
+		map.removeAllEntries(values);
 	}
 	public int size(LeoMap map) {
 		return map.size();

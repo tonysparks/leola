@@ -8,10 +8,12 @@ package leola.vm.types;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
+import leola.vm.Leola;
 import leola.vm.Scope;
 import leola.vm.compiler.Outer;
 import leola.vm.exceptions.LeolaRuntimeException;
@@ -21,7 +23,163 @@ import leola.vm.util.LeoTypeConverter;
 
 
 /**
- * Base object for Leola types.
+ * Base object for {@link Leola} types.  The basic design principal for the {@link LeoObject} is to treat all
+ * types the same, that is avoid the need to cast as much as possible and error if the underlying type does not
+ * support an operation.
+ * 
+ * <p>
+ * This does have the negative consequence of having the {@link LeoObject} blow up in size and responsibility.  However, I 
+ * feel the trade-off is warranted.
+ * 
+ * <p>
+ * There are a number of operators that can be overridden (both in Java and Leola code).  The operators include:
+ * <table border="1">
+ *  <tr>
+ *      <th>Leola Operator</th>
+ *      <th>Java/Leola method name</th>
+ *      <th>Description</th>
+ *  </tr>
+ *  <tr>
+ *      <td>===</td>
+ *      <td>$req</td>
+ *      <td>Reference equals operator, the default functionality is to check the equality of the references (identical to Java '==' operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>==</td>
+ *      <td>$eq</td>
+ *      <td>Object equals operator, the default functionality is to check the equality of the objects (identical to Java <code>equals</code> method)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>!=</td>
+ *      <td>$neq</td>
+ *      <td>Object not equals operator, the default functionality is to check the negated equality of the objects (identical to Java <code>!equals</code> method)</td>      
+ *  </tr>    
+ *  <tr>
+ *      <td><</td>
+ *      <td>$lt</td>
+ *      <td>Object less than operator, the default functionality is to check if the left hand object is less than the right hand object (identical to Java <code><</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td><=</td>
+ *      <td>$lte</td>
+ *      <td>Object less than or equals operator, the default functionality is to check if the left hand object is less than or equal to the right hand object (identical to Java <code>equals</code> method and/or the <code><</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>></td>
+ *      <td>$gt</td>
+ *      <td>Object greater than operator, the default functionality is to check if the left hand object is greater than the right hand object (identical to Java <code>></code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>>=</td>
+ *      <td>$gte</td>
+ *      <td>Object greater than or equals operator, the default functionality is to check if the left hand object is greater than or equal to the right hand object (identical to Java <code>equals</code> method and/or the <code>></code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>+</td>
+ *      <td>$add</td>
+ *      <td>Object addition operator, the default functionality is to add the right hand object to the left hand object (identical to Java <code>+</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>-</td>
+ *      <td>$sub</td>
+ *      <td>Object subtraction operator, the default functionality is to subtract the right hand object from the left hand object (identical to Java <code>-</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>*</td>
+ *      <td>$mul</td>
+ *      <td>Object multiplication operator, the default functionality is to multiply the right hand object by the left hand object (identical to Java <code>*</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>/</td>
+ *      <td>$div</td>
+ *      <td>Object division operator, the default functionality is to divide the left hand object by the right hand object (identical to Java <code>/</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>%</td>
+ *      <td>$mod</td>
+ *      <td>Object remainder (or modules) operator, the default functionality is to take the remainder of dividing the left hand object by the right hand object (identical to Java <code>%</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>!</td>
+ *      <td>$neg</td>
+ *      <td>Object negate operator, the default functionality is to take the negative of the object (identical to Java <code>!</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>~</td>
+ *      <td>$bnot</td>
+ *      <td>Object binary NOT operator, the default functionality is to negate/flip the object (identical to Java <code>~</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>&</td>
+ *      <td>$band</td>
+ *      <td>Object binary AND operator, the default functionality is to binary AND together the right hand object and the left hand object (identical to Java <code>&</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>|</td>
+ *      <td>$bor</td>
+ *      <td>Object binary OR operator, the default functionality is to binary OR together the right hand object and the left hand object (identical to Java <code>|</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td><<</td>
+ *      <td>$bsl</td>
+ *      <td>Object binary shift left operator, the default functionality is to binary shift left the left hand object by the right hand object (identical to Java <code><<</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>>></td>
+ *      <td>$bsr</td>
+ *      <td>Object binary shift right operator, the default functionality is to binary shift right the left hand object by the right hand object (identical to Java <code>>></code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>^</td>
+ *      <td>$xor</td>
+ *      <td>Object binary EXCLUSIVE OR operator, the default functionality is to binary exclusive or of the left hand object by the right hand object (identical to Java <code>^</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>[]</td>
+ *      <td>$sindex</td>
+ *      <td>Object set at index operator, the default functionality is to set the right hand object at the supplied index of the left hand object (identical to Java <code>left[index] = right</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>[]</td>
+ *      <td>$index</td>
+ *      <td>Object get object at index operator, the default functionality is to retrieve the object at the supplied index (identical to Java <code>left[index]</code> operator)</td>      
+ *  </tr>
+ *  <tr>
+ *      <td>toString()</td>
+ *      <td>toString</td>
+ *      <td>Object toString operator, should convert the object to a {@link String} object (identical to Java <code>toString()</code> method)</td>      
+ *  </tr>
+ * </table>
+ *
+ * <p>
+ * Some example Leola scripts that override the above operators:
+ * <pre>
+ *   class Vector(x, y) {
+ *     var $add = def(other) {
+ *       return new Vector(x+other.x, y+other.y)
+ *     }
+ *     var $sub = def(other) {
+ *       return new Vector(x-other.x, y-other.y)
+ *     }
+ *     var $mul = def(other) {
+ *       return case 
+ *          when other is Vector -> new Vector(x*other.x, y*other.y)
+ *          else new Vector(x*other, y*other)
+ *      }
+ *      
+ *     var toString = def() {
+ *       return "(" + x + "," + y + ")"
+ *     }
+ *   }
+ *   
+ *   var v = new Vector(10, 5)
+ *   var z = new Vector(4, 10)
+ *   
+ *   var delta = v-z
+ *   println(delta) // (6,-5) 
+ *   println(delta * 2) // 12, -10
+ *   
+ * </pre>
  *
  * @author Tony
  *
@@ -54,6 +212,13 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	public static final LeoString SINDEX = LeoString.valueOf("$sindex");
 		
 	public static final LeoString toString = LeoString.valueOf("toString");
+	
+	/**
+	 * A convenience means for retrieving the {@link LeoNull} object
+	 */
+	public static final LeoObject NULL = LeoNull.LEONULL;
+	public static final LeoObject TRUE = LeoBoolean.LEOTRUE;
+	public static final LeoObject FALSE = LeoBoolean.LEOFALSE;
 	
 	/**
 	 * Converts the supplied Java object into the appropriate {@link LeoObject} type.
@@ -116,7 +281,7 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	/**
 	 * @param type
 	 */
-	public LeoObject(LeoType type) {
+	protected LeoObject(LeoType type) {
 		this.type = type;
 	}
 
@@ -578,7 +743,7 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	 * @param value
 	 */
 	public void setObject(LeoObject key, LeoObject value) {
-		throw new LeolaRuntimeException(this + " is not a complex object");
+	    throw new LeolaRuntimeException("AccessError: " + this + " is not a complex object; unable to access: '" + key + "'");
 	}
 	
 	/**
@@ -598,7 +763,7 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	 * @return
 	 */
 	public LeoObject getObject(LeoObject key) {
-		throw new LeolaRuntimeException(this + " is not a complex object");
+		throw new LeolaRuntimeException("AccessError: " + this + " is not a complex object; unable to access: '" + key + "'");
 	}
 	
 	/**
@@ -629,7 +794,7 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	 * @return true if the supplied key has an associated value, otherwise false
 	 */
 	public boolean hasObject(LeoObject key) {
-	    throw new LeolaRuntimeException(this + " is not a complex object");
+	    throw new LeolaRuntimeException("AccessError: " + this + " is not a complex object; unable to access: '" + key + "'");
 	}
 	
 	/**
@@ -828,6 +993,87 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	}
 	
 	
+
+    /**
+     * Throws a ClassNotFoundError
+     * 
+     * @param message the error message
+     */
+    public static void throwClassNotFoundError(String message) {
+        throw new LeolaRuntimeException("NoClassDefinitionError: " + message);
+    }
+    
+    
+	/**
+	 * Throws a NativeMethodError 
+	 * 
+	 * @param message the error message
+	 */
+	public static void throwNativeMethodError(String message) {
+	    throw new LeolaRuntimeException("NativeMethodError: " + message);
+	}
+	
+	/**
+	 * Throws a {@link LeolaRuntimeException} denoting a DivideByZeroError.
+	 */
+	public static void throwDivideByZeroError() {
+	    throw new LeolaRuntimeException("DivideByZeroError: Can't divide by zero.");
+	}
+	
+	/**
+     * Throws a {@link LeolaRuntimeException} denoting an AttributeError, stating that a requested attribute
+     * does not exist in the owned scope.
+     * 
+     * @param name the name of the attribute
+     */
+    public void throwAttributeError(LeoObject name) {
+        if(isClass()) {
+            if(isNativeClass()) {
+                LeoNativeClass nClass = as();
+                throwAttributeError(nClass.getNativeClass(), name);
+            }
+            else {
+                LeoClass aClass = as();
+                throw new LeolaRuntimeException
+                    ("AttributeError: '" + aClass.getClassName() + "' has no attribute with the name '" + name + "'");
+            }
+        }
+        else if(isNamespace()) {
+            LeoNamespace namespace = as();
+            throw new LeolaRuntimeException
+                ("AttributeError: '" + namespace.getName() + "' has no attribute with the name '" + name + "'");
+        }
+        else {
+            throw new LeolaRuntimeException
+                ("AttributeError: No attribute found with the name '" + name + "'");
+        }
+    }
+	
+	/**
+	 * Throws a {@link LeolaRuntimeException} denoting an AttributeError, stating that a requested attribute
+	 * does not exist in the owned scope and/or class.
+	 * 
+	 * @param ownerClass the containing class in which the attribute was requested.
+	 * @param name the name of the attribute
+	 */
+	public static void throwAttributeError(Class<?> ownerClass, LeoObject name) {
+	    throw new LeolaRuntimeException
+	        ("AttributeError: '" + ownerClass.getSimpleName() + "' has no attribute with the name '" + name + "'");
+	}
+	
+	
+	/**
+     * Throws a {@link LeolaRuntimeException} denoting an AttributeAccessError, stating that a requested attribute
+     * could not be accessed in the owned scope and/or class.
+     * 
+     * @param ownerClass the containing class in which the attribute was requested.
+     * @param name the name of the attribute
+     */
+	public static void throwAttributeAccessError(Class<?> ownerClass, LeoObject name) {
+	    throw new LeolaRuntimeException
+	        ("AttributeAccessError: '" + ownerClass.getSimpleName() + "' could not access attribute with the name '" + name + "'");
+    }
+	
 	/**
 	 * Determines if the supplied owner has a method by the supplied method name.
 	 * 
@@ -841,33 +1087,116 @@ public abstract class LeoObject implements Comparable<LeoObject> {
         return !methods.isEmpty();
 	}
 	
+    /**
+     * Retrieve the native methods or fields from the owner public method listings.  This will query the owner class
+     * using reflection if the supplied nativeApi {@link Map} is empty.
+     * 
+     * @param ownerClass the class in which to inspect
+     * @param owner the instance in which owns the native methods; this may be null if looking for static methods
+     * @param nativeApi the cache of native methods
+     * @param key the method name
+     * @return the {@link LeoObject} of the native method, or null if not found
+     */
+    protected static LeoObject getNativeMember(Class<?> ownerClass, Object owner, Map<LeoObject, LeoObject> nativeApi, LeoObject key) {
+        LeoObject func = nativeApi.get(key);
+        if (!LeoObject.isTrue(func)) {
+            synchronized (nativeApi) {
+                /* unsure that we don't override
+                 * any previous thread's attempt at creating 
+                 * our native function
+                 */
+                func = nativeApi.get(key);
+                if (!LeoObject.isTrue(func)) {
+                    
+                    String keyStr = key.toString();
+                    
+                    List<Method> methods = ClassUtil.getMethodsByName(ownerClass, keyStr);
+                    removeInterfaceMethods(methods);
+        
+                    if (methods.isEmpty()) {
+                        methods = ClassUtil.getMethodsByAnnotationAlias(ownerClass, keyStr);
+                        
+                        /* If there still isn't any methods by this name,
+                         * check the classes field members
+                         */
+                        if(methods.isEmpty()) {      
+                            Field field = ClassUtil.getInheritedField(ownerClass, keyStr);
+                            if(field != null) {
+                                try {
+                                    Object value = field.get(owner);
+                                    func = LeoObject.valueOf(value);
+                                    nativeApi.put(key, func);
+                                    
+                                    return (func);
+                                }
+                                catch(Exception e) {
+                                    throwAttributeAccessError(ownerClass, key);
+                                }
+                            }
+                            
+                            throwAttributeError(ownerClass, key);
+                        }
+                    }
+        
+                    func = new LeoNativeFunction(methods, owner);
+                    nativeApi.put(key, func);
+                }
+            }
+        }
+        
+        return func;
+    }
+	
+	/**
+     * Retrieve the native methods from the owner public method listings.  This will query the owner class
+     * using reflection if the supplied nativeApi {@link Map} is empty.
+     * 
+     * @param ownerClass the class in which to inspect
+     * @param owner the instance in which owns the native methods; this may be null if looking for static methods
+     * @param nativeApi the cache of native methods
+     * @param key the method name
+     * @return the {@link LeoObject} of the native method, or null if not found
+     */
+    protected static LeoObject getNativeMethod(Class<?> ownerClass, Object owner, Map<LeoObject, LeoObject> nativeApi, LeoObject key) {
+        LeoObject func = nativeApi.get(key);
+        if (!LeoObject.isTrue(func)) {
+            synchronized (nativeApi) {
+                /* unsure that we don't override
+                 * any previous thread's attempt at creating 
+                 * our native function
+                 */
+                func = nativeApi.get(key);
+                if (!LeoObject.isTrue(func)) {
+                    List<Method> methods = ClassUtil.getMethodsByName(ownerClass, key.toString());
+                    removeInterfaceMethods(methods);
+        
+                    if (methods.isEmpty()) {
+                        methods = ClassUtil.getMethodsByAnnotationAlias(ownerClass, key.toString());
+                        if(methods.isEmpty()) {                    
+                            throwAttributeError(ownerClass, key);
+                        }
+                    }
+        
+                    func = new LeoNativeFunction(methods, owner);
+                    nativeApi.put(key, func);
+                }
+            }
+        }
+        
+        return func;
+    }
+	
 	/**
 	 * Retrieve the native methods from the owner public method listings.  This will query the owner class
 	 * using reflection if the supplied nativeApi {@link Map} is empty.
 	 * 
-	 * @param owner the instance in which owns the native methods
+	 * @param owner the instance in which owns the native methods; owner can not be null
 	 * @param nativeApi the cache of native methods
 	 * @param key the method name
 	 * @return the {@link LeoObject} of the native method, or null if not found
 	 */
     protected static LeoObject getNativeMethod(Object owner, Map<LeoObject, LeoObject> nativeApi, LeoObject key) {
-        LeoObject func = nativeApi.get(key);
-        if (!LeoObject.isTrue(func)) {
-            List<Method> methods = ClassUtil.getMethodsByName(owner.getClass(), key.toString());
-            removeInterfaceMethods(methods);
-
-            if (methods.isEmpty()) {
-                methods = ClassUtil.getMethodsByAnnotationAlias(owner.getClass(), key.toString());
-                if(methods.isEmpty()) {
-                    throw new LeolaRuntimeException("No method exists by the name: " + key);
-                }
-            }
-
-            func = new LeoNativeFunction(methods, owner);
-            nativeApi.put(key, func);
-        }
-        
-        return func;
+        return getNativeMethod(owner.getClass(), owner, nativeApi, key);
     }
 	    
     

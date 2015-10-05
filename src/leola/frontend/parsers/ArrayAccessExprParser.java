@@ -83,7 +83,7 @@ public class ArrayAccessExprParser extends ExprParser {
         	expr = new ArrayAccessExpr(variableName, index);
         }
 
-		setLineNumber(expr, currentToken());
+		setLineNumber(expr, firstToken);
 
 		return expr;
 	}

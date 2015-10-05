@@ -26,7 +26,7 @@ import leola.vm.util.ClassUtil;
  *    println(aString) // HeXllo ; the indexing does an insert
  * </pre>
  * 
- * <b>
+ * <p>
  * This might change in the future, I'm a bit undecided if this is a desirable feature -- furthermore this probably can cause
  * issues with the {@link LeoString} interning (due to the original string referencing the LeoString, which if altered would no
  * longer match).
@@ -558,7 +558,7 @@ public class LeoString extends LeoObject {
 	private void checkSizeForConversion() {
 		if ( this.value.length() > 1) {
 			throw new LeolaRuntimeException
-				("The supplied LeoString: " + this.value + " is larger than 1 character and therefore does not match the native type: char");
+				("StringCharError: The supplied LeoString: '" + this.value + "' is larger than 1 character and therefore does not match the native type: char");
 		}
 	}
 	

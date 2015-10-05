@@ -45,12 +45,13 @@ public class MapDeclExprParser extends ExprParser {
 	 * @see leola.frontend.parsers.ExprParser#parse(leola.frontend.Token)
 	 */
 	@Override
-	public ASTNode parse(Token token) throws Exception {						
+	public ASTNode parse(Token token) throws Exception {	
+	    Token startingToken = token;
 	    List<Pair<Expr, Expr>> elements = ParserUtils.parseMapParameters(this, token, COMMA_SET
 													, LeolaTokenType.RIGHT_BRACE);
 		
 		MapDeclExpr expr = new MapDeclExpr(elements);
-		setLineNumber(expr, currentToken());
+		setLineNumber(expr, startingToken);
 		
 		return expr;
 	}

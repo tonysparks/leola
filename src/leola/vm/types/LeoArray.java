@@ -25,12 +25,51 @@ import leola.vm.lib.LeolaMethod;
 
 
 /**
- * An array
+ * An expandable array that can act as a Stack or a randomly accessed array.  The underlying implementation
+ * is almost identical to an {@link ArrayList}, the major difference is that it only accepts {@link LeoObject}'s
+ * as the contained object.
+ * 
+ * <p>
+ * All optional methods are implemented from the {@link List} interface and {@link Iterator}.
  *
  * @author Tony
  *
  */
 public class LeoArray extends LeoObject implements List<LeoObject> {
+    
+    
+    /**
+     * Copies the elements of supplied {@link Collection} into a {@link LeoArray}.
+     * 
+     * @param list the list of elements to be converted/copied into the {@link LeoArray}
+     * @return the new {@link LeoArray} containing the elements from the {@link Collection}
+     */
+    public static LeoArray toArray(Collection<?> list) {
+        LeoArray array = new LeoArray(list.size());
+        for(Object o : list) {
+            array.add(LeoObject.valueOf(o));
+        }
+        return array;
+    }
+    
+    /**
+     * Converts the raw array to a {@link LeoArray}
+     * 
+     * @param leoObjects
+     * @return a new {@link LeoArray} consisting of the supplied objects
+     */
+    public static LeoArray newLeoArray(LeoObject ...leoObjects ) {
+        LeoArray array = null;
+        if ( leoObjects != null ) {
+            array = new LeoArray(leoObjects);           
+        }
+        else {
+            array = new LeoArray();
+        }
+        
+        return array;
+    }
+    
     
 	private LeoObject[] array;
 	private int size;
@@ -96,24 +135,6 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	}
 	
 
-	
-	/**
-	 * Converts the raw array to a {@link LeoArray}
-	 * 
-	 * @param leoObjects
-	 * @return
-	 */
-	public static LeoArray toLeoArray(LeoObject ...leoObjects ) {
-		LeoArray array = null;
-		if ( leoObjects != null ) {
-			array = new LeoArray(leoObjects);			
-		}
-		else {
-			array = new LeoArray();
-		}
-		
-		return array;
-	}
 	
 	/**
 	 * Iterates through the array given the supplied bounds

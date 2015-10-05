@@ -32,6 +32,7 @@ public class TryStmtParser extends StmtParser {
 	 */
 	@Override
 	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
 		Token next = nextToken(); // eat the TRY keyword
 		StmtParser stmtParser = new StmtParser(this);
 		Stmt stmt = (Stmt)stmtParser.parse(next);
@@ -55,7 +56,7 @@ public class TryStmtParser extends StmtParser {
 		}
 		
 		TryStmt tryStmt = new TryStmt(stmt, onStmt, finallyStmt);
-		setLineNumber(tryStmt, currentToken());
+		setLineNumber(tryStmt, startingToken);
 		return tryStmt;
 	}
 

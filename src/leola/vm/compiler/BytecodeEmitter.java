@@ -807,12 +807,14 @@ public class BytecodeEmitter {
 	 * @param line the line number in the Leola script code
 	 */
 	public void line(int line) {
+	    
 		if ( this.isDebug() ) {
 			if ( line != peek().localScope.getCurrentLineNumber() && line != 0 
-				&& (getInstructionCount() > 0 )) {
-				
+				&& (getInstructionCount() >= 0 )) {
+
 			    peek().localScope.setCurrentLineNumber(line);
-				if ( OPCODE(peekInstr()) != LINE  ) {
+			    
+			    if ( getInstructionCount()==0 || OPCODE(peekInstr()) != LINE  ) {
 				    instrx(LINE, line);
 				}
 				else {

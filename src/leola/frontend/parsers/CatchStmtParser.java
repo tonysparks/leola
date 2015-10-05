@@ -41,6 +41,7 @@ public class CatchStmtParser extends StmtParser {
     public ASTNode parse(Token token)
         throws Exception {		
 	       
+	    Token startingToken = token;
         token = nextToken(); // eat the CATCH token
         if(! token.getType().equals(LeolaTokenType.IDENTIFIER)) {
             getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_IDENTIFIER);
@@ -52,7 +53,7 @@ public class CatchStmtParser extends StmtParser {
 		
         // Create the Catch node.
     	CatchStmt onStmt = new CatchStmt(identifier, stmt);
-        setLineNumber(onStmt, currentToken());
+        setLineNumber(onStmt, startingToken);
         return onStmt;
     }
 

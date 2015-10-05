@@ -30,7 +30,7 @@ public class NullExprParser extends ExprParser {
 	public ASTNode parse(Token token) throws Exception {
 		nextToken(); // eat the NULL
 		NullExpr expr = new NullExpr();
-		setLineNumber(expr, currentToken());
+		setLineNumber(expr, token);
 		return expr;
 	}
 

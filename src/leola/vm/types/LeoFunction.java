@@ -111,7 +111,7 @@ public class LeoFunction extends LeoOuterObject {
 	    VM vm = this.runtime.getActiveVM();
 		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {
-				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1));
+				case 0: return vm.execute(env, this, this.bytecode, LeoArray.newLeoArray(arg1));
 			}
 		}
 		return vm.execute(env, this, this.bytecode, arg1);		
@@ -122,8 +122,8 @@ public class LeoFunction extends LeoOuterObject {
 	    VM vm = this.runtime.getActiveVM();
 		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {				
-				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1, arg2));
-				case 1: return vm.execute(env, this, this.bytecode, arg1, LeoArray.toLeoArray(arg2));				
+				case 0: return vm.execute(env, this, this.bytecode, LeoArray.newLeoArray(arg1, arg2));
+				case 1: return vm.execute(env, this, this.bytecode, arg1, LeoArray.newLeoArray(arg2));				
 			}				
 		}		
 		return vm.execute(env, this, this.bytecode, arg1, arg2);
@@ -134,9 +134,9 @@ public class LeoFunction extends LeoOuterObject {
 	    VM vm = this.runtime.getActiveVM();
 		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {				
-				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1, arg2, arg3));
-				case 1: return vm.execute(env, this, this.bytecode, arg1, LeoArray.toLeoArray(arg2, arg3));
-				case 2: return vm.execute(env, this, this.bytecode, arg1, arg2, LeoArray.toLeoArray(arg3));				
+				case 0: return vm.execute(env, this, this.bytecode, LeoArray.newLeoArray(arg1, arg2, arg3));
+				case 1: return vm.execute(env, this, this.bytecode, arg1, LeoArray.newLeoArray(arg2, arg3));
+				case 2: return vm.execute(env, this, this.bytecode, arg1, arg2, LeoArray.newLeoArray(arg3));				
 			}				
 		}
 		return vm.execute(env, this, this.bytecode, arg1, arg2, arg3);
@@ -147,10 +147,10 @@ public class LeoFunction extends LeoOuterObject {
 	    VM vm = this.runtime.getActiveVM();
 		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {				
-				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1, arg2, arg3, arg4));
-				case 1: return vm.execute(env, this, this.bytecode, arg1, LeoArray.toLeoArray(arg2, arg3, arg4));
-				case 2: return vm.execute(env, this, this.bytecode, arg1, arg2, LeoArray.toLeoArray(arg3, arg4));
-				case 3: return vm.execute(env, this, this.bytecode, arg1, arg2, arg3, LeoArray.toLeoArray(arg4));
+				case 0: return vm.execute(env, this, this.bytecode, LeoArray.newLeoArray(arg1, arg2, arg3, arg4));
+				case 1: return vm.execute(env, this, this.bytecode, arg1, LeoArray.newLeoArray(arg2, arg3, arg4));
+				case 2: return vm.execute(env, this, this.bytecode, arg1, arg2, LeoArray.newLeoArray(arg3, arg4));
+				case 3: return vm.execute(env, this, this.bytecode, arg1, arg2, arg3, LeoArray.newLeoArray(arg4));
 			}				
 		}
 		return vm.execute(env, this, this.bytecode, arg1, arg2, arg3, arg4);
@@ -161,11 +161,11 @@ public class LeoFunction extends LeoOuterObject {
 	    VM vm = this.runtime.getActiveVM();
 		if(this.bytecode.hasVarargs()) {
 			switch(this.bytecode.getVarargIndex()) {				
-				case 0: return vm.execute(env, this, this.bytecode, LeoArray.toLeoArray(arg1, arg2, arg3, arg4, arg5));
-				case 1: return vm.execute(env, this, this.bytecode, arg1, LeoArray.toLeoArray(arg2, arg3, arg4, arg5));
-				case 2: return vm.execute(env, this, this.bytecode, arg1, arg2, LeoArray.toLeoArray(arg3, arg4, arg5));
-				case 3: return vm.execute(env, this, this.bytecode, arg1, arg2, arg3, LeoArray.toLeoArray(arg4, arg5));
-				case 4: return vm.execute(env, this, this.bytecode, arg1, arg2, arg3, arg4, LeoArray.toLeoArray(arg5));
+				case 0: return vm.execute(env, this, this.bytecode, LeoArray.newLeoArray(arg1, arg2, arg3, arg4, arg5));
+				case 1: return vm.execute(env, this, this.bytecode, arg1, LeoArray.newLeoArray(arg2, arg3, arg4, arg5));
+				case 2: return vm.execute(env, this, this.bytecode, arg1, arg2, LeoArray.newLeoArray(arg3, arg4, arg5));
+				case 3: return vm.execute(env, this, this.bytecode, arg1, arg2, arg3, LeoArray.newLeoArray(arg4, arg5));
+				case 4: return vm.execute(env, this, this.bytecode, arg1, arg2, arg3, arg4, LeoArray.newLeoArray(arg5));
 			}				
 		}
 		return vm.execute(env, this, this.bytecode, arg1, arg2, arg3, arg4, arg5);
@@ -176,7 +176,7 @@ public class LeoFunction extends LeoOuterObject {
 	    VM vm = this.runtime.getActiveVM();
 		if(this.bytecode.hasVarargs()) {
 			int index = this.bytecode.getVarargIndex();
-			LeoArray varargs =  LeoArray.toLeoArray( Arrays.copyOfRange(args, index, args.length) );
+			LeoArray varargs =  LeoArray.newLeoArray( Arrays.copyOfRange(args, index, args.length) );
 			LeoObject[] newArgs = new LeoObject[index+1];
 			System.arraycopy(args, 0, newArgs, 0, index);
 			newArgs[index] = varargs;

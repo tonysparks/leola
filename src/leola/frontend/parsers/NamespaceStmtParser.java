@@ -39,8 +39,9 @@ public class NamespaceStmtParser extends StmtParser {
 	 * @see leola.frontend.parsers.StmtParser#parse(leola.frontend.Token)
 	 */
 	@Override
-	public ASTNode parse(Token tok) throws Exception {
-		Token token = nextToken();  // consume the NAMESPACE
+	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
+		token = nextToken();  // consume the NAMESPACE
 
 		if ( ! token.getType().equals(LeolaTokenType.IDENTIFIER) ) {
 			getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_IDENTIFIER);
@@ -73,7 +74,7 @@ public class NamespaceStmtParser extends StmtParser {
 //        }
 
         NamespaceStmt namespaceStmt = new NamespaceStmt(stmt, namespaceName);
-        setLineNumber(namespaceStmt, currentToken());
+        setLineNumber(namespaceStmt, startingToken);
         return namespaceStmt;
 	}
 

@@ -31,10 +31,11 @@ public class FuncInvocationParser extends ExprParser {
 	 */
 	@Override
 	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
 		String functionName = token.getText();
 		Expr[] params = ParserUtils.parseArgumentExpressions(this, token);
 		FuncInvocationExpr expr = new FuncInvocationExpr(functionName, params);
-		setLineNumber(expr, currentToken());
+		setLineNumber(expr, startingToken);
 		return expr;
 	}
 }

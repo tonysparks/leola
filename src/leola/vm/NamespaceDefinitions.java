@@ -32,6 +32,15 @@ public class NamespaceDefinitions {
 	}
 	
 	/**
+	 * Removes all {@link LeoNamespace}'s.  Use this method with care.
+	 */
+	public void clearDefinitions() {
+	    if(hasDefinitions()) {
+	        this.namespaces.clear();
+	    }
+	}
+	
+	/**
 	 * @return the classDefinitions
 	 */
 	public Map<LeoObject, LeoNamespace> getNamespaceDefinitions() {

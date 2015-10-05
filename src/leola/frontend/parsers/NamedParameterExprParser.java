@@ -41,12 +41,13 @@ public class NamedParameterExprParser extends StmtParser {
     public ASTNode parse(Token token)
         throws Exception {		
 		
+	    Token startingToken = token;
 	    String parameterName = token.getText();
 		
 	    Expr valueExpr = (Expr)new ExprParser(this).parse(nextToken());
 	    
         NamedParameterExpr stmt = new NamedParameterExpr(parameterName, valueExpr);
-        setLineNumber(stmt, currentToken());
+        setLineNumber(stmt, startingToken);
         return stmt;
     }
 

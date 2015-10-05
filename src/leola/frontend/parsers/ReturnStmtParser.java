@@ -29,12 +29,13 @@ public class ReturnStmtParser extends StmtParser {
 	 */
 	@Override
 	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
 		Token next = nextToken(); // eat the RETURN keyword
 		ExprParser retExpr = new ExprParser(this);
 		Expr expr = (Expr)retExpr.parse(next);
 		
 		ReturnStmt retStmt = new ReturnStmt(expr);
-		setLineNumber(retStmt, currentToken());
+		setLineNumber(retStmt, startingToken);
 		return retStmt;
 	}
 

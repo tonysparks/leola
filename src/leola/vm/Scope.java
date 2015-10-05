@@ -7,7 +7,12 @@ package leola.vm;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaMethod;
@@ -68,6 +73,60 @@ public class Scope {
 
 	}
 
+	/**
+	 * This will clear out (i.e., remove) all data elements from this {@link Scope}.
+	 * 
+	 * <p>
+	 * This includes:
+	 * <ul>
+	 *     <li>The {@link ClassDefinitions}</li>
+	 *     <li>The {@link NamespaceDefinitions}</li>
+	 *     <li>Invokes {@link Scope#clear()} on the <code>parent</code> scope of this Scope</li>
+	 *     <li>Any bound variables within this Scope</li>
+	 * </ul>
+	 * As the name implies, this does remove all allocated objects which will become garbage and 
+	 * there before be collected by the JVM GC.  Use this method with caution.
+	 */
+	public void clear() {
+	    if(hasClassDefinitions()) {
+	        this.classDefinitions.clearDefinitions();	        
+	    }
+	    
+	    if(hasNamespaceDefinitions()) {
+	        this.namespaceDefinitions.clearDefinitions();
+	    }
+	    
+	    if(hasParent()) {
+	        this.parent.clear();
+	    }
+	    	    
+	    if(hasObjects()) {
+	        /* Create a new Set here so that we don't get caught in an infinite recursive loop if
+	         * the scopes are self referencing
+	         */
+	        Set<Map.Entry<LeoObject, LeoObject>> entrySet = new HashSet<Map.Entry<LeoObject,LeoObject>>(this.values.entrySet());
+	        this.values.clear();
+	        
+	        for(Map.Entry<LeoObject, LeoObject> entry : entrySet) {
+	            Scope keyScope = entry.getKey().getScope();
+	            if(keyScope != null) {
+	                keyScope.clear();
+	            }
+	            
+	            Scope valueScope = entry.getValue().getScope();
+	            if(valueScope != null) {
+	                valueScope.clear();
+	            }
+	        }
+	    }
+	}
+	
+	/**
+	 * @return true if this {@link Scope} has a parent {@link Scope} defined.
+	 */
+	public boolean hasParent() {
+	    return this.parent != null;
+	}
 
 	/**
 	 * @return true if there are {@link ClassDefinition}s in this {@link Scope}
@@ -262,6 +321,13 @@ public class Scope {
 	}
 
 	/**
+	 * @return true if and only if there are stored objects in this {@link Scope}
+	 */
+	public boolean hasObjects() {
+	    return (this.values != null) && !this.values.isEmpty();
+	}
+	
+	/**
 	 * @return the number of {@link LeoObject}s in this {@link Scope}
 	 */
 	public int getNumberOfObjects() {
@@ -310,19 +376,10 @@ public class Scope {
 	 * 
 	 * @param jObject
 	 */
-	public void loadNatives(Object jObject) {
-		Class<?> nClass = jObject.getClass();
-		List<Method> methods = ClassUtil.getAllDeclaredMethods(nClass);
-		for(Method m: methods) {
-			LeoNativeFunction func = new LeoNativeFunction(nClass, jObject, m.getName(), m.getParameterTypes().length);
-			if(m.isAnnotationPresent(LeolaMethod.class)) {
-				storeObject(m.getAnnotation(LeolaMethod.class).alias(), func);
-			}
-			else {
-				storeObject(m.getName(), func);
-			}
-		}
-	}
+    public void loadNatives(Object jObject) {
+        Class<?> aClass = jObject.getClass();
+        loadClass(aClass, jObject, false);
+    }
 
 	/**
 	 * Loads the static methods of the native class into the supplied {@link Scope}
@@ -330,23 +387,54 @@ public class Scope {
 	 * @param aClass
 	 */
 	public void loadStatics(Class<?> aClass) {
-		List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);
-		for(Method m: methods) {
-			LeoNativeFunction func = new LeoNativeFunction(aClass, null, m.getName(), m.getParameterTypes().length);
-			boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
-
-			if ( isStatic ) {
-				if(m.isAnnotationPresent(LeolaMethod.class)) {
-					storeObject(m.getAnnotation(LeolaMethod.class).alias(), func);
-				}
-				else {
-					storeObject(m.getName(), func);
-				}
-			}
-		}
+		loadClass(aClass, null, true);
 	}
 	
-	
+	/**
+	 * Loads the class methods into this {@link Scope}
+	 * 
+	 * @param aClass the class to look for methods
+	 * @param jObject the instance object (may be null)
+	 * @param onlyStatics if we should only be loading static
+	 */
+    private void loadClass(Class<?> aClass, Object jObject, boolean onlyStatics) {
+        List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);
+
+        /*
+         * first join all the functions with the same name (group the overloaded
+         * functions)
+         */
+        Map<String, List<Method>> grouped = new HashMap<String, List<Method>>();
+        for (Method m : methods) {
+            boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
+            if (isStatic || !onlyStatics) {
+                if (!grouped.containsKey(m.getName())) {
+                    grouped.put(m.getName(), new ArrayList<Method>());
+                }
+
+                grouped.get(m.getName()).add(m);
+
+            }
+        }
+
+        /*
+         * Now iterate over the grouped functions to add them to the scoped
+         * object
+         */
+        for (List<Method> overloads : grouped.values()) {
+            if (!overloads.isEmpty()) {
+                Method m = overloads.get(0);
+                LeoNativeFunction func = new LeoNativeFunction(overloads, jObject);
+
+                if (m.isAnnotationPresent(LeolaMethod.class)) {
+                    storeObject(m.getAnnotation(LeolaMethod.class).alias(), func);
+                }
+                else {
+                    storeObject(m.getName(), func);
+                }
+            }
+        }
+    }
 	
 	/**
      * Looks up a namespace.
@@ -405,7 +493,7 @@ public class Scope {
      */
     public ClassDefinitions lookupClassDefinitions(Scope currentScope, LeoObject className) {
         if ( className == null ) {
-            throw new LeolaRuntimeException("Invalid class name, can not be empty!");
+            throw new LeolaRuntimeException("InvalidClassNameError: The class name can not be empty!");
         }
         
         String jclassName = className.toString();

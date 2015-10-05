@@ -40,6 +40,7 @@ public class IfStmtParser extends StmtParser {
 	 */
 	@Override
 	public ASTNode parse(Token token) throws Exception {
+	    Token startingToken = token;
 		token = nextToken();  // consume the IF
 		
 		IfStmt ifStmt = null;
@@ -77,7 +78,7 @@ public class IfStmtParser extends StmtParser {
         	ifStmt = new IfStmt(exprNode, thenStmt);
         }
 
-        setLineNumber(ifStmt, currentToken());
+        setLineNumber(ifStmt, startingToken);
         return ifStmt;
 	}
 
