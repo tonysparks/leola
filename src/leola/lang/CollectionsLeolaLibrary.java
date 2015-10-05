@@ -5,6 +5,7 @@
 */
 package leola.lang;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,6 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 	public void init(Leola leola, LeoNamespace namespace) throws LeolaRuntimeException {
 		this.runtime = leola;
 		runtime.putIntoNamespace(this, namespace);
-//		leola.eval(CollectionsLeolaLibrary.class.getResourceAsStream("collections.leola"));
 	}
 
 	/**
@@ -55,11 +55,94 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
      * @return the {@link ConcurrentMap}
      */
     public ConcurrentMap<LeoObject, LeoObject> concurrentMap(LeoMap map) {
-        if(map != null && !map.isEmpty()) {
-            return new ConcurrentHashMap<LeoObject, LeoObject>(map);
+        if(map == null) {
+            map = new LeoMap();
         }
         
-        return new ConcurrentHashMap<LeoObject, LeoObject>();
+        /* Since the LeoMap class does not use an internal java.util.Map structure;
+         * we have to add in some of the common API's to the concurrentMap.  This
+         * is fairly sub-optimal from a development/maintenance perspective...
+         */
+        return new ConcurrentHashMap<LeoObject, LeoObject>(map) {            
+            private static final long serialVersionUID = 6526027801906112095L;
+
+            @LeolaMethod(alias="$sindex")
+            public LeoObject $sindex(LeoObject key, LeoObject value) {
+                return put(key,value);
+            }
+            
+            @LeolaMethod(alias="$index")
+            public LeoObject $index(LeoObject key) {
+                return get(key);
+            }
+            
+            @LeolaMethod(alias="has")
+            public boolean has(LeoObject key) {
+                return this.containsKey(key);
+            }
+
+            @LeolaMethod(alias="empty")
+            public boolean empty() {
+                return this.isEmpty();
+            }
+            
+            @LeolaMethod(alias="vals")
+            public LeoArray vals() {
+                return new LeoArray(new ArrayList<LeoObject>(this.values()));
+            }
+            
+            @LeolaMethod(alias="foreach")
+            public void foreach(LeoObject function) {
+                if(function != null) {
+                    for(Map.Entry<LeoObject, LeoObject> entry : this.entrySet()) {
+                        LeoObject key = entry.getKey();
+                        if(key != null) {
+                            LeoObject value = entry.getValue();
+                            LeoObject result = function.call(key, value);
+                            if(LeoObject.isTrue(result)) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            @LeolaMethod(alias="filter")
+            public ConcurrentMap<LeoObject, LeoObject> filter(LeoObject function) {
+                if(function != null) {
+                    ConcurrentMap<LeoObject, LeoObject> map = concurrentMap(null);
+                    for(Map.Entry<LeoObject, LeoObject> entry : this.entrySet()) {
+                        LeoObject key = entry.getKey();
+                        if(key != null) {
+                            LeoObject value = entry.getValue();
+                            if( LeoObject.isTrue(function.call(key, value)) ) {
+                                map.put(key, value);
+                            }
+                        }
+                    }
+                    return map;
+                }
+                return this;
+            }
+            
+            @LeolaMethod(alias="map")
+            public ConcurrentMap<LeoObject, LeoObject> map(LeoObject function) {
+                if(function != null) {
+                    ConcurrentMap<LeoObject, LeoObject> map = concurrentMap(null);
+                    for(Map.Entry<LeoObject, LeoObject> entry : this.entrySet()) {
+                        LeoObject key = entry.getKey();
+                        if(key != null) {
+                            LeoObject value = entry.getValue();
+                            value = function.call(key, value);
+                            map.put(key, value);                    
+                        }
+                    }
+                    return map;
+                }
+                return this;
+            }
+            
+        };
     }
 	
     /**

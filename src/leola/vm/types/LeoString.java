@@ -87,12 +87,19 @@ public class LeoString extends LeoObject {
 	/**
      * Adds ability to reference the public API of this class
      */
-    private Map<LeoObject, LeoObject> arrayApi; 
-    private LeoObject getNativeMethod(LeoObject key) {
-        if(this.arrayApi == null) {
-            this.arrayApi = new LeoMap();
+    private Map<LeoObject, LeoObject> stringApi; 
+    private Map<LeoObject, LeoObject> getApiMappings() {
+        if(this.stringApi == null) {
+            synchronized (this) {                
+                if(this.stringApi == null) {    
+                    this.stringApi = new LeoMap();
+                }
+            }
         }
-        return getNativeMethod(this, this.arrayApi, key);
+        return this.stringApi;
+    }
+    private LeoObject getNativeMethod(LeoObject key) {        
+        return getNativeMethod(this, getApiMappings(), key);
     }
 	
 	/* (non-Javadoc)
@@ -212,8 +219,7 @@ public class LeoString extends LeoObject {
      */
     @Override
     public void setObject(LeoObject key, LeoObject value) { 
-        getNativeMethod(key);
-        this.arrayApi.put(key, value);      
+        this.getApiMappings().put(key, value);      
     }
     
     /* (non-Javadoc)

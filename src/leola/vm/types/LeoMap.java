@@ -90,11 +90,18 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
      * Adds ability to reference the public API of this class
      */
     private Map<LeoObject, LeoObject> mapApi;  
-    private LeoObject getNativeMethod(LeoObject key) {
-        if(this.mapApi == null) { 
-            this.mapApi = new LeoMap();
+    private Map<LeoObject, LeoObject> getApiMappings() {
+        if(this.mapApi == null) {
+            synchronized (this) {                
+                if(this.mapApi == null) {    
+                    this.mapApi = new LeoMap();
+                }
+            }
         }
-        return getNativeMethod(this, this.mapApi, key);
+        return this.mapApi;
+    }
+    private LeoObject getNativeMethod(LeoObject key) {        
+        return getNativeMethod(this, getApiMappings(), key);
     }
 	
     
@@ -309,8 +316,7 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	        put(key,value);
 	    }
 	    else {	    
-    	    getNativeMethod(key);
-    	    this.mapApi.put(key, value);
+    	    getApiMappings().put(key, value);
 	    }
 	}
 	

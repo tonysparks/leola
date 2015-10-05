@@ -153,7 +153,7 @@ public class LeoNativeClass extends LeoObject {
 	    Method method = ClassUtil.getMethodByAnnotationAlias(nativeClass, "$sindex");
 	    if(method!=null) {
 	        try {
-                ClassUtil.invokeMethod(method, instance, new Object[] {key.getValue(), other.getValue()});
+                ClassUtil.invokeMethod(method, instance, new LeoObject[] {key, other});
             }
             catch (Exception e) {
                 throw new LeolaRuntimeException(e);
@@ -171,8 +171,8 @@ public class LeoNativeClass extends LeoObject {
 	public LeoObject $index(LeoObject other) {
 	    Method method = ClassUtil.getMethodByAnnotationAlias(nativeClass, "$index");
         if(method!=null) {
-            try {
-                return LeoObject.valueOf( ClassUtil.invokeMethod(method, instance, new Object[] {other.getValue()}) );
+            try {                
+                return LeoObject.valueOf( ClassUtil.invokeMethod(method, instance, new LeoObject[] {other}) );
             }
             catch (Exception e) {
                 throw new LeolaRuntimeException(e);

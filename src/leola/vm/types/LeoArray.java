@@ -127,11 +127,18 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 * Adds ability to reference the public API of this class
 	 */
     private Map<LeoObject, LeoObject> arrayApi;	
-	private LeoObject getNativeMethod(LeoObject key) {
-	    if(this.arrayApi == null) {
-	        this.arrayApi = new LeoMap();
-	    }
-	    return getNativeMethod(this, this.arrayApi, key);
+    private Map<LeoObject, LeoObject> getApiMappings() {
+        if(this.arrayApi == null) {
+            synchronized (this) {                
+                if(this.arrayApi == null) {    
+                    this.arrayApi = new LeoMap();
+                }
+            }
+        }
+        return this.arrayApi;
+    }
+	private LeoObject getNativeMethod(LeoObject key) {	    
+	    return getNativeMethod(this, getApiMappings(), key);
 	}
 	
 
@@ -486,9 +493,12 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 */
 	@Override
 	public void setObject(LeoObject key, LeoObject value) {	
-//		set(key, value);
-	    getNativeMethod(key);
-	    this.arrayApi.put(key, value);	    
+	    if(key.isNumber()) {
+	        set(key,value);
+	    }
+	    else {
+	        this.getApiMappings().put(key, value);
+	    }
 	}
 	
 	/* (non-Javadoc)
@@ -496,7 +506,10 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 */
 	@Override
 	public LeoObject getObject(LeoObject key) {
-//		return get(key.asInt());
+	    if(key.isNumber()) {
+	        return get(key.asInt());
+	    }
+	    
 	    return getNativeMethod(key);
 	}
 	
