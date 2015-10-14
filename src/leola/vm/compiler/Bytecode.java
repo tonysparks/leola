@@ -7,6 +7,7 @@ package leola.vm.compiler;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ public class Bytecode {
     private static final String lineFormat2 = "%-12s %-16s \n";
     private static final String lineFormat3 = "%-12s %-16s \t\t; %s \n";
     private static final String lineFormat4 = "%-12s %-16s \t\t; %-6s (%s) \n";
+    private static final String lineFormat4Ex = "%-12s %-8s %-6s \t\t; %-6s \n";
     private static final String Indent = "  ";
     
 	public static final int MAGIC_NUMBER = 0x1E01A;
@@ -153,7 +155,7 @@ public class Bytecode {
 	 * 
 	 * @param filename
 	 */
-	public void setSourceFile(String filename) {
+	public void setSourceFile(File filename) {
 		/*
 		 * TEMP HACK -- move the compiler!!!
 		 */
@@ -170,8 +172,15 @@ public class Bytecode {
 	/**
 	 * @return the source file that created this {@link Bytecode}
 	 */
-	public String getSourceFile() {
-		return (this.debugSymbols!=null) ? this.debugSymbols.getSourceFile() : "";
+	public File getSourceFile() {
+		return (this.debugSymbols!=null) ? this.debugSymbols.getSourceFile() : null;
+	}
+	
+	/**
+	 * @return the name of the source file that created this {@link Bytecode}
+	 */
+	public String getSourceFileName() {
+	    return (this.debugSymbols!=null) ? this.debugSymbols.getSourceFile().getName() : "";
 	}
 	
 	/**
@@ -267,6 +276,8 @@ public class Bytecode {
 			for(int t = 0; t < numTabs; t++) sb.append(Indent);
 			switch(iopcode) {
 			    case Opcodes.END_BLOCK:
+			    case Opcodes.TAIL_CALL:
+			    case Opcodes.NEW_OBJ: 
 				case Opcodes.INVOKE: {
 					String arg1 = Integer.toString(Opcodes.ARG1(code));
 					String arg2 = Integer.toString(Opcodes.ARG2(code));
@@ -274,7 +285,7 @@ public class Bytecode {
 						sb.append(String.format(lineFormat3, opcode, arg1, i));
 					}
 					else {
-						sb.append(String.format(lineFormat4, opcode, arg1, arg2, i));
+						sb.append(String.format(lineFormat4Ex, opcode, arg1, arg2, i));
 					}
 					break;
 				}
@@ -377,11 +388,6 @@ public class Bytecode {
                 case Opcodes.SIDX: {				                                                 
 				    sb.append(String.format(lineFormat3, opcode, "", i));
 				    break;
-				}
-				case Opcodes.TAIL_CALL: {
-					String argx = Integer.toString(Opcodes.ARG1(code));														
-					sb.append(String.format(lineFormat3, opcode, argx, i));
-					break;
 				}
 				case Opcodes.STORE_LOCAL:
 				case Opcodes.LOAD_LOCAL: {

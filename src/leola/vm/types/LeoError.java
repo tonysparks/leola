@@ -130,14 +130,21 @@ public class LeoError extends LeoObject {
 		int tab = 0;
 		int size = stackTrace.size();
 		for(int i = 0; i < size; i++) {						
-			LeoError error = stackTrace.get(i);
+			LeoError error = stackTrace.get(i);			
 			if(error.getLineNumber()>0) {
-				sb.append("+-Thrown from line: ").append(error.lineNumber);
+			    if(error.sourceFile!=null) {
+    				sb.append("+-Thrown from ")
+    				        .append("<").append(error.sourceFile).append("> @ line: ")
+    				        .append(error.lineNumber);
+			    }
+			    else {
+			        sb.append("+-Thrown from line: ").append(error.lineNumber);
+			    }
 			}
 			else {
 				sb.append("+-Thrown: ");
 			}
-			String message = error.message.toString();
+			String message = error.message.isNull() ? "" : error.message.toString();
 			
 			if ( i < size-1 ) {
 				sb.append("\n");

@@ -49,6 +49,9 @@ public class StmtParser extends LeolaParser {
     protected static final EnumSet<LeolaTokenType> STMT_START_SET =
         EnumSet.of(IF, VAR, WHILE, LEFT_BRACE, SWITCH, YIELD,
         		   RETURN, BREAK, CONTINUE, IDENTIFIER, SEMICOLON, CLASS, CASE, NAMESPACE, THROW, TRY);
+    static {
+        STMT_START_SET.addAll(ExprParser.EXPR_START_SET);
+    }
 
     // Synchronization set for following a statement.
     protected static final EnumSet<LeolaTokenType> STMT_FOLLOW_SET =
@@ -176,7 +179,7 @@ public class StmtParser extends LeolaParser {
     /**
      * Eats the optional line end
      * @param token
-     * @return
+     * @return the next Token
      * @throws Exception
      */
     protected Token eatOptionalStmtEnd(Token token) throws Exception {
@@ -192,7 +195,7 @@ public class StmtParser extends LeolaParser {
 
     /**
      * Parse a statement list.
-     * @param token the curent token.
+     * @param tok the current token.
      * @param parentNode the parent node of the statement list.
      * @param terminator the token type of the node that terminates the list.
      * @param errorCode the error code if the terminator token is missing.
@@ -241,7 +244,7 @@ public class StmtParser extends LeolaParser {
             token = nextToken();  // consume the terminator token
         }
         else {
-            getExceptionHandler().errorToken(token, this, errorCode);
+            throwParseError(token, errorCode);
         }
     }
 
@@ -262,7 +265,7 @@ public class StmtParser extends LeolaParser {
         if (!syncSet.contains(token.getType())) {
 
             // Flag the unexpected token.
-            getExceptionHandler().errorToken(token, this, LeolaErrorCode.UNEXPECTED_TOKEN);
+            throwParseError(token, LeolaErrorCode.UNEXPECTED_TOKEN);
 
             // Recover by skipping tokens that are not
             // in the synchronization set.

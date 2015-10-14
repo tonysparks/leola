@@ -14,7 +14,6 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
-import leola.vm.Leola;
 import leola.vm.types.LeoArray;
 import leola.vm.types.LeoMap;
 import leola.vm.types.LeoObject;
@@ -32,14 +31,12 @@ public class Query {
 	private ParsedSql parsedSql;
 	private boolean isPrepared;
 
-	private Leola runtime;
 	/**
 	 * @param conn
 	 * @param parsedSql
 	 */
-	public Query(Leola runtime, Connection conn, ParsedSql parsedSql) {
+	public Query(Connection conn, ParsedSql parsedSql) {
 		super();
-		this.runtime = runtime;
 		this.conn = conn;
 		this.parsedSql = parsedSql;
 		
@@ -172,7 +169,7 @@ public class Query {
 
 	private void safeExecuteFunction(LeoObject function, LeoObject arg1) {
 		try {
-			this.runtime.execute(function, arg1);
+			function.call(arg1);
 		}
 		catch (Exception e) {
 			System.err.println(e);

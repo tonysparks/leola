@@ -57,6 +57,20 @@ public class ClassDefinition {
 	}
 	
 	/**
+	 * @return true if the constructor contains variable arguments
+	 */
+	public boolean hasVarargs() {
+	    return this.body.hasVarargs();
+	}
+	
+	/**
+	 * @return the number of parameters the constructor takes
+	 */
+	public int getNumberOfParameters() {
+	    return this.body.numArgs;
+	}
+	
+	/**
 	 * @return the declaredScope
 	 */
 	public Scope getDeclaredScope() {

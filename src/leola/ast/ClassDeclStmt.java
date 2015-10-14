@@ -49,10 +49,11 @@ public class ClassDeclStmt extends Stmt {
 
 	/**
 	 * @param className
-	 * @param variables
+	 * @param classParams
+	 * @param classBodyStmt
 	 * @param parentClassName
+	 * @param parentClassParams
 	 * @param interfaceNames
-	 * @param constructorExprs
 	 */
 	public ClassDeclStmt(String className
 					  , ParameterList classParams

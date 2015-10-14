@@ -5,8 +5,6 @@
 */
 package leola.lang;
 
-import java.util.Map;
-
 import leola.vm.Leola;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaIgnore;
@@ -36,15 +34,8 @@ public class MapLeolaLibrary implements LeolaLibrary {
 	}
 	
 	
-	public void foreach(LeoMap map, LeoObject function) {
-
-		for(Map.Entry<LeoObject, LeoObject> entry : map.getMap().entrySet()) {
-			LeoObject result = this.runtime.execute(function, entry.getKey(), entry.getValue() );	
-			if ( LeoObject.isTrue(result) ) {
-				break;
-			}
-		}
-		
+	public LeoObject foreach(LeoMap map, LeoObject function) {
+	    return map.foreach(function);
 	}
 	
 	public void put(LeoMap map, LeoObject key, LeoObject value) {

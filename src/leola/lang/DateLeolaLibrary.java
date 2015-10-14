@@ -160,7 +160,7 @@ public class DateLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Returns the number of milliseconds since January 1, 1970, 00:00:00 GMT represented by this Date object.
 	 * @param date
-	 * @return
+	 * @return the time
 	 */
 	public long toMSec(Date date) {
 		return date.getTime();
@@ -169,7 +169,7 @@ public class DateLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Converts the {@link Date} to a {@link Timestamp}
 	 * @param date
-	 * @return
+	 * @return the time
 	 */
 	public Timestamp toTimestamp(Date date) {
 		return new Timestamp(date.getTime());

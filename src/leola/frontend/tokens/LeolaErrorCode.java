@@ -12,6 +12,9 @@ public enum LeolaErrorCode {
     INVALID_NUMBER("Invalid number"),
     INVALID_VAR_ARGS_START("Invalid variable argument; must have variable name"),
     INVALID_VAR_ARGS("Invalid variable argument; must be last argument"),
+    INVALID_MULTI_VAR_ARGS("Invalid variable argument; only one variable argument is allowed"),
+    INVALID_ARGS_EXPANSION("Invalid variable argument expansion; can only be used in function arguments"),
+    INVALID_MULTI_ARGS_EXPANSION("Invalid variable argument expansion; can only expand one argument"),
     
     MISSING_ARROW("Missing ->"),
     MISSING_COMMA("Missing ,"),

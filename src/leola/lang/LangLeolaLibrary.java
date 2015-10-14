@@ -60,6 +60,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 * Includes either a Leola script file or Jar file.
 	 * 
 	 * @param lib
+	 * @param namespace
 	 * @throws Exception
 	 */
 	public final void include(String lib, String namespace) throws Exception {
@@ -70,6 +71,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 * Loads a {@link LeolaLibrary} file.
 	 * 
 	 * @param lib
+	 * @param namespace
 	 * @throws Exception
 	 */
 	public final void require(String lib, String namespace) throws Exception {
@@ -79,6 +81,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Reloads a library
 	 * @param lib
+	 * @param namespace
 	 * @throws Exception
 	 */
 	public void reload(String lib, String namespace) throws Exception {
@@ -140,8 +143,8 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Loads a class
 	 *
-	 * @param interpreter
 	 * @param className
+	 * @param namespace
 	 * @throws Exception
 	 */
 	@LeolaMethod(alias="import")
@@ -159,9 +162,8 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Evaluates the expression.
 	 *
-	 * @param leola
 	 * @param expr
-	 * @return
+	 * @return the result of evaluation
 	 * @throws Exception
 	 */
 	public final LeoObject eval(String expr) throws Exception {
@@ -174,7 +176,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 * Reads a line from sys in
 	 *
 	 * TODO - move to io
-	 * @return
+	 * @return the line read from system in
 	 */
 	@SuppressWarnings("resource")
 	public final String readln() {
@@ -192,6 +194,12 @@ public class LangLeolaLibrary implements LeolaLibrary {
 		return result;
 	}
 
+	/**
+	 * Print format
+	 * 
+	 * @param x the string to be formatted 
+	 * @param args the format arguments
+	 */
 	@LeolaMethodVarargs
 	public final void printf(Object x, LeoObject ... args) {
 	    if(args!=null) {
@@ -228,7 +236,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Transforms the supplied object into a number
 	 * @param x
-	 * @return
+	 * @return the double
 	 */
 	public final double toNumber(Object x) {
 		String str = x.toString();
@@ -238,12 +246,19 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Transforms the supplied object into a string
 	 * @param x
-	 * @return
+	 * @return the string
 	 */
 	public final String toString(Object x) {
 		return x.toString();
 	}
 	
+	
+	/**
+	 * Converts the string into byte[]
+	 * 
+	 * @param str
+	 * @return the byte[]
+	 */
 	public final LeoNativeClass toBytes(String str) {
 		return new LeoNativeClass(byte[].class, str.getBytes());
 	}
@@ -283,7 +298,7 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	@LeolaMethod(alias="synchronized")
 	public final LeoObject _synchronized(LeoObject function) {
 	    synchronized (function) {
-	        return function.call();
+	        return function.xcall();
         }
 	}
 	
@@ -308,7 +323,12 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	    return LeoMap.toMap(map);
 	}
 	
-
+	/**
+	 * Converts the object to a character
+	 * 
+	 * @param x
+	 * @return the character
+	 */
 	public final char toChar(Object x) {
 		if ( x instanceof String) {
 			return ((String) x).charAt(0);
@@ -334,14 +354,14 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Constructs a new Array
 	 * @param size
-	 * @param optional fill function
-	 * @return
+	 * @param func optional fill function
+	 * @return the new array
 	 */
 	public final LeoArray newArray(int size, LeoObject func) {		
 		LeoArray result = new LeoArray(size);
 		if( func != null ) {
 			for(int i = 0; i < size; i++ ) {			
-				result.add(this.runtime.execute(func, LeoInteger.valueOf(i)));
+				result.add(func.xcall(LeoInteger.valueOf(i)));
 			}
 		}
 		else {
@@ -358,25 +378,36 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 * as the thread runnable.
 	 *
 	 * @param function
-	 * @return
+	 * @return the thread class
 	 */
-	public final LeoNativeClass newThread(final LeoObject function) {		
+	public final LeoNativeClass newThread(final LeoObject function, String name, Boolean daemon) {		
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				try {
-					runtime.execute(function);
+					function.xcall();
 				}
 				catch (Throwable t) {
 					t.printStackTrace();
 				}
 			}
-		});
+		}, name!=null?name:"leola-user-thread");
 
+		if(daemon != null) {
+		    thread.setDaemon(daemon);
+		}
+		
 		return new LeoNativeClass(thread);
 	}
 	
+	
+	/**
+	 * Creates a new {@link Scheduler}
+	 * 
+	 * @param poolSize
+	 * @return the {@link Scheduler}
+	 */
 	public final LeoNativeClass newScheduler(int poolSize) {
-		return new LeoNativeClass(new Scheduler(runtime, poolSize));
+		return new LeoNativeClass(new Scheduler(poolSize));
 	}
 
 	/**
@@ -386,22 +417,29 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 */
 	public static class Scheduler {
 		private ScheduledExecutorService executorService;
-		private Leola runtime;
-		Scheduler(Leola runtime, int poolSize) {
+		Scheduler(int poolSize) {
 			this.executorService = Executors.newScheduledThreadPool(poolSize);
-			this.runtime = runtime;
 		}
 		
+		/**
+		 * Terminates the scheduler
+		 */
 		public void shutdown() {			
 			this.executorService.shutdownNow();
 		}
 		
+		/**
+		 * Schedules the function
+		 * 
+		 * @param timeMsec
+		 * @param function
+		 */
 		public void schedule(long timeMsec, final LeoObject function) {
 			this.executorService.schedule(new Callable<Void>() {
 
 				public Void call() throws Exception {
 					try {
-						runtime.execute(function);
+						function.xcall();
 					}
 					catch (Throwable t) {
 						t.printStackTrace();
@@ -414,12 +452,19 @@ public class LangLeolaLibrary implements LeolaLibrary {
 			}, timeMsec, TimeUnit.MILLISECONDS);
 		}
 		
+		
+		/**
+		 * Repeatedly executes the function
+		 * 
+		 * @param delay
+		 * @param function
+		 */
 		public void repeat(long delay, final LeoObject function) {
 			this.executorService.scheduleWithFixedDelay(new Runnable() {
 
 				public void run() {
 					try {
-						runtime.execute(function);
+						function.xcall();
 					}
 					catch (Throwable t) {
 						t.printStackTrace();

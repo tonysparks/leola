@@ -44,7 +44,7 @@ public class NamedParameterExprParser extends StmtParser {
 	    Token startingToken = token;
 	    String parameterName = token.getText();
 		
-	    Expr valueExpr = (Expr)new ExprParser(this).parse(nextToken());
+	    Expr valueExpr = (Expr)new ExprParser(this, true).parse(nextToken());
 	    
         NamedParameterExpr stmt = new NamedParameterExpr(parameterName, valueExpr);
         setLineNumber(stmt, startingToken);

@@ -16,8 +16,6 @@ import leola.frontend.EvalException;
 public class CompoundExpr extends Expr {
 
 	/**
-	 * @param firstStmt
-	 * @param secondStmt
 	 */
 	public CompoundExpr() {
 	}

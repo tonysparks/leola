@@ -2,6 +2,7 @@ package leola.frontend;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 
 import leola.frontend.listener.EventDispatcher;
 
@@ -19,7 +20,7 @@ import leola.frontend.listener.EventDispatcher;
  * For instructional purposes only. No warranties.
  * </p>
  */
-public class Source {
+public class Source implements AutoCloseable {
     
     public static final char EOL = '\n'; // end-of-line character
     public static final char EOF = (char) 0; // end-of-file character
@@ -39,10 +40,10 @@ public class Source {
      * @throws IOException
      *             if an I/O error occurred
      */
-    public Source(EventDispatcher eventDispatcher, BufferedReader reader) {
+    public Source(EventDispatcher eventDispatcher, Reader reader) {
         this.lineNum = 0;
         this.currentPos = -2; // set to -2 to read the first source line
-        this.reader = reader;
+        this.reader = (reader instanceof BufferedReader) ? (BufferedReader)reader : new BufferedReader(reader);
         this.eventDispatcher = eventDispatcher;
     }
 
@@ -79,7 +80,7 @@ public class Source {
      * @throws Exception
      *             if an error occurred.
      */
-    public char currentChar() throws Exception {
+    public char currentChar() throws IOException {
         // First time?
         if (currentPos == -2) {
             readLine();
@@ -115,7 +116,7 @@ public class Source {
      * @throws Exception
      *             if an error occurred.
      */
-    public char nextChar() throws Exception {
+    public char nextChar() throws IOException {
         ++currentPos;
         return currentChar();
     }
@@ -128,7 +129,7 @@ public class Source {
      * @throws Exception
      *             if an error occurred.
      */
-    public char peekChar() throws Exception {
+    public char peekChar() throws IOException {
         return peekAhead(1);
     }
 
@@ -136,10 +137,10 @@ public class Source {
      * Looks ahead 'pos' positions
      * 
      * @param pos
-     * @return
+     * @return the peeked character
      * @throws Excepion
      */
-    public char peekAhead(int pos) throws Exception {
+    public char peekAhead(int pos) throws IOException {
         currentChar();
         if (line == null) {
             return EOF;
@@ -154,7 +155,7 @@ public class Source {
      * @throws Exception
      *             if an error occurred.
      */
-    public boolean atEol() throws Exception {
+    public boolean atEol() throws IOException {
         return (line != null) && (currentPos == line.length());
     }
 
@@ -163,7 +164,7 @@ public class Source {
      * @throws Exception
      *             if an error occurred.
      */
-    public boolean atEof() throws Exception {
+    public boolean atEof() throws IOException {
         // First time?
         if (currentPos == -2) {
             readLine();
@@ -176,10 +177,10 @@ public class Source {
      * Skip the rest of the current input line by forcing the next read to read
      * a new line.
      * 
-     * @throws Exception
+     * @throws IOException
      *             if an error occurred.
      */
-    public void skipToNextLine() throws Exception {
+    public void skipToNextLine() throws IOException {
         if (line != null) {
             currentPos = line.length() + 1;
         }
@@ -210,14 +211,10 @@ public class Source {
      * @throws Exception
      *             if an error occurred.
      */
-    public void close() throws Exception {
+    @Override
+    public void close() throws IOException {
         if (reader != null) {
-            try {
-                reader.close();
-            }
-            catch (IOException ex) {
-                throw ex;
-            }
+            reader.close();
         }
     }
 

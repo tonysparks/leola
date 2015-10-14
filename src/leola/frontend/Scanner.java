@@ -1,5 +1,7 @@
 package leola.frontend;
 
+import java.io.IOException;
+
 import leola.frontend.listener.EventDispatcher;
 
 /**
@@ -71,7 +73,7 @@ public abstract class Scanner {
      * @throws Exception
      *             if an error occurred.
      */
-    public Token nextToken() throws Exception {
+    public Token nextToken() throws IOException {
         prevToken = currentToken;
         currentToken = extractToken();
         return currentToken;
@@ -85,7 +87,7 @@ public abstract class Scanner {
      * @throws Exception
      *             if an error occurred.
      */
-    protected abstract Token extractToken() throws Exception;
+    protected abstract Token extractToken() throws IOException;
 
     /**
      * Call the source's currentChar() method.
@@ -94,7 +96,7 @@ public abstract class Scanner {
      * @throws Exception
      *             if an error occurred.
      */
-    public char currentChar() throws Exception {
+    public char currentChar() throws IOException {
         return source.currentChar();
     }
 
@@ -105,17 +107,17 @@ public abstract class Scanner {
      * @throws Exception
      *             if an error occurred.
      */
-    public char nextChar() throws Exception {
+    public char nextChar() throws IOException {
         return source.nextChar();
     }
 
     /**
      * Peeks at the next char
      * 
-     * @return
+     * @return the peeked character
      * @throws Exception
      */
-    public char peekChar() throws Exception {
+    public char peekChar() throws IOException {
         return this.source.peekChar();
     }
 
@@ -126,7 +128,7 @@ public abstract class Scanner {
      * @throws Exception
      *             if an error occurred.
      */
-    public boolean atEol() throws Exception {
+    public boolean atEol() throws IOException {
         return source.atEol();
     }
 
@@ -137,7 +139,7 @@ public abstract class Scanner {
      * @throws Exception
      *             if an error occurred.
      */
-    public boolean atEof() throws Exception {
+    public boolean atEof() throws IOException {
         return source.atEof();
     }
 
@@ -147,7 +149,7 @@ public abstract class Scanner {
      * @throws Exception
      *             if an error occurred.
      */
-    public void skipToNextLine() throws Exception {
+    public void skipToNextLine() throws IOException {
         source.skipToNextLine();
     }
 }

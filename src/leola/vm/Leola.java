@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -412,6 +413,28 @@ public class Leola {
 	}
 
 	/**
+	 * Sets the {@link ExceptionHandler}.
+	 * @param handler
+	 */
+	public void setExceptionHandler(ExceptionHandler handler) {
+	    this.exceptionHandler = handler;
+	}
+	
+	/**
+	 * @return the {@link ExceptionHandler}
+	 */
+	public ExceptionHandler getExceptionHandler() {
+	    return this.exceptionHandler;
+	}
+	
+	/**
+     * @return the eventDispatcher
+     */
+    public EventDispatcher getEventDispatcher() {
+        return eventDispatcher;
+    }
+	
+	/**
 	 * @return the current working directory
 	 */
 	public File getWorkingDirectory() {
@@ -798,7 +821,7 @@ public class Leola {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject callee, Bytecode code, LeoObject[] args) throws LeolaRuntimeException {
-		return this.vm.get().execute(callee,callee, code,args);
+		return this.vm.get().execute(callee,callee, code,args).throwIfError();
 	}
 
 	/**
@@ -809,7 +832,7 @@ public class Leola {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(LeoObject callee, Bytecode code) throws LeolaRuntimeException {
-		return this.vm.get().execute(callee,callee, code);
+		return this.vm.get().execute(callee,callee, code).throwIfError();
 	}
 
 	/**
@@ -820,7 +843,7 @@ public class Leola {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(Bytecode code, LeoObject[] args) throws LeolaRuntimeException {
-		return this.vm.get().execute(this.global,this.global, code,args);
+		return this.vm.get().execute(this.global,this.global, code,args).throwIfError();
 	}
 
 	/**
@@ -830,105 +853,11 @@ public class Leola {
 	 * @throws LeolaRuntimeException
 	 */
 	public LeoObject execute(Bytecode code) throws LeolaRuntimeException {
-		return this.vm.get().execute(this.global, this.global, code);
+		return this.vm.get().execute(this.global, this.global, code).throwIfError();
 	}
 
 
-	/**
-	 * Executes the function
-	 *
-	 * @param function
-	 * @param arg1
-	 * @return an object of the resulting execution (always returns an object)
-	 * @throws LeolaRuntimeException
-	 */
-	public LeoObject execute(LeoObject function, LeoObject arg1) throws LeolaRuntimeException {
-		return function.call(arg1);
-	}
-
-	/**
-	 * Executes the function
-	 *
-	 * @param function
-	 * @param arg1
-	 * @param arg2
-	 * @return an object of the resulting execution (always returns an object)
-	 * @throws LeolaRuntimeException
-	 */
-	public LeoObject execute(LeoObject function, LeoObject arg1, LeoObject arg2) throws LeolaRuntimeException {
-		return function.call(arg1, arg2);
-	}
-
-	/**
-	 * Executes the function
-	 *
-	 * @param function
-	 * @param arg1
-	 * @param arg2
-	 * @param arg3
-	 * @return an object of the resulting execution (always returns an object)
-	 * @throws LeolaRuntimeException
-	 */
-	public LeoObject execute(LeoObject function, LeoObject arg1, LeoObject arg2, LeoObject arg3) throws LeolaRuntimeException {
-		return function.call(arg1, arg2, arg3);
-	}
-
-
-	/**
-	 * Executes the function
-	 *
-	 * @param function
-	 * @param arg1
-	 * @param arg2
-	 * @param arg3
-	 * @param arg4
-	 * @return an object of the resulting execution (always returns an object)
-	 * @throws LeolaRuntimeException
-	 */
-	public LeoObject execute(LeoObject function, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4) throws LeolaRuntimeException {
-		return function.call(arg1, arg2, arg3, arg4);
-	}
-
-
-	/**
-	 * Executes the function
-	 *
-	 * @param function
-	 * @param arg1
-	 * @param arg2
-	 * @param arg3
-	 * @param arg4
-	 * @param arg5
-	 * @return an object of the resulting execution (always returns an object)
-	 * @throws LeolaRuntimeException
-	 */
-	public LeoObject execute(LeoObject function, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4, LeoObject arg5) throws LeolaRuntimeException {
-		return function.call(arg1, arg2, arg3, arg4, arg5);
-	}
-
-	/**
-	 * Executes the function
-	 *
-	 * @param function
-	 * @param args
-	 * @return an object of the resulting execution (always returns an object)
-	 * @throws LeolaRuntimeException
-	 */
-	public LeoObject execute(LeoObject function, LeoObject[] args) throws LeolaRuntimeException {
-		return function.call(args);
-	}
-
-	/**
-	 * Executes the function
-	 *
-	 * @param function
-	 * @return an object of the resulting execution (always returns an object)
-	 * @throws LeolaRuntimeException
-	 */
-	public LeoObject execute(LeoObject function) throws LeolaRuntimeException {
-		return function.call();
-	}
-
+	
 
 	/**
 	 * Evaluates the inlined source code.
@@ -981,13 +910,13 @@ public class Leola {
 
 
 			Bytecode bytecode = Bytecode.read(ns, in);
-			bytecode.setSourceFile(file.getName());
+			bytecode.setSourceFile(file);
 
 			result = execute(bytecode);
 		}
 		else {
 			Bytecode bytecode = compile(new BufferedReader(new FileReader(file)), this.exceptionHandler);
-			bytecode.setSourceFile(file.getName());
+			bytecode.setSourceFile(file);
 
 			result = execute(ns, bytecode);
 		}
@@ -995,13 +924,13 @@ public class Leola {
 		return result;
 	}
 
-	public LeoObject eval(BufferedReader reader) throws Exception {
+	public LeoObject eval(Reader reader) throws Exception {
 		Bytecode bytecode = compile(reader, this.exceptionHandler);
 		LeoObject result = execute(bytecode);
 		return result;
 	}
 
-	public LeoObject eval(BufferedReader reader, LeoNamespace namespace) throws Exception {
+	public LeoObject eval(Reader reader, LeoNamespace namespace) throws Exception {
 		Bytecode bytecode = compile(reader, this.exceptionHandler);
 		LeoObject result = execute(namespace, bytecode);
 		return result;
@@ -1017,7 +946,7 @@ public class Leola {
 	public Bytecode read(File scriptFile) throws Exception {
 	    Bytecode code = read(new BufferedInputStream(new FileInputStream(scriptFile)));
 	    if(code != null) {
-	        code.setSourceFile(scriptFile.getName());
+	        code.setSourceFile(scriptFile);
 	    }
 	    
 	    return code;
@@ -1100,7 +1029,7 @@ public class Leola {
 	 */
 	public Bytecode compile(File scriptFile) throws Exception {
 	    Bytecode code = compile(new BufferedReader(new FileReader(scriptFile)));
-        code.setSourceFile(scriptFile.getName());
+        code.setSourceFile(scriptFile);
         return code;
 	}
 	
@@ -1111,7 +1040,7 @@ public class Leola {
 	 * @return
 	 * @throws Exception
 	 */
-	public Bytecode compile(BufferedReader reader) throws Exception {
+	public Bytecode compile(Reader reader) throws Exception {
 		return compile(reader, this.exceptionHandler);
 	}
 
@@ -1122,7 +1051,7 @@ public class Leola {
 	 * @return
 	 * @throws Exception
 	 */
-	public Bytecode compile(BufferedReader reader, ExceptionHandler exceptionHandler) throws Exception {
+	public Bytecode compile(Reader reader, ExceptionHandler exceptionHandler) throws Exception {
 		ASTNode program = generateAST(reader, exceptionHandler);
 		BytecodeGeneratorVisitor gen = new BytecodeGeneratorVisitor(this, new EmitterScopes());
 		program.visit(gen);
@@ -1170,7 +1099,7 @@ public class Leola {
      * @return the root node of the AST
      * @throws Exception
      */
-    public ASTNode generateAST(BufferedReader reader, ExceptionHandler exceptionHandler) throws Exception {
+    public ASTNode generateAST(Reader reader, ExceptionHandler exceptionHandler) throws Exception {
         final Source source = new Source(this.eventDispatcher, reader);
 
         Scanner scanner = new LeolaScanner(source);

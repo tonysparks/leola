@@ -61,7 +61,7 @@ public class ChainedAssignmentExprParser extends ExprParser {
         	token = currentToken();
         }
         else {
-            getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_EQUALS);
+            throwParseError(token, LeolaErrorCode.MISSING_EQUALS);
         }
 
         // Parse the expression.  The ASSIGN node adopts the expression's

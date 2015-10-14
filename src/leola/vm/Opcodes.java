@@ -459,8 +459,7 @@ public class Opcodes {
             case SIDX:    {
                 op = "SIDX";
                 break;
-            }
-			
+            }            
 			case LINE: {
 				op = "LINE";
 				break;
@@ -530,8 +529,8 @@ public class Opcodes {
 		RET = 31,                     /*      */
 				
 		/* method invocation */
-		INVOKE = 32,		          /* ARG1 */  		
-		TAIL_CALL = 33,		          /* ARG1 */
+		INVOKE = 32,		          /* ARG1, ARG2 */  		
+		TAIL_CALL = 33,		          /* ARG1, ARG2 */
 		
 		/* member access */
 		GET = 34,                     /*      */
@@ -578,9 +577,9 @@ public class Opcodes {
 				
 		IDX = 64,                     /*      */
 		SIDX = 65,                    /*      */
-		
+				
 		/* debug */
-		LINE = 66                     /* ARGx */
+		LINE = 67                     /* ARGx */
 		;
 	
 	
@@ -678,7 +677,7 @@ public class Opcodes {
 		opcodes.put("LTE", LTE);
 		
 		opcodes.put("IDX", IDX);
-		opcodes.put("SIDX", SIDX);
+		opcodes.put("SIDX", SIDX);		
 		
 		opcodes.put("LINE", LINE);	
 	}

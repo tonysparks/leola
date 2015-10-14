@@ -119,20 +119,22 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
      * </pre>
      * 
      * @param function
+     * @return the {@link LeoObject} returned from the supplied function if returned <code>true</code>
      */
-    public void foreach(LeoObject function) {
+    public LeoObject foreach(LeoObject function) {
         if(function != null) {
             for(int i = 0; i < this.bucketLength(); i++) {
                 LeoObject key = getKey(i);
                 if(key != null) {
                     LeoObject value = getValue(i);
-                    LeoObject result = function.call(key, value);
+                    LeoObject result = function.xcall(key, value);
                     if(LeoObject.isTrue(result)) {
-                        break;
+                        return result;
                     }
                 }
             }
         }
+        return LeoObject.NULL;
     }
     
     /**
@@ -155,7 +157,7 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
                 LeoObject key = getKey(i);
                 if(key != null) {
                     LeoObject value = getValue(i);
-                    if( LeoObject.isTrue(function.call(key, value)) ) {
+                    if( LeoObject.isTrue(function.xcall(key, value)) ) {
                         map.put(key, value);
                     }
                 }
@@ -175,7 +177,7 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
      * </pre>
      * 
      * @param function
-     * @return
+     * @return the new mapped {@link LeoMap}
      */
     public LeoMap map(LeoObject function) {
         if(function != null) {
@@ -184,7 +186,7 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
                 LeoObject key = getKey(i);
                 if(key != null) {
                     LeoObject value = getValue(i);
-                    value = function.call(key, value);
+                    value = function.xcall(key, value);
                     map.put(key, value);                    
                 }
             }

@@ -6,12 +6,16 @@
 package leola.lang;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.StringReader;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import leola.vm.Args;
 import leola.vm.Leola;
 import leola.vm.compiler.Assembler;
 import leola.vm.compiler.Bytecode;
+import leola.vm.debug.DebugEvent;
+import leola.vm.debug.DebugListener;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaIgnore;
 import leola.vm.lib.LeolaLibrary;
@@ -47,7 +51,7 @@ public class DebugLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Retrieves the {@link Bytecode} from the supplied object.
 	 * @param f
-	 * @return
+	 * @return the bytecode
 	 * @throws Exception
 	 */
 	public final Bytecode getbytecode(LeoObject f) throws Exception {
@@ -81,6 +85,31 @@ public class DebugLeolaLibrary implements LeolaLibrary {
 		Bytecode code = assember.compile(new BufferedReader(new StringReader(asm.toString())));
 		return new LeoFunction(runtime, runtime.getGlobalNamespace(), code);
 	}
+
+	/**
+	 * Attaches a debugger script.  The script should return
+	 * back a callback function that will be used to pass back
+	 * the {@link DebugEvent}.
+	 * 
+	 * @param filename the script file
+	 */
+	public void debugger(final String filename) throws Exception {
+	    final File scriptFile = new File(filename);
+	    
+	    runtime.setDebugListener(new DebugListener() {
+            Leola runtime = new Leola(new Args.ArgsBuilder()
+                .setIncludeDirectories(DebugLeolaLibrary.this.runtime.getIncludePath())
+                .setFileName(filename)
+                .build());
+	        LeoObject fun = runtime.eval(scriptFile);
+	        
+	        
+            @Override
+            public void onLineNumber(DebugEvent event) {
+                fun.xcall(LeoObject.valueOf(event));            
+            }
+        });
+	}
 	
 	/**
 	 * The assert function by default is disabled.
@@ -111,8 +140,7 @@ public class DebugLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Assert that both objects are equal to each other.
 	 *
-	 * @param l
-	 * @param r
+	 * @param obj
 	 * @param message
 	 * @throws Exception
 	 */

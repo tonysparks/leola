@@ -2,6 +2,7 @@ package leola.frontend;
 
 import leola.ast.ASTNode;
 import leola.frontend.listener.EventDispatcher;
+import leola.frontend.tokens.LeolaErrorCode;
 
 /**
  * <h1>Parser</h1>
@@ -113,6 +114,17 @@ public abstract class Parser {
      */
     public Token nextToken() throws Exception {
         return scanner.nextToken();
+    }
+    
+    
+    /**
+     * Issues a parsing exception.
+     * 
+     * @param token
+     * @param errorCode
+     */
+    public void throwParseError(Token token, LeolaErrorCode errorCode) {
+        getExceptionHandler().errorToken(token, this, errorCode);
     }
 
 }

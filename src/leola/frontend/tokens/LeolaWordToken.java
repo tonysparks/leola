@@ -1,8 +1,11 @@
 package leola.frontend.tokens;
 
-import leola.frontend.Source;
+import static leola.frontend.tokens.LeolaTokenType.IDENTIFIER;
+import static leola.frontend.tokens.LeolaTokenType.RESERVED_WORDS;
 
-import static leola.frontend.tokens.LeolaTokenType.*;
+import java.io.IOException;
+
+import leola.frontend.Source;
 
 
 /**
@@ -16,7 +19,7 @@ public class LeolaWordToken extends LeolaToken {
 	/**
 	 * Determines if the supplied character is valid inside the identifier
 	 * @param c
-	 * @return
+	 * @return true if valid identifier character
 	 */
 	public static final boolean isValidIdentifierCharacter(char c) {
 		boolean isValid = Character.isLetterOrDigit(c);
@@ -59,7 +62,7 @@ public class LeolaWordToken extends LeolaToken {
      * @throws Exception if an error occurred.
      */
     public LeolaWordToken(Source source)
-        throws Exception {
+        throws IOException {
         super(source);
     }
 
@@ -69,7 +72,7 @@ public class LeolaWordToken extends LeolaToken {
      */
     @Override
 	protected void extract()
-        throws Exception {
+        throws IOException {
         StringBuilder textBuffer = new StringBuilder();
         char currentChar = currentChar();
 

@@ -97,8 +97,17 @@ public class LeoFunction extends LeoOuterObject {
 	/**
 	 * @return the numberOfArgs
 	 */
+	@Override
 	public int getNumberOfArgs() {
 		return numberOfArgs;
+	}
+	
+	/**
+	 * @return true if this function has variable arguments
+	 */
+	@Override
+	public boolean hasVarargs() {
+	    return this.bytecode.hasVarargs();
 	}
 
 	@Override

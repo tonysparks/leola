@@ -6,6 +6,7 @@
 package leola.vm.exceptions;
 
 import leola.vm.types.LeoError;
+import leola.vm.types.LeoObject;
 
 
 /**
@@ -27,14 +28,21 @@ public class LeolaRuntimeException extends RuntimeException {
 	 *
 	 */
 	public LeolaRuntimeException() {
-		this.leoError = new LeoError();
+		this(new LeoError());
 	}
 	
 	/**
 	 * @param error
 	 */
-	public LeolaRuntimeException(LeoError error) {
-		this.leoError = error;
+	public LeolaRuntimeException(LeoObject error) {
+	    if(error==null) {
+	        error = new LeoError();
+	    }
+	    else if (!error.isError()) {
+	        error = new LeoError(error);
+	    }
+	    
+		this.leoError = error.as();
 	}
 
 	/**

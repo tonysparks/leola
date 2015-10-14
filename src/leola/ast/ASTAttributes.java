@@ -14,8 +14,9 @@ package leola.ast;
 public interface ASTAttributes {
 	
 	public static final int
-		IS_PROPERTY = (1<<1),
-		NAMESPACE_PROPERTY = (1<<2)
+		IS_PROPERTY           = (1<<1),
+		NAMESPACE_PROPERTY    = (1<<2),
+		IS_ARG_ARRAY_EXPAND   = (1<<3)
 		;
 	
 	/**

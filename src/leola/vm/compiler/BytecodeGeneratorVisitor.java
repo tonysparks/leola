@@ -598,8 +598,10 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 	@Override
 	public void visit(ChainedFuncInvocationExpr s) throws EvalException {
 		asm.line(s.getLineNumber());
-
+		
+		int expandedArgsIndex = 0;
 		int nargs = 0;
+		
 		Expr[] params = s.getParameters();
 		if ( params != null ) {
             boolean hasNamedParameters = false;
@@ -607,11 +609,20 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
              * if so, we need to add some additional instructions
              * that effect performance
              */
+            int index = 0;
             for(Expr param : params) {
                 if(param instanceof NamedParameterExpr) {
-                    hasNamedParameters = true;
-                    break;
+                    hasNamedParameters = true;  
+                    NamedParameterExpr nExpr = (NamedParameterExpr)param;
+                    if(nExpr.getValueExpr().hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {                       
+                        expandedArgsIndex=index+1;    
+                    }
                 }
+                else if(param.hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {
+                    expandedArgsIndex=index+1;
+                }
+                
+                index++;
             }
             
             
@@ -631,7 +642,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		}
 		
 		asm.rotl(nargs);
-		asm.invoke(nargs);
+		asm.invoke(nargs,expandedArgsIndex);
 	}
 
 	/* (non-Javadoc)
@@ -716,7 +727,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		asm.addAndloadconst(superParams!=null?superParams.length:0);
 		
 		asm.addAndloadconst(asm.getBytecodeIndex());		
-		asm.classdef(interfaces!=null?interfaces.length:0);
+		asm.classdef(interfaces!=null?interfaces.length:0, params.size(), params.isVarargs());
 		{			
 			Stmt body = s.getClassBodyStmt();
 			body.visit(this);
@@ -950,20 +961,32 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 	public void visit(FuncInvocationExpr s) throws EvalException {		
 		asm.line(s.getLineNumber());
 		
+		int expandedArgsIndex = 0;
+		
 		int nargs = 0;
 		Expr[] params = s.getParameters();
 		if ( params != null ) {
 		    
 		    boolean hasNamedParameters = false;
+		    
 		    /* check to see if there are any NamedParameters,
 		     * if so, we need to add some additional instructions
 		     * that effect performance
 		     */
+		    int index = 0;
 		    for(Expr param : params) {
 		        if(param instanceof NamedParameterExpr) {
-		            hasNamedParameters = true;
-		            break;
+		            hasNamedParameters = true;	
+		            NamedParameterExpr nExpr = (NamedParameterExpr)param;
+		            if(nExpr.getValueExpr().hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {		                
+		                expandedArgsIndex=index+1;    
+		            }
 		        }
+		        else if(param.hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {
+		            expandedArgsIndex=index+1;
+		        }
+		        
+		        index++;
 		    }
 		    
 		    
@@ -1001,13 +1024,13 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		if ( ! this.tailCallStack.isEmpty() ) {
 			Tailcall tc = this.tailCallStack.peek();
 			if ( tc.tailcallExpr == s) {
-				asm.tailcall(nargs);
+				asm.tailcall(nargs, expandedArgsIndex);
 				isTailcall = true;
 			}
 		}
 		
 		if ( !isTailcall ) {
-			asm.invoke(nargs);
+		    asm.invoke(nargs, expandedArgsIndex);
 		}				
 	}
 	
@@ -1071,7 +1094,9 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 	public void visit(NewExpr s) throws EvalException {
 		asm.line(s.getLineNumber());
 		
+		int expandedArgsIndex = 0;
 		int nargs = 0;
+		
 		Expr[] params = s.getParameters();
 		if(params != null) {
             boolean hasNamedParameters = false;
@@ -1079,11 +1104,20 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
              * if so, we need to add some additional instructions
              * that effect performance
              */
+            int index = 0;
             for(Expr param : params) {
                 if(param instanceof NamedParameterExpr) {
-                    hasNamedParameters = true;
-                    break;
+                    hasNamedParameters = true;  
+                    NamedParameterExpr nExpr = (NamedParameterExpr)param;
+                    if(nExpr.getValueExpr().hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {                       
+                        expandedArgsIndex=index+1;    
+                    }
                 }
+                else if(param.hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {
+                    expandedArgsIndex=index+1;
+                }
+                
+                index++;
             }
             
             
@@ -1105,7 +1139,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		String className = s.getClassName();		
 		asm.addAndloadconst(className);
 		
-		asm.newobj(nargs);
+		asm.newobj(nargs, expandedArgsIndex);
 	}
 
 	/* (non-Javadoc)
@@ -1397,7 +1431,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 			case NOT: {
 				asm.not();
 				break;
-			}
+			}			
 		}
 	}
 

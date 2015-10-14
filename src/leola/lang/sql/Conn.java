@@ -10,7 +10,6 @@ import java.sql.Savepoint;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import leola.vm.Leola;
 import leola.vm.types.LeoMap;
 import leola.vm.types.LeoNativeClass;
 import leola.vm.types.LeoObject;
@@ -26,16 +25,14 @@ public class Conn {
 	 * SQL connection
 	 */
 	private Connection sqlConn;
-	private Leola runtime;
 	private Map<String, Savepoint> savepoints;
 
 	private LeoObject thisObject;
 	/**
 	 * @param sqlConn
 	 */
-	public Conn(Leola runtime, Connection sqlConn) throws Exception {
+	public Conn(Connection sqlConn) throws Exception {
 		super();
-		this.runtime = runtime;
 		this.sqlConn = sqlConn;
 		this.thisObject = new LeoNativeClass(this);
 		
@@ -96,7 +93,7 @@ public class Conn {
 	public Query query(LeoObject sql) {
 		String query = sql.toString();
 		ParsedSql parsedSql = SqlParameterParser.parseSqlStatement(query);				
-		return new Query(this.runtime, this.sqlConn, parsedSql);	
+		return new Query(this.sqlConn, parsedSql);	
 	}
 	
 	/**
@@ -199,7 +196,7 @@ public class Conn {
 		LeoObject result = null;
 		Savepoint savepoint = this.sqlConn.setSavepoint();
 		try {			
-			result = runtime.execute(func, this.thisObject);
+			result = func.xcall(this.thisObject);
 			this.sqlConn.commit();
 		}
 		catch(Exception t) {

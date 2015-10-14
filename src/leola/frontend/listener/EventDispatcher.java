@@ -246,7 +246,7 @@ public class EventDispatcher {
 	/**
 	 * Get all the {@link Event} classes that currently have listeners.
 	 * 
-	 * @return
+	 * @return the set of event classes
 	 */
 	public Set<Class<?>> getEventClasses() {
 		return this.eventListenerMap.keySet();

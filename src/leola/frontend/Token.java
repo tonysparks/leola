@@ -1,5 +1,7 @@
 package leola.frontend;
 
+import java.io.IOException;
+
 /**
  * <h1>Token</h1>
  *
@@ -30,7 +32,7 @@ public class Token {
      * @throws Exception
      *             if an error occurred.
      */
-    public Token(Source source) throws Exception {
+    public Token(Source source) throws IOException {
         this.source = source;
         this.lineNum = source.getLineNum();
         this.position = source.getPosition();
@@ -103,7 +105,7 @@ public class Token {
      * @throws Exception
      *             if an error occurred.
      */
-    protected void extract() throws Exception {
+    protected void extract() throws IOException {
         text = Character.toString(currentChar());
         value = null;
 
@@ -117,7 +119,7 @@ public class Token {
      * @throws Exception
      *             if an error occurred.
      */
-    protected char currentChar() throws Exception {
+    protected char currentChar() throws IOException {
         return source.currentChar();
     }
 
@@ -128,7 +130,7 @@ public class Token {
      * @throws Exception
      *             if an error occurred.
      */
-    protected char nextChar() throws Exception {
+    protected char nextChar() throws IOException {
         return source.nextChar();
     }
 
@@ -139,7 +141,7 @@ public class Token {
      * @throws Exception
      *             if an error occurred.
      */
-    protected char peekChar() throws Exception {
+    protected char peekChar() throws IOException {
         return source.peekChar();
     }
 
@@ -150,7 +152,7 @@ public class Token {
      * @return the char at the current position + pos, or EOL/EOF if it reached the end of the line or file.
      * @throws Exception
      */
-    protected char peekAhead(int pos) throws Exception {
+    protected char peekAhead(int pos) throws IOException {
         return source.peekAhead(pos);
     }
 }

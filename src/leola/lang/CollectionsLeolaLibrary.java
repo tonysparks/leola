@@ -7,7 +7,6 @@ package leola.lang;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,6 +19,7 @@ import leola.vm.lib.LeolaIgnore;
 import leola.vm.lib.LeolaLibrary;
 import leola.vm.lib.LeolaMethod;
 import leola.vm.types.LeoArray;
+import leola.vm.types.LeoGenerator;
 import leola.vm.types.LeoInteger;
 import leola.vm.types.LeoMap;
 import leola.vm.types.LeoNamespace;
@@ -98,7 +98,7 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
                         LeoObject key = entry.getKey();
                         if(key != null) {
                             LeoObject value = entry.getValue();
-                            LeoObject result = function.call(key, value);
+                            LeoObject result = function.xcall(key, value);
                             if(LeoObject.isTrue(result)) {
                                 break;
                             }
@@ -115,7 +115,7 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
                         LeoObject key = entry.getKey();
                         if(key != null) {
                             LeoObject value = entry.getValue();
-                            if( LeoObject.isTrue(function.call(key, value)) ) {
+                            if( LeoObject.isTrue(function.xcall(key, value)) ) {
                                 map.put(key, value);
                             }
                         }
@@ -133,7 +133,7 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
                         LeoObject key = entry.getKey();
                         if(key != null) {
                             LeoObject value = entry.getValue();
-                            value = function.call(key, value);
+                            value = function.xcall(key, value);
                             map.put(key, value);                    
                         }
                     }
@@ -185,7 +185,7 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 	 */
 	public final void repeat(int n, LeoObject function){
 		for(int i = 0; i < n; i++) {
-			LeoObject result = this.runtime.execute(function, LeoInteger.valueOf(i));	
+			LeoObject result = function.xcall(LeoInteger.valueOf(i));			        
 			if ( LeoObject.isTrue(result) ) {
 				break;
 			}
@@ -197,7 +197,7 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 	 * returns the length of the array
 	 *
 	 * @param array
-	 * @return
+	 * @return the length
 	 */
 	public final int length(LeoObject array) {
 		if ( array == null ) return 0;
@@ -213,105 +213,66 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Iterates through the array invoking the call back.
 	 *
-	 * @param array
+	 * @param list
 	 * @param function
-	 * @throws Exception
+	 * @return the object returned from the function is true 
 	 */
-	public final LeoObject foreach(LeoObject array, LeoObject function) throws Exception {
-		LeoObject r = LeoNull.LEONULL;
-		if(array != null) {
-			switch(array.getType()) {
+	public final LeoObject foreach(LeoObject list, LeoObject function) {
+		LeoObject result = LeoNull.LEONULL;
+		if(list != null) {
+			switch(list.getType()) {
 				case ARRAY: {
-					LeoArray a = array.as();
-					List<LeoObject> list = a.getArray();
-					int size = list.size();
-			
-	
-					for(int i = 0; i < size; i++) {
-						LeoObject result = this.runtime.execute(function, list.get(i));	
-						if ( LeoObject.isTrue(result) ) {
-							r = result;
-							break;
-						}
-					}
-					
+					LeoArray array = list.as();
+					result = array.foreach(function);									
 					break;
 				}
 				case MAP: {
-					LeoMap map = array.as();
-	
-					for(Map.Entry<LeoObject, LeoObject> entry : map.getMap().entrySet()) {
-						LeoObject result = this.runtime.execute(function, entry.getKey(), entry.getValue() );	
-						if ( LeoObject.isTrue(result) ) {
-							r = result;
-							break;
-						}
-					}
-					
+					LeoMap map = list.as();
+					result = map.foreach(function);					
 					break;
 				}
 				case STRING: {
-					LeoString str = array.as();
-					int size = str.length();				
-					
-					for(int i = 0; i < size; i++) {
-						LeoObject result = this.runtime.execute(function, str.charAt(i) );	
-						if ( LeoObject.isTrue(result) ) {
-							r = result;
-							break;
-						}
-					}
-					
+					LeoString str = list.as();
+					result = str.foreach(function);					
 					break;
 				}
 				case GENERATOR: {
-					while(true) {
-						LeoObject generatorResult = this.runtime.execute(array);
-						if(generatorResult == LeoNull.LEONULL) {
-							break;
-						}
-						
-						LeoObject result = this.runtime.execute(function, generatorResult);
-						if ( LeoObject.isTrue(result) ) {
-							r = result;
-							break;
-						}
-					}
-					
+					LeoGenerator gen = list.as();
+					result = gen.foreach(function);
 					break;
-
 				}
 				default: {					
 				}
 			}
 		}
-		return r;
+		
+		return result;
 	}
 
 	/**
 	 * Iterates through the array.
-	 *
-	 * @param interpreter
+	 * 
+	 * @param obj
 	 * @param start
 	 * @param end
 	 * @param function
-	 * @throws Exception
 	 */
 	@LeolaMethod(alias="for")
-	public void __for(LeoArray array, int start, int end, LeoObject function) throws Exception {
-		List<LeoObject> list = array.getArray();
-
-		if ( start < 0 || end > list.size()) {
-			throw new LeolaRuntimeException("Invalid array index: " + start + " to " + end + "[Size of array: " + list.size() + "]");
-		}
-
-		for(int i = start; i < end; i++) {
-			LeoObject result = this.runtime.execute(function, list.get(i));	
-			if ( LeoObject.isTrue(result) ) {
-				break;
-			}
-		}
-		
+	public void __for(LeoObject obj, int start, int end, LeoObject function) {
+	    switch(obj.getType()) {
+    	    case ARRAY: {
+    	        LeoArray array = obj.as();
+    	        array._for(start, end, function);
+    	        break;
+    	    }
+    	    case STRING: {
+    	        LeoString string = obj.as();
+    	        string._for(start, end, function);
+    	        break;
+    	    }
+    	    default:
+	    }
+				
 	}
 
 	/**
@@ -321,23 +282,14 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 	 * @param array
 	 * @param function
 	 * @return the supplied array
-	 * @throws Exception
 	 */
-	public final LeoArray fill(LeoArray array, LeoObject function) throws Exception {
-		List<LeoObject> list = array.getArray();
-		int size = list.size();
-
-		for(int i = 0; i < size; i++) {
-			LeoObject result = this.runtime.execute(function, LeoInteger.valueOf(i));	
-			list.set(i, result);
-		}
-		
-		return array;
+	public final LeoArray fill(LeoArray array, LeoObject function) {
+	    return array.fill(function);
 	}
 	
 	private void checkTypes(LeoObject start, LeoObject end) {
 		if(start.getType() != end.getType()) {
-			throw new IllegalArgumentException("Ranges do not match in type: " + start.getType() + " vs. " + end.getType());
+			throw new LeolaRuntimeException("Ranges do not match in type: " + start.getType() + " vs. " + end.getType());
 		}
 	}
 	
@@ -346,7 +298,7 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 	 * 
 	 * @param start
 	 * @param end
-	 * @return
+	 * @return the {@link LeoArray} of the range
 	 */
 	public final LeoObject range(LeoObject start, LeoObject end) {
 		checkTypes(start, end);
@@ -380,81 +332,30 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 	 * 
 	 * @param list (either an Array, Map or String)
 	 * @param function
-	 * @return
-	 * @throws Exception
+	 * @return the filtered list
 	 */
-	public final LeoObject filter(LeoObject list, LeoObject function) throws Exception {
+	public final LeoObject filter(LeoObject list, LeoObject function) {
 		LeoObject result = LeoNull.LEONULL;
 
 		switch(list.getType()) {
 			case STRING: {
-				String str = list.toString();
-				StringBuilder sb = new StringBuilder(str);
-				
-				int len = str.length();
-				for(int i = 0; i < len; i++) {
-					char c = str.charAt(i);
-					
-					LeoString ch = LeoString.valueOf( String.valueOf(c));
-					if ( LeoObject.isTrue(this.runtime.execute(function, ch)) ) {						
-						sb.append(c);
-					}
-				}
-				
-				result = LeoString.valueOf(sb.toString());
-				
+			    LeoString string = list.as();
+			    result = string.filter(function);
 				break;
 			}
 			case ARRAY: {
-				LeoArray array = list.as();					
-				int size = array.size();
-				
-				LeoArray r = new LeoArray(size);
-				for(int i = 0; i < size; i++) {
-					LeoObject obj = array.get(i);
-					if ( LeoObject.isTrue(this.runtime.execute(function, obj)) ) {						
-						r.add(obj);
-					}
-				}
-				
-				result = r;
-				
+				LeoArray array = list.as();													
+				result = array.filter(function);				
 				break;
 			}
 			case MAP: {
-				LeoMap map = list.as();					
-				int size = map.bucketLength();
-				
-				LeoMap m = new LeoMap(size);
-				for(int i = 0; i < size; i++) {
-					LeoObject key = map.getKey(i);
-					if(key==null) continue;
-					
-					LeoObject value = map.getValue(i);
-					
-					if ( LeoObject.isTrue(this.runtime.execute(function, key, value)) ) {
-						m.put(key, value);
-					}
-				}
-				
-				result = m;
-				
+				LeoMap map = list.as();						
+				result = map.filter(function);				
 				break;
 			}
 			case GENERATOR: {
-				
-				result = new LeoArray();
-				while(true) {
-					LeoObject generatorResult = this.runtime.execute(list);
-					if(generatorResult == LeoNull.LEONULL) {
-						break;
-					}
-					
-					if( LeoObject.isTrue(this.runtime.execute(function, generatorResult))) {
-						result.$add(generatorResult);
-					}
-				}
-				
+			    LeoGenerator gen = list.as();
+			    result = gen.filter(function);				
 				break;
 			}
 			default: {				
@@ -470,59 +371,30 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 	 * 
 	 * @param list (either an Array or String)
 	 * @param function
-	 * @return
-	 * @throws Exception
+	 * @return the resulting list
 	 */
-	public final LeoObject map(LeoObject list, LeoObject function) throws Exception {
+	public final LeoObject map(LeoObject list, LeoObject function) {
 		LeoObject result = LeoNull.LEONULL;
 
 		switch(list.getType()) {
 			case STRING: {
-				String str = list.toString();
-				StringBuilder sb = new StringBuilder(str);
-				
-				int len = str.length();
-				for(int i = 0; i < len; i++) {
-					char c = str.charAt(i);
-					
-					LeoString ch = LeoString.valueOf( String.valueOf(c));
-					LeoObject r = this.runtime.execute(function, ch);
-						
-					sb.append(r.toString());					
-				}
-				
-				result = LeoString.valueOf(sb.toString());
-				
+				LeoString string = list.as();
+				result = string.map(function);
 				break;
 			}
 			case ARRAY: {
-				LeoArray array = list.as();					
-				int size = array.size();
-				
-				LeoArray r = new LeoArray(size);
-				for(int i = 0; i < size; i++) {
-					LeoObject obj = array.get(i);
-					LeoObject o = this.runtime.execute(function, obj);
-						
-					r.add(o);					
-				}
-				
-				result = r;
-				
+				LeoArray array = list.as();		
+				result = array.map(function);
 				break;
 			}
+			case MAP: {
+			    LeoMap map = list.as();
+			    result = map.map(function);
+			    break;
+			}
 			case GENERATOR: {
-				
-				result = new LeoArray();
-				while(true) {
-					LeoObject generatorResult = this.runtime.execute(list);
-					if(generatorResult == LeoNull.LEONULL) {
-						break;
-					}
-					
-					result.$add(this.runtime.execute(function, generatorResult));					
-				}
-				
+				LeoGenerator gen = list.as();
+				result = gen.map(function);				
 				break;
 			}
 			default: {				
@@ -533,35 +405,25 @@ public class CollectionsLeolaLibrary implements LeolaLibrary {
 	}
 	
 	/**
-	 * calls function(item) for each of the sequence’s items and returns a list of the return values.
+	 * Reduces all of the values in the list into one value.
 	 * 
-	 * @param list (either an Array, Map or String)
+	 * @param list (either an Array or Generator)
 	 * @param function
-	 * @return
-	 * @throws Exception
+	 * @return the resulting object
 	 */
-	public final LeoObject reduce(LeoObject list, LeoObject function) throws Exception {
+	public final LeoObject reduce(LeoObject list, LeoObject function) {
 		LeoObject result = LeoNull.LEONULL;
 			
 		switch(list.getType()) {
 			case ARRAY: {
 				LeoArray array = list.as();					
-				int size = array.size();
-				switch(size) {
-					case 0: break;
-					case 1: result= array.get(0); break;
-					default: {
-						LeoObject prev = array.get(0);
-						for(int i = 1; i < size; i++) {
-							LeoObject obj = array.get(i);
-							LeoObject o = this.runtime.execute(function, prev, obj);
-							prev = o;
-						}
-						
-						result = prev;		
-					}
-				}												
+				result = array.reduce(function);											
 				break;
+			}
+			case GENERATOR: {
+			    LeoGenerator gen = list.as();
+			    result = gen.reduce(function);
+			    break;
 			}
 			default: {				
 			}

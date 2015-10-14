@@ -162,10 +162,10 @@ public class LeoNativeFunction extends LeoObject {
 		    result = ClassUtil.invokeMethod(this.overloads, this.instance, args);			
 		} 
 		catch(LeolaRuntimeException e) {
-			return e.getLeoError();
+			throw e;
 		}
 		catch (Exception e) {
-			return new LeoError(e); 
+			LeoObject.rethrow(e); 
 		}
 		
 		return LeoObject.valueOf(result);
@@ -212,7 +212,8 @@ public class LeoNativeFunction extends LeoObject {
 	public Object getValue() {
 		return this;
 	}
-
+	
+	
 	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#clone()
 	 */

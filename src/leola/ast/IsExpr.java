@@ -23,7 +23,9 @@ public class IsExpr extends OwnableExpr {
 	private String className;
 
 	/**
-	 * @param value
+	 * @param owner
+	 * @param lhsExpr
+	 * @param className
 	 */
 	public IsExpr(String owner, Expr lhsExpr, String className) {
 		super(owner);

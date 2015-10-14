@@ -141,6 +141,25 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	    return getNativeMethod(this, getApiMappings(), key);
 	}
 	
+	
+	/**
+     * Iterates through the array invoking the call back filling the
+     * array
+     *
+     * @param function
+     * @return this instance for method chaining
+     */
+    public final LeoArray fill(LeoObject function) {        
+        int size = size();
+
+        for(int i = 0; i < size; i++) {
+            LeoObject result = function.xcall(LeoInteger.valueOf(i));   
+            set(i, result);
+        }
+        
+        
+        return this;
+    }
 
 	
 	/**
@@ -164,7 +183,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
         }
 
         for(int i = startIndex; i < endIndex; i++) {
-            LeoObject result = function.call(get(i)); 
+            LeoObject result = function.xcall(get(i)); 
             if ( LeoObject.isTrue(result) ) {
                 break;
             }
@@ -189,7 +208,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
             Arrays.sort(this.array, 0, this.size, new Comparator<LeoObject>() {                
                 @Override
                 public int compare(LeoObject o1, LeoObject o2) {
-                    LeoObject result = function.call(o1, o2);
+                    LeoObject result = function.xcall(o1, o2);
                     return result.asInt();
                 }
             });
@@ -214,17 +233,20 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 * </pre>
 	 * 
 	 * @param function
+	 * @return the {@link LeoObject} returned from the supplied function if returned <code>true</code>
 	 */
-	public void foreach(LeoObject function) {
+	public LeoObject foreach(LeoObject function) {
 	    if(function != null) {
     	    for(int i = 0; i < this.size; i++) {
     	        LeoObject obj = get(i);
-    	        LeoObject result = function.call(obj);
+    	        LeoObject result = function.xcall(obj);
     	        if(LeoObject.isTrue(result)) {
-    	            break;
+    	            return result;
     	        }
     	    }
 	    }
+	    
+	    return LeoObject.NULL;
 	}
 	
 	/**
@@ -245,7 +267,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	        LeoArray array = new LeoArray();
             for(int i = 0; i < this.size; i++) {
                 LeoObject obj = get(i);
-                if( LeoObject.isTrue(function.call(obj)) ) {
+                if( LeoObject.isTrue(function.xcall(obj)) ) {
                     array.add(obj);
                 }
             }
@@ -271,7 +293,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
             LeoArray array = new LeoArray(this.size);
             for(int i = 0; i < this.size; i++) {                
                 LeoObject obj = get(i);
-                LeoObject result = function.call(obj);
+                LeoObject result = function.xcall(obj);
                 
                 array.add(result);
             }
@@ -299,7 +321,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
             LeoObject result = get(0);
             for(int i = 1; i < this.size; i++) {            
                 LeoObject obj = get(i);
-                result = function.call(result, obj);
+                result = function.xcall(result, obj);
             }
             return result;
         }
@@ -712,6 +734,24 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	@Override
 	public Object getValue() {
 		return this; /*this.array;*/
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#getValue(java.lang.Class)
+	 */
+	@Override
+	public Object getValue(Class<?> narrowType) {
+	    if(narrowType.isArray()) {
+	        Class<?> arrayType = narrowType.getComponentType();
+	        Object array = Array.newInstance(arrayType, size());
+	        for(int i = 0; i < size(); i++) {
+	            Object javaElement = LeoObject.toJavaObject(arrayType, this.array[i]);
+                Array.set(array, i, javaElement);
+	        }
+	        return array;
+	    }
+	    
+	    return super.getValue(narrowType);
 	}
 	
 	/* (non-Javadoc)

@@ -7,6 +7,9 @@ package leola.frontend;
 
 import static leola.frontend.Source.EOF;
 import static leola.frontend.Source.EOL;
+
+import java.io.IOException;
+
 import leola.frontend.tokens.LeolaErrorCode;
 import leola.frontend.tokens.LeolaErrorToken;
 import leola.frontend.tokens.LeolaNumberToken;
@@ -40,7 +43,7 @@ public class LeolaScanner extends Scanner {
 	 * @see leola.frontend.Scanner#extractToken()
 	 */
 	@Override
-	protected Token extractToken() throws Exception {
+	protected Token extractToken() throws IOException {
 		skipWhiteSpace();
         Token token;
         char currentChar = currentChar();
@@ -76,7 +79,7 @@ public class LeolaScanner extends Scanner {
      * Skip whitespace characters by consuming them.  A comment is whitespace.
      * @throws Exception if an error occurred.
      */
-    private void skipWhiteSpace() throws Exception {
+    private void skipWhiteSpace() throws IOException {
         char currentChar = currentChar();
 
         while (Character.isWhitespace(currentChar)
@@ -117,7 +120,7 @@ public class LeolaScanner extends Scanner {
      * @return
      * @throws Exception
      */
-    private boolean checkSequence(String seq) throws Exception {
+    private boolean checkSequence(String seq) throws IOException {
     	boolean result = true;
     	char currentChar = currentChar();
 

@@ -22,8 +22,6 @@ public class ParameterList {
 	
 
 	/**
-	 * @param parameters
-	 * @param isVarargs
 	 */
 	public ParameterList() {		
 		this.parameters = new ArrayList<String>();

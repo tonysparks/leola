@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import leola.vm.exceptions.LeolaRuntimeException;
+import leola.vm.lib.LeolaMethod;
 import leola.vm.util.ClassUtil;
 
 
@@ -134,6 +135,106 @@ public class LeoString extends LeoObject {
 		return this.value;
 	}
 
+	/**
+     * Maps the supplied function to each element in the string.
+     * 
+     * <pre>
+     *     var result = "hi".map(def(e) return e+"2")
+     *     println(result) // h2i2
+     * </pre>
+     * 
+     * @param function
+     * @return the new mapped {@link LeoString}
+     */
+	public LeoString map(LeoObject function) {	    
+        StringBuilder sb = new StringBuilder(length());
+        
+        int len = length();
+        for(int i = 0; i < len; i++) {            
+            LeoObject result = function.xcall(charAt(i));
+            sb.append(result.toString());                    
+        }
+        
+        return LeoString.valueOf(sb.toString());
+	}
+	
+	/**
+	 * Returns a sequence consisting of those items from the sequence for which function(item) is true
+	 * 
+	 * @param function
+	 * @return the new String
+	 */
+	public LeoString filter(LeoObject function) {	    
+        StringBuilder sb = new StringBuilder(this.value);
+        
+        int len = this.value.length();
+        for(int i = 0; i < len; i++) {
+            char c = this.value.charAt(i);
+            
+            LeoString ch = LeoString.valueOf( String.valueOf(c));
+            if ( LeoObject.isTrue(function.xcall(ch)) ) {                       
+                sb.append(c);
+            }
+        }
+        
+        return LeoString.valueOf(sb.toString());
+	}
+	
+	
+    /**
+     * Iterates through the string, invoking the supplied 
+     * function object for each element.  The start and end index are [start, end).
+     * 
+     * <pre>
+     *   "hi".for(0, 1, def(c) println(c))
+     *   // prints: 
+     *   // h
+     *   
+     * </pre>
+     * 
+     * @param start starting index (inclusive)
+     * @param end ending index (exclusive)
+     * @param function
+     */
+	@LeolaMethod(alias="for")
+    public void _for(int start, int end, LeoObject function) {
+        int len = length();               
+
+        for(int i = start; i < len && i < end; i++) {
+            LeoObject result = function.xcall(charAt(i));  
+            if(LeoObject.isTrue(result)) {
+                break;
+            }
+        }
+    }
+	
+	/**
+     * Iterates through the array, invoking the supplied 
+     * function object for each element
+     * 
+     * <pre>
+     *   "hi".foreach(def(c) println(c))
+     *   // prints: 
+     *   // h
+     *   // i
+     *   
+     * </pre>
+     * 
+     * @param function
+     * @return the {@link LeoObject} returned from the supplied function if returned <code>true</code>
+     */
+	public LeoObject foreach(LeoObject function) {
+	    int len = length();               
+        
+        for(int i = 0; i < len; i++) {
+            LeoObject result = function.xcall(charAt(i));  
+            if ( LeoObject.isTrue(result) ) {
+                return result;
+            }
+        }
+        return LeoObject.NULL;
+	}
+	
 	/**
 	 * @return a new instance in lower case
 	 */

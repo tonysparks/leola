@@ -5,42 +5,11 @@
 */
 package leola.frontend.parsers;
 
-import static leola.frontend.tokens.LeolaTokenType.BITWISE_AND;
-import static leola.frontend.tokens.LeolaTokenType.BITWISE_NOT;
-import static leola.frontend.tokens.LeolaTokenType.BITWISE_OR;
-import static leola.frontend.tokens.LeolaTokenType.BITWISE_XOR;
-import static leola.frontend.tokens.LeolaTokenType.BIT_SHIFT_LEFT;
-import static leola.frontend.tokens.LeolaTokenType.BIT_SHIFT_RIGHT;
-import static leola.frontend.tokens.LeolaTokenType.DEF;
-import static leola.frontend.tokens.LeolaTokenType.DOT;
-import static leola.frontend.tokens.LeolaTokenType.D_EQUALS;
-import static leola.frontend.tokens.LeolaTokenType.GEN;
-import static leola.frontend.tokens.LeolaTokenType.GREATER_EQUALS;
-import static leola.frontend.tokens.LeolaTokenType.GREATER_THAN;
-import static leola.frontend.tokens.LeolaTokenType.IDENTIFIER;
-import static leola.frontend.tokens.LeolaTokenType.INTEGER;
-import static leola.frontend.tokens.LeolaTokenType.LEFT_BRACKET;
-import static leola.frontend.tokens.LeolaTokenType.LEFT_PAREN;
-import static leola.frontend.tokens.LeolaTokenType.LESS_EQUALS;
-import static leola.frontend.tokens.LeolaTokenType.LESS_THAN;
-import static leola.frontend.tokens.LeolaTokenType.LOGICAL_AND;
-import static leola.frontend.tokens.LeolaTokenType.LOGICAL_OR;
-import static leola.frontend.tokens.LeolaTokenType.MINUS;
-import static leola.frontend.tokens.LeolaTokenType.MOD;
-import static leola.frontend.tokens.LeolaTokenType.NOT;
-import static leola.frontend.tokens.LeolaTokenType.NOT_EQUALS;
-import static leola.frontend.tokens.LeolaTokenType.NULL;
-import static leola.frontend.tokens.LeolaTokenType.PLUS;
-import static leola.frontend.tokens.LeolaTokenType.REAL;
-import static leola.frontend.tokens.LeolaTokenType.REF_EQUALS;
-import static leola.frontend.tokens.LeolaTokenType.RIGHT_BRACKET;
-import static leola.frontend.tokens.LeolaTokenType.RIGHT_PAREN;
-import static leola.frontend.tokens.LeolaTokenType.SLASH;
-import static leola.frontend.tokens.LeolaTokenType.STAR;
-import static leola.frontend.tokens.LeolaTokenType.STRING;
+import static leola.frontend.tokens.LeolaTokenType.*;
 
 import java.util.EnumSet;
 
+import leola.ast.ASTAttributes;
 import leola.ast.ASTNode;
 import leola.ast.BinaryExpr;
 import leola.ast.BooleanExpr;
@@ -70,8 +39,10 @@ public class ExprParser extends StmtParser {
 
     // Synchronization set for starting an expression.
     public static final EnumSet<LeolaTokenType> EXPR_START_SET =
-        EnumSet.of(PLUS, MINUS, IDENTIFIER, INTEGER, REAL, STRING, DEF, GEN,
-        		   NULL, NOT, BITWISE_NOT, LEFT_PAREN, LEFT_BRACKET);
+        EnumSet.of(PLUS, MINUS, 
+                   IDENTIFIER, STRING, LONG, INTEGER, REAL, TRUE, FALSE,  
+                   DEF, GEN, CASE, NEW, NULL, NOT, BITWISE_NOT, 
+                   LEFT_PAREN, LEFT_BRACE, LEFT_BRACKET);
 
     public static final EnumSet<LeolaTokenType> EXPR_END_SET =
         EnumSet.of(IDENTIFIER, /*INTEGER, REAL, STRING, DEF, $ME,
@@ -102,7 +73,7 @@ public class ExprParser extends StmtParser {
         EnumSet.of(DOT, LEFT_PAREN, LEFT_BRACKET/*, IDENTIFIER*/);
 
     private boolean isNamedParameter;
-
+    
     /**
 	 * @param parser
 	 */
@@ -246,24 +217,34 @@ public class ExprParser extends StmtParser {
 
         LeolaTokenType signType = null;  // type of leading sign (if any)
 
+        Token leadingToken = token;
         // Look for a leading + or - sign.
         LeolaTokenType tokenType = token.getType();
-        if ( (tokenType == LeolaTokenType.PLUS) ||
-        	 (tokenType == LeolaTokenType.MINUS)) {
+        if ( (tokenType == STAR) ||
+             (tokenType == PLUS) ||             
+        	 (tokenType == MINUS)) {            
             signType = tokenType;
-            token = nextToken();  // consume the + or -
+            token = nextToken();  // consume the + or - or *            
         }
 
         // Parse a term and make the root of its tree the root node.
         ASTNode rootNode = parseTerm(token);
 
         // Was there a leading - sign?
-        if (signType == MINUS) {
-
-            // Create a NEGATE node and adopt the current tree
-            // as its child. The NEGATE node becomes the new root node.
-            UnaryExpr negateNode = new UnaryExpr((Expr)rootNode, UnaryOp.NEGATE);
-            rootNode = negateNode;
+        if(signType!=null) {
+            if (signType == MINUS) {
+    
+                // Create a NEGATE node and adopt the current tree
+                // as its child. The NEGATE node becomes the new root node.
+                UnaryExpr negateNode = new UnaryExpr((Expr)rootNode, UnaryOp.NEGATE);
+                rootNode = negateNode;
+            }
+            else if(signType == STAR) {
+                if(!this.isNamedParameter) {
+                    throwParseError(leadingToken, LeolaErrorCode.INVALID_ARGS_EXPANSION);
+                }
+                rootNode.appendFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND);
+            }
         }
 
         token = currentToken();
@@ -414,7 +395,7 @@ public class ExprParser extends StmtParser {
         			token = nextToken();  // consume the number
         		}
         		catch(Exception e) {
-        			getExceptionHandler().errorToken(token, this, LeolaErrorCode.INVALID_NUMBER);
+        		    throwParseError(token, LeolaErrorCode.INVALID_NUMBER);
         		}
         		break;
         	}
@@ -477,7 +458,7 @@ public class ExprParser extends StmtParser {
                     token = nextToken();  // consume the )
                 }
                 else {
-                	getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_RIGHT_PAREN);
+                    throwParseError(token, LeolaErrorCode.MISSING_RIGHT_PAREN);
                 }
                 break;
             }
@@ -496,7 +477,7 @@ public class ExprParser extends StmtParser {
                 break;
             }
             default: {
-            	getExceptionHandler().errorToken(token, this, LeolaErrorCode.UNEXPECTED_TOKEN);
+                throwParseError(token, LeolaErrorCode.UNEXPECTED_TOKEN);
             }
         }
 

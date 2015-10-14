@@ -4,6 +4,9 @@ import static leola.frontend.Source.EOF;
 import static leola.frontend.tokens.LeolaErrorCode.UNEXPECTED_EOF;
 import static leola.frontend.tokens.LeolaTokenType.ERROR;
 import static leola.frontend.tokens.LeolaTokenType.STRING;
+
+import java.io.IOException;
+
 import leola.frontend.Source;
 
 
@@ -24,7 +27,7 @@ public class LeolaStringToken extends LeolaToken
      * @throws Exception if an error occurred.
      */
     public LeolaStringToken(Source source)
-        throws Exception {
+        throws IOException {
         super(source);
     }
 
@@ -34,7 +37,7 @@ public class LeolaStringToken extends LeolaToken
      */
     @Override
 	protected void extract()
-        throws Exception {
+        throws IOException {
         StringBuilder textBuffer = new StringBuilder();
         StringBuilder valueBuffer = new StringBuilder();
 
@@ -102,7 +105,7 @@ public class LeolaStringToken extends LeolaToken
      * @return
      * @throws Exception
      */
-    private boolean isEscape(char currentChar) throws Exception {
+    private boolean isEscape(char currentChar) throws IOException {
     	boolean isEscape = false;
     	if ( currentChar == '\\' ) {
     		char nextChar = peekChar();
@@ -131,7 +134,7 @@ public class LeolaStringToken extends LeolaToken
      * @return
      * @throws Exception
      */
-    private char applyEscape(char currentChar) throws Exception {
+    private char applyEscape(char currentChar) throws IOException {
     	char result = currentChar;
     	char nextChar = nextChar();
     	switch(nextChar) {

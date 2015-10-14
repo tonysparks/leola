@@ -7,6 +7,7 @@ package leola.vm.compiler;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.File;
 import java.io.IOException;
 import java.util.Stack;
 
@@ -68,7 +69,7 @@ public class DebugSymbols {
 	private int index;
 	
 	private String source;
-	private String sourceFile;
+	private File sourceFile;
 	
 	/**
 	 * 
@@ -102,14 +103,14 @@ public class DebugSymbols {
 	/**
 	 * @param sourceFile the sourceFile to set
 	 */
-	public void setSourceFile(String sourceFile) {
+	public void setSourceFile(File sourceFile) {
 		this.sourceFile = sourceFile;
 	}
 	
 	/**
 	 * @return the sourceFile
 	 */
-	public String getSourceFile() {
+	public File getSourceFile() {
 		return sourceFile;
 	}
 	

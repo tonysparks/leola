@@ -20,8 +20,10 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
+import leola.ast.ASTAttributes;
 import leola.ast.ASTNode;
 import leola.ast.Expr;
+import leola.ast.NamedParameterExpr;
 import leola.frontend.Parser;
 import leola.frontend.Token;
 import leola.frontend.tokens.LeolaErrorCode;
@@ -61,11 +63,18 @@ public class ParserUtils {
     /**
      * Parses a list of expressions as denoted by
      * 
+     *
      * <pre>
      *   x,y // parses the x, y expressions
      * </pre>
-     * 
-     * @param token the current token.
+     *  
+     * @param parser
+     * @param currentToken
+     * @param commaDelimeter
+     * @param endToken
+     * @param isParameter
+     * @return the expression list
+     * @throws Exception
      */
     private static Expr[] parseExpressionList(StmtParser parser
                                              , Token currentToken
@@ -78,10 +87,33 @@ public class ParserUtils {
 
         List<Expr> paramsNode = new ArrayList<Expr>();
 
+        boolean isArrayExpanded = false;
+        
         // Loop to parse each actual parameter.
         while (token.getType() != endToken) {
             ASTNode actualNode = expressionParser.parse(token);
             paramsNode.add( (Expr)actualNode);
+                        
+            /* Ensure we only have one array expansion in the parameter
+             * listings
+             */
+            if(actualNode instanceof NamedParameterExpr) {
+                NamedParameterExpr nExpr = (NamedParameterExpr)actualNode;
+                if(nExpr.getValueExpr().hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {                       
+                    if(isArrayExpanded) {
+                        parser.throwParseError(token, LeolaErrorCode.INVALID_MULTI_ARGS_EXPANSION);
+                    }
+                    
+                    isArrayExpanded = true;    
+                }
+            }
+            else if(actualNode.hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {
+                if(isArrayExpanded) {
+                    parser.throwParseError(token, LeolaErrorCode.INVALID_MULTI_ARGS_EXPANSION);
+                }
+                
+                isArrayExpanded = true;
+            }
 
             token = parser.synchronize(commaDelimeter);
             LeolaTokenType tokenType = token.getType();
@@ -91,7 +123,7 @@ public class ParserUtils {
                 token = parser.nextToken();  // consume ,
             }
             else if (ExprParser.EXPR_START_SET.contains(tokenType)) {
-                parser.getExceptionHandler().errorToken(token, parser, LeolaErrorCode.MISSING_COMMA);
+                parser.throwParseError(token, LeolaErrorCode.MISSING_COMMA);
             }
             else if (tokenType != endToken) {
                 token = parser.synchronize(ExprParser.EXPR_START_SET);
@@ -100,7 +132,7 @@ public class ParserUtils {
 
         token = parser.nextToken();  // consume closing )
 
-        return paramsNode.toArray(new Expr[0]);
+        return paramsNode.toArray(new Expr[paramsNode.size()]);
     }
     
     /**
@@ -110,7 +142,10 @@ public class ParserUtils {
      *   function(x,y); // parses the x, y expressions
      * </pre>
      * 
-     * @param token the current token.
+     * @param parser
+     * @param currentToken the current token.
+     * @return the expression list
+     * @throws Exception
      */
     public static Expr[] parseArgumentExpressions(StmtParser parser, Token currentToken) throws Exception {
         return parseExpressionList(parser, currentToken, PARAMETER_LIST_SET, RIGHT_PAREN, true);
@@ -123,7 +158,10 @@ public class ParserUtils {
      *   var array = [x,y]; // parses the x, y expressions
      * </pre>
      * 
-     * @param token the current token.
+     * @param parser
+     * @param currentToken the current token.
+     * @return the expression list
+     * @throws Exception
      */
     public static Expr[] parseArrayDeclaration(StmtParser parser
                                              , Token currentToken) throws Exception {
@@ -143,7 +181,12 @@ public class ParserUtils {
      *  // This function parses the x->"hello",y->"bye" part 
      *  <pre>
      * 
-     * @param token the current token.
+     * @param parser
+     * @param currentToken the current token.
+     * @param commaDelimeter
+     * @param endToken
+     * @return the expression list
+     * @throws Exception
      */
     public static List<Pair<Expr, Expr>> parseMapParameters(StmtParser parser
                                                      , Token currentToken
@@ -166,7 +209,7 @@ public class ParserUtils {
 
             token = expressionParser.currentToken();
             if ( token.getType() != ARROW ) {
-                parser.getExceptionHandler().errorToken(token, parser, LeolaErrorCode.MISSING_ARROW);
+                parser.throwParseError(token, LeolaErrorCode.MISSING_ARROW);
             }
             else {
                 token = expressionParser.nextToken(); // eat the Arrow
@@ -185,7 +228,7 @@ public class ParserUtils {
                 token = parser.nextToken();  // consume ,
             }
             else if (ExprParser.EXPR_START_SET.contains(tokenType)) {
-                parser.getExceptionHandler().errorToken(token, parser, LeolaErrorCode.MISSING_COMMA);
+                parser.throwParseError(token, LeolaErrorCode.MISSING_COMMA);
             }
             else if (tokenType != endToken) {
                 token = parser.synchronize(ExprParser.EXPR_START_SET);
@@ -204,16 +247,17 @@ public class ParserUtils {
 	 *   class Person(name, age); // this parses out the name, age list
 	 * </pre>
 	 *
-	 * @param next
-	 * @return
-	 * @throws Exception
+	 * @param parser
+     * @param next the current token.
+     * @return the expression list
+     * @throws Exception
 	 */
 	public static ParameterList parseParameterListings(Parser parser, Token next) throws Exception {
 		LeolaTokenType type = next.getType();
 
 		/* If the is no left brace, fail */
 		if ( ! type.equals(LEFT_PAREN)) {
-			parser.getExceptionHandler().errorToken(next, parser, LeolaErrorCode.MISSING_LEFT_PAREN);
+			parser.throwParseError(next, LeolaErrorCode.MISSING_LEFT_PAREN);
 		}
 
 		next = parser.nextToken(); // consume the (
@@ -238,11 +282,15 @@ public class ParserUtils {
 			}
 			else if( type.equals(VAR_ARGS)) {
 				if(!isIdentifier) {
-					parser.getExceptionHandler().errorToken(next, parser, LeolaErrorCode.INVALID_VAR_ARGS_START);	
+					parser.throwParseError(next, LeolaErrorCode.INVALID_VAR_ARGS_START);	
 				}
+				if(parameters.isVarargs()) {
+                    parser.throwParseError(next, LeolaErrorCode.INVALID_MULTI_VAR_ARGS);
+                }
 				
 				next = parser.nextToken();
 				type = next.getType();
+				
 
 				parameters.setVarargs(true);
 				
@@ -265,16 +313,16 @@ public class ParserUtils {
 				needsComma = false;
 			}
 			else if(isVarargs) {
-				parser.getExceptionHandler().errorToken(next, parser, LeolaErrorCode.INVALID_VAR_ARGS);
+				parser.throwParseError(next, LeolaErrorCode.INVALID_VAR_ARGS);
 			}
 
 			if ( ! PARAM_OPS.contains(type) && needsComma ) {
-				parser.getExceptionHandler().errorToken(next, parser, LeolaErrorCode.MISSING_COMMA);
+				parser.throwParseError(next, LeolaErrorCode.MISSING_COMMA);
 			}
 		}
 
 		if ( !type.equals(RIGHT_PAREN)) {
-			parser.getExceptionHandler().errorToken(next, parser, LeolaErrorCode.MISSING_RIGHT_PAREN);
+			parser.throwParseError(next, LeolaErrorCode.MISSING_RIGHT_PAREN);
 		}
 
 		next = parser.nextToken(); // eat the )
@@ -286,9 +334,11 @@ public class ParserUtils {
 	/**
 	 * Parses the class name, generally this is used when a set of class names are expected.
 	 *
-	 * @param token
-	 * @return
-	 * @throws Exception
+	 * @param parser
+     * @param token the current token.
+     * @param endTokenTypes 
+     * @return the class name
+     * @throws Exception
 	 */
 	public static String parseClassName(Parser parser, Token token, LeolaTokenType ... endTokenTypes) throws Exception {
 		EnumSet<LeolaTokenType> quitSet = EnumSet.copyOf(Arrays.asList(endTokenTypes));
@@ -308,7 +358,7 @@ public class ParserUtils {
 				className += ":";
 			}
 			else {
-				parser.getExceptionHandler().errorToken(token, parser, LeolaErrorCode.UNEXPECTED_TOKEN);
+				parser.throwParseError(token, LeolaErrorCode.UNEXPECTED_TOKEN);
 			}
 
 			token = parser.nextToken();
@@ -343,7 +393,7 @@ public class ParserUtils {
                 className += ":";
             }
             else {
-                parser.getExceptionHandler().errorToken(token, parser, LeolaErrorCode.UNEXPECTED_TOKEN);
+                parser.throwParseError(token, LeolaErrorCode.UNEXPECTED_TOKEN);
             }
 
             token = parser.nextToken();

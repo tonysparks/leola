@@ -20,7 +20,7 @@ public class ChainedMemberAccessExpr extends OwnableExpr {
 
 
 	/**
-	 * @param parent
+	 * @param parentName
 	 * @param access
 	 */
 	public ChainedMemberAccessExpr(String parentName, Expr access) {

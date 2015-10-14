@@ -244,7 +244,7 @@ public class IOLeolaLibrary implements LeolaLibrary {
 	 */
 	public LeolaFile fopen(String filename, String mode) throws Exception {				
 		RandomAccessFile raf = new RandomAccessFile(new File(filename), mode);
-		return new LeolaFile(raf, this.runtime);		
+		return new LeolaFile(raf);		
 	}	
 	
 	/**

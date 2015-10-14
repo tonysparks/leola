@@ -40,7 +40,7 @@ public class StringLeolaLibrary implements LeolaLibrary {
 		int size = str.length();
 
 		for(int i = 0; i < size; i++) {
-			LeoObject result = this.runtime.execute(function, str.charAt(i) );	
+			LeoObject result = function.xcall(str.charAt(i));	
 			if ( LeoObject.isTrue(result) ) {
 				break;
 			}

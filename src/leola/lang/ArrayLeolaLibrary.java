@@ -38,15 +38,7 @@ public class ArrayLeolaLibrary implements LeolaLibrary {
 
 	
 	public void foreach(LeoArray array, LeoObject function) {		
-		int size = array.size();
-
-		for(int i = 0; i < size; i++) {
-			LeoObject result = this.runtime.execute(function, array.get(i) );	
-			if ( LeoObject.isTrue(result) ) {
-				break;
-			}
-		}
-		
+		array.foreach(function);		
 	}
 
 
@@ -123,7 +115,7 @@ public class ArrayLeolaLibrary implements LeolaLibrary {
 
 			@Override
 			public int compare(LeoObject o1, LeoObject o2) {
-				LeoObject res = runtime.execute(comparator, o1, o2);
+				LeoObject res = comparator.xcall(o1, o2);
 				return (Integer)LeoObject.toJavaObject(int.class, res);
 			}
 		});

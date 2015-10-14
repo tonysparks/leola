@@ -16,8 +16,6 @@ import leola.frontend.EvalException;
 public class ProgramStmt extends Stmt {
 
 	/**
-	 * @param firstStmt
-	 * @param secondStmt
 	 */
 	public ProgramStmt() {
 	}

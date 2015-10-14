@@ -70,30 +70,173 @@ public class LeoGenerator extends LeoFunction {
 		return true;
 	}		
 	
+	/**
+     * Returns a sequence consisting of those items from the generator for which function(item) is true
+     * 
+     * <pre>
+     *   var count = def(to) {
+     *      return gen() {
+     *          var i = 0
+     *          while i < to {
+     *              yield i
+     *              i += 1
+     *          }
+     *      }
+     *   }
+     *   
+     *   filter(count(5), def(e) return e%2==0)
+     *    .foreach(println)
+     *    
+     *   // prints: 
+     *   // 0
+     *   // 2
+     *   // 4
+     *   
+     * </pre>
+     * 
+     * @param function
+     * @return the resulting {@link LeoArray}
+     */
+	public LeoArray filter(LeoObject function) {
+	    LeoArray result = new LeoArray();
+        while(true) {
+            LeoObject generatorResult = xcall();
+            if(generatorResult == LeoNull.LEONULL) {
+                break;
+            }
+            
+            if( LeoObject.isTrue(function.xcall(generatorResult))) {
+                result.add(generatorResult);
+            }
+        }
+        
+        return result;
+	}
+	
+	/**
+     * Iterates through the array, invoking the supplied 
+     * function object for each element
+     * 
+     * <pre>
+     *   var count = def(to) {
+     *      return gen() {
+     *          var i = 0
+     *          while i < to {
+     *              yield i
+     *              i += 1
+     *          }
+     *      }
+     *   }
+     *   
+     *   foreach(count(5), println)
+     *   // prints: 
+     *   // 0
+     *   // 1
+     *   // 2
+     *   // 3
+     *   // 4
+     *   
+     * </pre>
+     * 
+     * @param function
+     * @return the {@link LeoObject} returned from the supplied function if returned <code>true</code>
+     */
+	public LeoObject foreach(LeoObject function) {
+	    while(true) {
+            LeoObject generatorResult = xcall();
+            if(generatorResult == LeoNull.LEONULL) {
+                break;
+            }
+            
+            LeoObject result = function.xcall(generatorResult);
+            if ( LeoObject.isTrue(result) ) {
+                return result;
+            }
+        }
+	    
+	    return LeoObject.NULL;
+	}
+	
+	
+	/**
+	 * Applies a function to each generator iteration.
+	 * 
+	 * <pre>
+     *   var count = def(to) {
+     *      return gen() {
+     *          var i = 0
+     *          while i < to {
+     *              yield i
+     *              i += 1
+     *          }
+     *      }
+     *   }
+     *   
+     *   map(count(5), def(e) return e + 10)
+     *     .foreach(println)
+     *   // prints: 
+     *   // 10
+     *   // 11
+     *   // 12
+     *   // 13
+     *   // 14
+	 * </pre>
+	 * 
+	 * @param function
+	 * @return a {@link LeoArray} of results
+	 */
+	public LeoArray map(LeoObject function) {
+	    LeoArray result = new LeoArray();
+        while(true) {
+            LeoObject generatorResult = xcall();
+            if(generatorResult == LeoNull.LEONULL) {
+                break;
+            }
+            
+            result.add(function.xcall(generatorResult));                   
+        }
+        return result;
+	}
+	
+	/**
+     * Reduces all of the elements in this generator into one value.
+     * 
+     * <pre>
+     *   var count = def(to) {
+     *      return gen() {
+     *          var i = 0
+     *          while i < to {
+     *              yield i
+     *              i += 1
+     *          }
+     *      }
+     *   }
+     *   var sum = reduce(count(5), def(p,n) return p+n)
+     *   println(sum) // 10
+     * </pre>
+     * 
+     * 
+     * @param function
+     * @return
+     */
+    public LeoObject reduce(LeoObject function) {
+        LeoObject result = xcall();
+        if(result != LeoObject.NULL) {
+            while(true) {                        
+                LeoObject generatorResult = xcall();
+                if(generatorResult == LeoNull.LEONULL) {
+                    break;
+                }
+                
+                result = function.xcall(result, generatorResult);            
+            } 
+        }
+        
+        return result;
+    }
+	
 	@Override
 	public void write(DataOutput out) throws IOException {
-//		out.write(this.getType().ordinal());
-//		this.bytecode.write(out);
-//		int nouters = this.outers!=null?this.outers.length:0;
-//		if (nouters>0) {
-////			for(int i =0; i < nouters; i++) {
-////				LeoObject o = this.outers[i];
-////				if ( o == null ) {
-////					nouters = i;
-////					break;
-////				}			
-////			}
-//			
-//			out.writeInt(nouters);
-//			
-////			for(int i =0; i < nouters; i++) {
-////				LeoObject o = this.outers[i];						
-////				o.write(out);
-////			}
-//		}
-//		else {
-//			out.writeInt(nouters);
-//		}
 	}
 	
 	/**

@@ -124,7 +124,7 @@ public class CaseExprParser extends StmtParser {
 
         }
         else {
-            getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_LEFT_BRACE);
+            throwParseError(token, LeolaErrorCode.MISSING_LEFT_BRACE);
         }
 
         token = currentToken();
@@ -132,7 +132,7 @@ public class CaseExprParser extends StmtParser {
             nextToken();
         }
         else if ( hasOpeningBrace ) {
-            getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_RIGHT_BRACE);
+            throwParseError(token, LeolaErrorCode.MISSING_RIGHT_BRACE);
         }
 
         CaseExpr caseExpr = new CaseExpr(conditionNode, whenExprs, elseExpr);
@@ -150,7 +150,7 @@ public class CaseExprParser extends StmtParser {
 
 	    token = currentToken();
 	    if ( ! token.getType().equals(LeolaTokenType.ARROW)) {
-	        getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_ARROW);
+	        throwParseError(token, LeolaErrorCode.MISSING_ARROW);
 	    }
 	    else {
 	        token = nextToken();

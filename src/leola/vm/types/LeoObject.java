@@ -798,10 +798,124 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	}
 	
 	/**
+	 * This is the equivalent of:
+	 * 
+	 * <pre>
+	 *    LeoObject result = x.call().throwIfError();
+	 * </pre>
+	 * 
+	 * @return the result of invoking the function.
+	 * @throws LeolaRuntimeException if the result of invoking the object returns a {@link LeoError}
+	 */
+	public LeoObject xcall() throws LeolaRuntimeException {
+	    return call().throwIfError();
+	}
+	
+	/**
+     * This is the equivalent of:
+     * 
+     * <pre>
+     *    LeoObject result = x.call(arg1).throwIfError();
+     * </pre>
+     * 
+     * @param arg1 the first argument
+     * @return the result of invoking the function.
+     * @throws LeolaRuntimeException if the result of invoking the object returns a {@link LeoError}
+     */
+    public LeoObject xcall(LeoObject arg1) throws LeolaRuntimeException {
+        return call(arg1).throwIfError();
+    }
+	
+    /**
+     * This is the equivalent of:
+     * 
+     * <pre>
+     *    LeoObject result = x.call(arg1,arg2).throwIfError();
+     * </pre>
+     * 
+     * @param arg1 the first argument
+     * @param arg2 the second argument
+     * @return the result of invoking the function.
+     * @throws LeolaRuntimeException if the result of invoking the object returns a {@link LeoError}
+     */
+    public LeoObject xcall(LeoObject arg1, LeoObject arg2) throws LeolaRuntimeException {
+        return call(arg1, arg2).throwIfError();
+    }
+    
+    /**
+     * This is the equivalent of:
+     * 
+     * <pre>
+     *    LeoObject result = x.call(arg1,arg2,arg3).throwIfError();
+     * </pre>
+     * 
+     * @param arg1 the first argument
+     * @param arg2 the second argument
+     * @param arg3 the third argument
+     * @return the result of invoking the function.
+     * @throws LeolaRuntimeException if the result of invoking the object returns a {@link LeoError}
+     */
+    public LeoObject xcall(LeoObject arg1, LeoObject arg2, LeoObject arg3) throws LeolaRuntimeException {
+        return call(arg1, arg2,arg3).throwIfError();
+    }
+    
+    /**
+     * This is the equivalent of:
+     * 
+     * <pre>
+     *    LeoObject result = x.call(arg1,arg2,arg3,arg4).throwIfError();
+     * </pre>
+     * 
+     * @param arg1 the first argument
+     * @param arg2 the second argument
+     * @param arg3 the third argument
+     * @param arg4 the fourth argument
+     * @return the result of invoking the function.
+     * @throws LeolaRuntimeException if the result of invoking the object returns a {@link LeoError}
+     */
+    public LeoObject xcall(LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4) throws LeolaRuntimeException {
+        return call(arg1, arg2, arg3, arg4).throwIfError();
+    }
+    
+    /**
+     * This is the equivalent of:
+     * 
+     * <pre>
+     *    LeoObject result = x.call(arg1,arg2,arg3,arg4,arg5).throwIfError();
+     * </pre>
+     * 
+     * @param arg1 the first argument
+     * @param arg2 the second argument
+     * @param arg3 the third argument
+     * @param arg4 the fourth argument
+     * @param arg5 the fifth argument
+     * @return the result of invoking the function.
+     * @throws LeolaRuntimeException if the result of invoking the object returns a {@link LeoError}
+     */
+    public LeoObject xcall(LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4, LeoObject arg5) throws LeolaRuntimeException {
+        return call(arg1, arg2, arg3, arg4, arg5).throwIfError();
+    }
+	
+    /**
+     * This is the equivalent of:
+     * 
+     * <pre>
+     *    LeoObject result = x.call(args).throwIfError();
+     * </pre>
+     * 
+     * @param args the argument list
+     * @return the result of invoking the function.
+     * @throws LeolaRuntimeException if the result of invoking the object returns a {@link LeoError}
+     */
+    public LeoObject xcall(LeoObject[] args) throws LeolaRuntimeException {
+        return call(args).throwIfError();
+    }
+    
+    /**
 	 * Invokes the function
 	 * 
 	 * @return the result of the function call
-	 */
+	 */	
 	public LeoObject call() {
 		throw new LeolaRuntimeException(this + " is not a function.");
 	}
@@ -912,6 +1026,20 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	}
 	
 	/**
+	 * @return the number of parameters this object takes
+	 */
+	public int getNumberOfArgs() {
+        return 0;
+    }
+    
+    /**
+     * @return true if this function has variable arguments
+     */
+    public boolean hasVarargs() {
+        return false;
+    }
+	
+	/**
 	 * Writes this object out
 	 * 
 	 * @param out
@@ -992,7 +1120,20 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 		return result;
 	}
 	
-	
+	/**
+	 * Throws a {@link LeolaRuntimeException} if this is a {@link LeoError} instance
+	 * 
+	 * @return this object for method chaining
+	 * @throws LeolaRuntimeException the underlying {@link LeoError}
+	 * 
+	 */
+	public LeoObject throwIfError() throws LeolaRuntimeException {
+	    if(isError()) {
+	        LeoError error = as();
+	        throw new LeolaRuntimeException(error);
+	    }
+	    return this;
+	}
 
     /**
      * Throws a ClassNotFoundError
@@ -1001,6 +1142,15 @@ public abstract class LeoObject implements Comparable<LeoObject> {
      */
     public static void throwClassNotFoundError(String message) {
         throw new LeolaRuntimeException("NoClassDefinitionError: " + message);
+    }
+    
+    /**
+     * Throws a MethodError
+     * 
+     * @param message the error message
+     */
+    public static void throwMethodError(String message) {
+        throw new LeolaRuntimeException("MethodError: " + message);
     }
     
     
@@ -1073,6 +1223,16 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	    throw new LeolaRuntimeException
 	        ("AttributeAccessError: '" + ownerClass.getSimpleName() + "' could not access attribute with the name '" + name + "'");
     }
+	
+	/**
+	 * Rethrows the supplied {@link Throwable} as a {@link LeolaRuntimeException}
+	 * 
+	 * @param t
+	 * @throws LeolaRuntimeException
+	 */
+	public static void rethrow(Throwable t) throws LeolaRuntimeException {
+	    throw new LeolaRuntimeException(t);
+	}
 	
 	/**
 	 * Determines if the supplied owner has a method by the supplied method name.

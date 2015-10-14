@@ -116,5 +116,18 @@ public class DebugEvent {
 	public Bytecode getBytecode() {
 		return bytecode;
 	}
-	
+
+	@Override
+	public String toString() {
+	    StringBuilder sb = new StringBuilder();
+	    final String format = "%4s %4s %26s %26s\n";
+	    sb.append(String.format(format, "Line#","PC","Stack", "Locals"));
+	    sb.append("========================================================================\n");
+	    sb.append(String.format(format, Integer.toString(this.lineNumber), Integer.toString(this.programCounter), this.stack[base], this.stack[base]));
+	    for(int i=base; i < this.stackPointer; i++) {
+	        String local = i<this.topStack ? this.stack[i].toString() : "";
+	        sb.append(String.format(format, "", "", this.stack[i], local));
+	    }
+	    return sb.toString();
+	}
 }

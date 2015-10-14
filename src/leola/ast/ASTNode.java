@@ -201,7 +201,7 @@ public abstract class ASTNode {
 	 * Tests to see if the attribute exists
 	 *
 	 * @param key
-	 * @return
+	 * @return true if the attribute is found;false otherwise
 	 */
 	public boolean hasAttribute(String key) {
 		boolean result = false;
@@ -216,7 +216,7 @@ public abstract class ASTNode {
 	 * Gets an attribute
 	 *
 	 * @param key
-	 * @return
+	 * @return the attribute value
 	 */
 	public Object getAttribute(String key) {
 		if ( this.attributes == null) return null;

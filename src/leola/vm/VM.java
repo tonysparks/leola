@@ -8,6 +8,7 @@ package leola.vm;
 import static leola.vm.Opcodes.ADD;
 import static leola.vm.Opcodes.AND;
 import static leola.vm.Opcodes.ARG1;
+import static leola.vm.Opcodes.ARG2;
 import static leola.vm.Opcodes.ARGsx;
 import static leola.vm.Opcodes.ARGx;
 import static leola.vm.Opcodes.BNOT;
@@ -87,6 +88,7 @@ import leola.vm.compiler.Outer.StackValue;
 import leola.vm.debug.DebugEvent;
 import leola.vm.debug.DebugListener;
 import leola.vm.exceptions.LeolaRuntimeException;
+import leola.vm.lib.LeolaLibrary;
 import leola.vm.types.LeoArray;
 import leola.vm.types.LeoBoolean;
 import leola.vm.types.LeoError;
@@ -101,7 +103,52 @@ import leola.vm.util.ClassUtil;
 
 
 /**
- * The Leola Virtual Machine executes the Leola bytecode.
+ * The {@link VM} (i.e., the Virtual Machine) is responsible for executing the Leola bytecode.  The current implementation uses a <code>stack</code>
+ * in order to operate.  The stack is shared amongst the call stack.  An important implementation detail is that if you are using a shared {@link Leola} 
+ * runtime instance, in order to be thread-safe, you must configure it to use {@link ThreadLocal}'s (via {@link Args#allowThreadLocal()}).  By enabling the
+ * use of {@link ThreadLocal}, a {@link VM} instance will be created per thread.  Please note, this does not fully guarantee thread-safety as the {@link Scope}
+ * containers are still shared amongst threads, i.e., assigning scoped variables is not atomic.  
+ * 
+ * <p>
+ * 
+ * <h2>The Stack</h2>
+ * 
+ * The VM attempts to optimize the allotted stack space by growing it on demand.  Upon initial startup, the VM will default to the {@link VM#DEFAULT_STACKSIZE} 
+ * size (this may be altered by {@link Args#getStackSize()}).  The stack size will grow if required (by executing a {@link Bytecode#maxstacksize} which is more 
+ * than what is currently available); the stack size does have a max capacity of growth which defaults to <code>({@link #DEFAULT_STACKSIZE} * {@link #DEFAULT_STACKSIZE})</code> 
+ * - (this can be altered by {@link Args#getMaxStackSize()}).
+ * 
+ * <p>
+ * 
+ * The shared stack is purely a performance enhancement; it took me a while to convince myself this was the appropriate approach.  The alternative would be 
+ * to create a new stack per {@link VM#execute(LeoObject, LeoObject, Bytecode)}.  In doing profiling, this created an immense amount of garbage (however speed 
+ * was relatively the same).
+ * 
+ * <p>
+ * <h2>Exception Handling</h2>
+ * The VM shouldn't throw any {@link Exception}s (unless there truly is an exceptional error in the VM), but instead will wrap any {@link Exception}s into a 
+ * {@link LeoError} which will be used as the result of executing a {@link VM#execute(LeoObject, LeoObject, Bytecode)}.  This approach keeps the execution 
+ * functions 'predictable'.  What does this mean?  It means it allows me to write the Java code without having to worry about exceptions being thrown from
+ * the client code.  I can treat the {@link LeoObject#call()} as a discrete unit of work, and if the Leola code contains an exception, it is a Leola exception
+ * and <b>not</b> an interpreter/Java exception.  
+ * <p>
+ * Given the above, there are plenty of scenarios were I <b>do</b> want to listen for exceptions from the Leola function call.  The common case for this
+ * scenario is in the standard library or {@link LeolaLibrary}'s.  The API's will want to know when an exception occurs, and handle them accordingly.  In these
+ * scenarios the API author should use the helper methods {@link LeoObject#xcall()}, which will throw a {@link LeolaRuntimeException} is the result of the 
+ * call is a {@link LeoError}.
+ * 
+ * <p>
+ * <h2>Object lifecyle</h2>
+ * As any sane implementation on the JVM, I take advantage of the JVM's garbage collector.  However, the JVM has to know when an object should be collected.
+ * Since the Leola {@link VM} contains a shared stack, we must be diligent in ensuring the stack only contains 'alive' objects.  After each 
+ * {@link VM#execute(LeoObject, LeoObject, Bytecode)} call, the VM's stack values are <code>popped</code> off for that function.  It does this by when an 
+ * execution is started it marks the current <code>top</code> of the stack, once the execution is terminated, it will <code>pop</code> off of the stack until
+ * the marked <code>top</code>.
+ * 
+ * <p>
+ * Since Leola supports closures, we have to be a little more advanced in our stack management and object life cycle.  
+ *
+ * <p>
  *
  * @author Tony
  *
@@ -111,7 +158,7 @@ public class VM {
 	/**
 	 * Maximum stack size
 	 */
-	public static final int DEFAULT_STACKSIZE = 1024;//1024 * 1024;
+	public static final int DEFAULT_STACKSIZE = 1024;
 
 	/**
 	 * Runtime
@@ -162,7 +209,7 @@ public class VM {
 		int stackSize = runtime.getArgs().getStackSize();
 		stackSize = (stackSize <= 0) ? DEFAULT_STACKSIZE : stackSize;
 
-		this.maxStackSize = Math.max(runtime.getArgs().getMaxStackSize(), stackSize);
+		this.maxStackSize = Math.max(runtime.getArgs().getMaxStackSize(), stackSize*stackSize);
 		
 		this.stack = new LeoObject[stackSize];
 		this.openouters = new Outer[stackSize];
@@ -198,7 +245,7 @@ public class VM {
 			System.arraycopy(args, 0, stack, base, args.length);
 		}
 
-		LeoObject result = executeStackframe(env, code, stack, callee, base );
+		LeoObject result = executeStackframe(env, code, callee, base );
 		return result;
 	}
 
@@ -217,7 +264,7 @@ public class VM {
 		
 		stack[base + 0] = arg1;		
 		
-		LeoObject result = executeStackframe(env, code, stack, callee, base );
+		LeoObject result = executeStackframe(env, code, callee, base );
 		return result;
 	}
 
@@ -238,7 +285,7 @@ public class VM {
 		stack[base + 0] = arg1;
 		stack[base + 1] = arg2;
 
-		LeoObject result = executeStackframe(env, code, stack, callee, base );
+		LeoObject result = executeStackframe(env, code, callee, base );
 		return result;
 	}
 
@@ -261,7 +308,7 @@ public class VM {
 		stack[base + 1] = arg2;
 		stack[base + 2] = arg3;
 
-		LeoObject result = executeStackframe(env, code, stack, callee, base );
+		LeoObject result = executeStackframe(env, code, callee, base );
 		return result;
 	}
 
@@ -286,7 +333,7 @@ public class VM {
 		stack[base + 2] = arg3;
 		stack[base + 3] = arg4;
 
-		LeoObject result = executeStackframe(env, code, stack, callee, base );
+		LeoObject result = executeStackframe(env, code, callee, base );
 		return result;
 	}
 
@@ -313,7 +360,7 @@ public class VM {
 		stack[base + 3] = arg4;
 		stack[base + 4] = arg5;
 
-		LeoObject result = executeStackframe(env, code, stack, callee, base );
+		LeoObject result = executeStackframe(env, code, callee, base );
 		return result;
 	}
 	
@@ -366,7 +413,7 @@ public class VM {
 	 * @param frame
 	 * @throws LeolaRuntimeException
 	 */
-	private LeoObject executeStackframe(LeoObject env, Bytecode code, LeoObject[] stack, LeoObject callee, int base) throws LeolaRuntimeException {
+	private LeoObject executeStackframe(LeoObject env, Bytecode code, LeoObject callee, int base) throws LeolaRuntimeException {
 		LeoObject result = LeoNull.LEONULL;
 		LeoObject errorThrown = LeoNull.LEONULL;
 
@@ -406,7 +453,7 @@ public class VM {
 		boolean closeOuters = false;
 		boolean yield = false;
 		boolean isReturnedSafely = true;
-		
+				
 		Scope scope = null;
 		
 		/* check and see if this is a scoped object,
@@ -547,7 +594,7 @@ public class VM {
 							continue;
 						}
 						case RET:	{
-							isReturnedSafely = true; /* do not clear out result in an ON block */
+							isReturnedSafely = true; 
 							
 							pc = len;  /* Break out of the bytecode */
 							if ( top>topStack) {
@@ -557,7 +604,7 @@ public class VM {
 						}
 						case YIELD: {
 							yield = true; /* lets not expire the generator */
-							isReturnedSafely = true; /* do not clear out result in an ON block */
+							isReturnedSafely = true; 
 							
 							/* copy what was stored on the stack, back to the
 							 * generators local copy
@@ -615,13 +662,38 @@ public class VM {
 							pc += pos;
 							continue;
 						}
-						case TAIL_CALL: {
+						case TAIL_CALL: {						    
 							pc = 0;	/* return to the beginning of the function call, with the
 									   stack persevered */
-	
+							LeoObject fun = stack[--top];
+							
 							int nargs = ARG1(i);
-							--top; /* pop the function object */
-							/*LeoObject obj = stack[--top];*/
+							
+	                         
+                            /* determine if there are named parameters to resolve */
+                            if(paramIndex > 0 ) {
+                                nargs = resolveNamedParameters(params, stack, top-nargs, fun, nargs);
+                                
+
+                                /* ready this for any other method calls */
+                                params.clear();
+                                paramIndex = 0;
+                            }   
+							
+							if(code.hasVarargs()) {
+							    int numberOfArguments = (nargs - code.numArgs) + 1;
+    							int expandedArgs = ARG2(i);
+    							
+    							/* If we don't have an expanded array request, wrap up the arguments
+    							 * into a new array
+    							 */
+    							if(expandedArgs<1) {
+        							LeoArray arguments = new LeoArray(readArrayFromStack(numberOfArguments, stack));    							
+        							stack[top++] = arguments;
+        							nargs = code.numArgs;
+    							}
+							}							
+							
 							switch(nargs) {
 								case 0: {
 									break;
@@ -681,42 +753,62 @@ public class VM {
 							continue;
 						}
 						case INVOKE:	{
-							int nargs = ARG1(i);
-							LeoObject fun = stack[--top];
-	
-							/* determine if there are named parameters to resolve */
-							if(paramIndex > 0 && !fun.isNativeFunction() ) {
-							    resolveNamedParameters(params, stack, top, fun, nargs);
-							    
+						    LeoObject fun = stack[--top];
+						    int nargs = ARG1(i);
+						    
+						    
+                            /* determine if there are named parameters to resolve */
+                            if(paramIndex > 0 && !fun.isNativeFunction() ) {
+                                nargs = resolveNamedParameters(params, stack, top-nargs, fun, nargs);
+                                
 
-						        /* ready this for any other method calls */
-							    params.clear();
-							    paramIndex = 0;
-							}                            
+                                /* ready this for any other method calls */
+                                params.clear();
+                                paramIndex = 0;
+                            } 
+						    
+						    /* If we have an expanded array argument,
+						     * go ahead and expand it
+						     */
+	                        int argIndex = ARG2(i);
+	                        if(argIndex>0) {
+	                            if(!fun.isNativeFunction()) {    	                            
+    	                            if(!fun.hasVarargs()) {
+    	                                error(fun + " does not accept variable arguments.");
+    	                            }
+    	                            int expectedNumberOfArguments = fun.getNumberOfArgs();
+    	                            if(nargs < expectedNumberOfArguments) {
+    	                                error("Invalid number of parameters '" + nargs + "' before the variable arguments expansion '" + expectedNumberOfArguments + "'.");
+    	                            }
+	                            }
+	                            
+                                nargs += expandArrayArgument() - 1;
+	                        }
+                           
 							
 							LeoObject c = null;
 	
 							switch(nargs) {
 								case 0: {
-									c = fun.call();
+									c = fun.xcall();
 									break;
 								}
 								case 1: {
 									LeoObject arg1 = stack[--top];
-									c = fun.call(arg1);
+									c = fun.xcall(arg1);
 									break;
 								}
 								case 2: {
 									LeoObject arg2 = stack[--top];
 									LeoObject arg1 = stack[--top];
-									c = fun.call(arg1, arg2);
+									c = fun.xcall(arg1, arg2);
 									break;
 								}
 								case 3: {
 									LeoObject arg3 = stack[--top];
 									LeoObject arg2 = stack[--top];
 									LeoObject arg1 = stack[--top];
-									c = fun.call(arg1, arg2, arg3);
+									c = fun.xcall(arg1, arg2, arg3);
 									break;
 								}
 								case 4: {
@@ -724,7 +816,7 @@ public class VM {
 									LeoObject arg3 = stack[--top];
 									LeoObject arg2 = stack[--top];
 									LeoObject arg1 = stack[--top];
-									c = fun.call(arg1, arg2, arg3, arg4);
+									c = fun.xcall(arg1, arg2, arg3, arg4);
 									break;
 								}
 								case 5: {
@@ -733,66 +825,71 @@ public class VM {
 									LeoObject arg3 = stack[--top];
 									LeoObject arg2 = stack[--top];
 									LeoObject arg1 = stack[--top];
-									c = fun.call(arg1, arg2, arg3, arg4, arg5);
+									c = fun.xcall(arg1, arg2, arg3, arg4, arg5);
 									break;
 								}
 								default: {
 									LeoObject[] args = readArrayFromStack(nargs, stack);
-									c = fun.call(args);
+									c = fun.xcall(args);
 								}
 							}
 	
-							stack[top++] = c;
-							
-							if( c.isError() )  {
-							    isReturnedSafely = false;
-								errorThrown = c;
-								result = c; 	/* throw this error */ 
-								pc = len; 		/* exit out of this function */ 
-								
-								LeoError error = c.as();
-								if(error.getLineNumber() < 1) {
-									error.setLineNumber(lineNumber);
-									error.setSourceFile(code.getSourceFile());
-								}
-								else {
-									error.addStack(new LeoError(lineNumber));
-								}
-							}
-	
+							stack[top++] = c;	
 							continue;
 						}
 						case NEW_OBJ:	{
 	
 							LeoObject className = stack[--top];
 	
-							int nargs = ARGx(i);
-							LeoObject[] args = readArrayFromStack(nargs, stack);
+							int nargs = ARG1(i);
+							
 							
 							LeoObject instance = null;
 	
 							ClassDefinitions defs = scope.lookupClassDefinitions(className);
 							if ( defs == null ) {
 	
-								if(!runtime.isSandboxed()) {															
-									instance = ClassUtil.newNativeInstance(className.toString(), args);
+								if(runtime.isSandboxed()) {															
+								    error("Unable to instantiate native Java classes ('"+ className +"') in Sandboxed mode.");
 								}
-								else {
-									error("Unable to instantiate native Java classes ('"+ className +"') in Sandboxed mode.");
-								}
+							
+								LeoObject[] args = readArrayFromStack(nargs, stack);
+								instance = ClassUtil.newNativeInstance(className.toString(), args);
 							}
 							else {
 							    LeoObject resolvedClassName = scope.getClassName(className);
                                 ClassDefinition definition = defs.getDefinition(resolvedClassName);
-							    
+                                LeoObject[] args = new LeoObject[definition.getNumberOfParameters()];
+                                args = readArrayFromStack(args, nargs, stack);
+                                for(int j=nargs; j < args.length; j++) {
+                                    args[j]=LeoObject.NULL;
+                                }
+                                
 							    if(paramIndex > 0) {				                       
-	                                resolveNamedParameters(params, args, nargs, definition.getParameterNames(), nargs);
+	                                resolveNamedParameters(params, args, 0, definition.getParameterNames(), nargs);
 	                                
 	
 	                                /* ready this for any other method calls */
 	                                params.clear();
 	                                paramIndex = 0;
-	                            }						    
+	                            }				
+							    
+							    if(definition.hasVarargs()) {
+	                                int numberOfArguments = (nargs - definition.getNumberOfParameters()) + 1;
+	                                int startVarArgIndex = nargs-numberOfArguments;
+	                                int expandedArgs = ARG2(i);
+	                                
+	                                /* If we don't have an expanded array request, wrap up the arguments
+	                                 * into a new array
+	                                 */
+	                                if(expandedArgs<1) {
+	                                    LeoArray arguments = new LeoArray(numberOfArguments);
+	                                    for(int k=startVarArgIndex; k<args.length;k++) {
+	                                        arguments.add(args[k]);
+	                                    }
+	                                    args[startVarArgIndex] = arguments;
+	                                }
+	                            }
 							    
 								instance = defs.newInstance(runtime, definition, args);
 							}
@@ -844,7 +941,7 @@ public class VM {
 							}
 							
 							Outer[] outers = ns.getOuters();
-							if (outers(outers, calleeouters, openouters, namespacecode.numOuters, base, pc, code)) {
+							if (assignOuters(outers, calleeouters, openouters, namespacecode.numOuters, base, pc, code)) {
 							    closeOuters = true;
 							}
 							pc += namespacecode.numOuters;
@@ -860,7 +957,7 @@ public class VM {
 							LeoGenerator fun = new LeoGenerator(this.runtime, scopedObj, bytecode.clone());
 	
 							Outer[] outers = fun.getOuters();
-							if (outers(outers, calleeouters, openouters, bytecode.numOuters, base, pc, code)) {
+							if (assignOuters(outers, calleeouters, openouters, bytecode.numOuters, base, pc, code)) {
                                 closeOuters = true;
                             }
 							pc += bytecode.numOuters;
@@ -874,7 +971,7 @@ public class VM {
 							LeoFunction fun = new LeoFunction(this.runtime, scopedObj, bytecode);
 	
 							Outer[] outers = fun.getOuters();							
-							if (outers(outers, calleeouters, openouters, bytecode.numOuters, base, pc, code)) {
+							if (assignOuters(outers, calleeouters, openouters, bytecode.numOuters, base, pc, code)) {
                                 closeOuters = true;
                             }
 							pc += bytecode.numOuters;
@@ -919,7 +1016,7 @@ public class VM {
 							defs.storeClass(className, classDefinition);
 	
 							Outer[] outers = classDefinition.getOuters();
-							if( outers(outers, calleeouters, openouters, body.numOuters, base, pc, code)) {
+							if( assignOuters(outers, calleeouters, openouters, body.numOuters, base, pc, code)) {
                                 closeOuters = true;
                             }
 							pc += body.numOuters;
@@ -943,15 +1040,17 @@ public class VM {
 						}
 						case THROW: {
 							/* we are not safely returning */
-							isReturnedSafely = false; 
-							
-							LeoObject str = stack[--top];							
-							errorThrown = buildStackTrace(code, errorThrown, str, lineNumber);
-	
-							stack[top++] = errorThrown;
-							
-							pc = len; /* exit out of this function */
-							continue;
+//							isReturnedSafely = false; 
+//							
+//							LeoObject str = stack[--top];							
+//							errorThrown = buildStackTrace(code, errorThrown, str, lineNumber);
+//	
+//							stack[top++] = errorThrown;
+//							
+//							pc = len; /* exit out of this function */
+						    
+						    LeoObject str = stack[--top];         						    		   
+						    throw new LeolaRuntimeException(new LeoError(str));
 						}
 	
 						case IDX: {
@@ -1096,7 +1195,6 @@ public class VM {
 							
 							continue;
 						}
-	
 						/* arithmetic operators */
 						case ADD:	{
 							LeoObject r = stack[--top];
@@ -1305,11 +1403,26 @@ public class VM {
 				}
 			}
 		} while(blockStack != null && !blockStack.isEmpty());
-
+		
 		return isReturnedSafely ? 
 				 result : errorThrown;
 	}
 
+	/**
+     * Reads an array of values from the stack.
+     * 
+     * @param args
+     * @param nargs
+     * @param stack
+     * @return the array of {@link LeoObject}'s, or null if nargs <= 0
+     */
+    private LeoObject[] readArrayFromStack(LeoObject[] args, int nargs, LeoObject[] stack) {                           
+        for(int j = nargs - 1; j >= 0; j--) {
+            args[j] = stack[--top];
+        }                
+        return args;
+    }
+	
 	
 	/**
 	 * Reads an array of values from the stack.
@@ -1322,12 +1435,37 @@ public class VM {
 	    LeoObject[] args = null;
         if ( nargs > 0 ) {
             args = new LeoObject[nargs];
-            for(int j = nargs - 1; j >= 0; j--) {
-                args[j] = stack[--top];
-            }
+            return readArrayFromStack(args, nargs, stack);
         }
         
         return args;
+	}
+	
+	/**
+	 * Expands the first function argument (which ends up really be the last argument in Leola code).
+	 * This will also ensure that the stack is appropriately resized if necessary.
+	 * 
+	 * @param doExpansion - if the expansion should actually be done
+	 * @return the number of arguments that were expanded
+	 */
+	private int expandArrayArgument() {	    
+        LeoObject l = stack[--top];
+        if(!l.isArray()) {
+            error(l + " is not an array");
+        }
+        
+        LeoArray array = l.as();
+        int size = array.size();
+                
+        
+        growStackIfRequired(stack, top, size+1);
+        
+        
+        for(int index = 0; index < size; index++) {
+            stack[top++] = array.get(index);    
+        }              
+        
+        return size;
 	}
 	
 	/**
@@ -1339,22 +1477,45 @@ public class VM {
 	 * @return the error thrown 
 	 */
 	private LeoObject buildStackTrace(Bytecode code, LeoObject errorThrown, Object message, int lineNumber) {
+		if( (message instanceof LeolaRuntimeException) ) {
+		    LeoError error = ((LeolaRuntimeException)message).getLeoError();
 		
-	    LeoError error = (message instanceof LeolaRuntimeException) ?
-	                        ((LeolaRuntimeException)message).getLeoError()
-	                            : new LeoError(message.toString());
-	    
-	    error.setSourceFile(code.getSourceFile());
-	    error.setLineNumber(lineNumber);
-	    
-		if(errorThrown.isError()) {
-			LeoError parentError = errorThrown.as();
-			parentError.addStack(error);
+		    if(error.getLineNumber()<0) {                         
+	            error.setSourceFile(code.getSourceFileName());
+	            error.setLineNumber(lineNumber);	            
+	        }
+		    else if(errorThrown.isError()) {
+	            LeoError parentError = errorThrown.as();
+	            parentError.addStack(error);
+	            error = parentError;
+	        }
+		    else {
+		        LeoError cause = new LeoError();
+		        cause.setSourceFile(code.getSourceFileName());
+                cause.setLineNumber(lineNumber);
+                error.addStack(cause);
+                
+		    }
+		    
+		    errorThrown = error;
 		}
 		else {
-			errorThrown = error;
-		}
 	    
+    	    LeoError error = new LeoError(message.toString());
+    	    
+            if(error.getLineNumber()<0) {	                        
+        	    error.setSourceFile(code.getSourceFileName());
+        	    error.setLineNumber(lineNumber);
+            }
+    	    
+    		if(errorThrown.isError()) {
+    			LeoError parentError = errorThrown.as();
+    			parentError.addStack(error);
+    		}
+    		else {
+    			errorThrown = error;
+    		}
+		}
 		
 		return errorThrown;
 	}
@@ -1379,13 +1540,26 @@ public class VM {
 	 * @param params
 	 * @param fun
 	 * @param nargs
+	 * @return the number of arguments to be expected
 	 */
-	private void resolveNamedParameters(List<LeoObject> params, LeoObject[] args, int argTop, LeoObject fun, int nargs) {	    
+	private int resolveNamedParameters(List<LeoObject> params, LeoObject[] args, int argTop, LeoObject fun, int nargs) {	    
         /* assume this is a function */
         LeoFunction f = fun.as();
         Bytecode bc = f.getBytecode();
         
-        resolveNamedParameters(params, args, argTop, bc.paramNames, nargs);                                                                                                         
+        resolveNamedParameters(params, args, argTop, bc.paramNames, nargs);
+        
+        /* If we received less number of parameters than expected,
+         * adjust the top of the stack, because we are accounting for
+         * them now
+         */
+        int expectedNumberOfParameters = bc.paramNames.length;
+        if(nargs < expectedNumberOfParameters) {
+            top += expectedNumberOfParameters-nargs;
+            nargs = expectedNumberOfParameters;
+        }
+        
+        return nargs;
 	}
     
     /**
@@ -1397,20 +1571,41 @@ public class VM {
      * @param nargs
      */
     private void resolveNamedParameters(List<LeoObject> params, LeoObject[] args, int topArgs, LeoObject[] paramNames, int nargs) {                   
-        /* store stack arguments in a temporary location */
+        int expectedNumberOfArgs = paramNames.length;
+//        int tmpTop = 0;//top;
         int tmpTop = top;
-        LeoObject[] tmp = stack;//new LeoObject[nargs];
-        for(int stackIndex = 0; stackIndex < nargs; stackIndex++) {
-            tmp[tmpTop + stackIndex] = args[topArgs - stackIndex - 1];
-        }
         
-                                                
+        
+//        LeoObject[] tmp = new LeoObject[expectedNumberOfArgs];//stack
+        LeoObject[] tmp = stack;
+        
+        /* Clone the supplied arguments into a temporary
+         * variable (we use the execution stack for performance reasons,
+         * this helps us avoid an allocation)
+         */
+        for(int stackIndex = 0; stackIndex < expectedNumberOfArgs; stackIndex++) {            
+            if(stackIndex < nargs) {
+                tmp[tmpTop + stackIndex] = args[topArgs + stackIndex];
+            }
+            else {
+                tmp[tmpTop + stackIndex] = LeoObject.NULL;
+            }
+            
+            args[topArgs+stackIndex] = null;
+        }
+                
+        int[] otherIndexes = new int[expectedNumberOfArgs];
+        
         /* iterate through the parameter names and adjust the stack
          * so that the names match the position the function expects them
          */
         for(int stackIndex = 0; stackIndex < params.size(); stackIndex++) {
             LeoObject paramName = params.get(stackIndex);
             if(paramName != null) {             
+                
+                /* Find the appropriate argument position
+                 * index for the named parameter
+                 */
                 int paramIndex = 0;
                 for(; paramIndex < paramNames.length; paramIndex++) {
                     if(paramNames[paramIndex].$eq(paramName)) {
@@ -1418,9 +1613,49 @@ public class VM {
                     }
                 }
                 
-                args[topArgs - (nargs - paramIndex)] = tmp[tmpTop + (nargs - stackIndex - 1)];
+                if(paramIndex>=paramNames.length) {
+                    error("Invalid parameter name '" + paramName + "'");
+                }
+                
+                otherIndexes[stackIndex] = paramIndex + 1;
+            }   
+            else {
+                otherIndexes[stackIndex] = -(stackIndex+1);
             }
-        }                                                                                                          
+        }            
+
+        /* Assign the named parameters to the correct position
+         */
+        for(int i = 0; i < expectedNumberOfArgs; i++) {         
+            if(otherIndexes[i]>0) {
+                args[topArgs+ (otherIndexes[i]-1) ] = tmp[tmpTop + i];
+            }            
+        }
+        
+        /* Account for arguments that do not have a name
+         * in front of them.  In these cases, we 'fill-in-the-blanks'
+         * in order from left to right.
+         */
+        int lastUnusedIndex = 0;
+        for(int i = 0; i < expectedNumberOfArgs; i++) {
+            if(args[topArgs+i] == null) {
+                for(; lastUnusedIndex < otherIndexes.length;) {
+                    if(otherIndexes[lastUnusedIndex]<0) {
+                        args[ topArgs+i ] = tmp[tmpTop + lastUnusedIndex++ ];
+                        break;
+                    }      
+                    lastUnusedIndex++;
+                }
+            }
+        }
+        
+        /* Whatever is left over, just assign
+         * them to NULL
+         */
+        for(int i = 0; i < expectedNumberOfArgs; i++) {
+            if(args[topArgs+i]==null)
+                args[topArgs+i] = LeoObject.NULL;
+        }
     }
 	
 	/**
@@ -1436,7 +1671,7 @@ public class VM {
 	 * @return true if there where Outers created that should be closed over once we leave the function
 	 * scope
 	 */
-	private boolean outers(Outer[] outers, Outer[] calleeouters, Outer[] openouters, 
+	private boolean assignOuters(Outer[] outers, Outer[] calleeouters, Outer[] openouters, 
 	                    int numOuters, 
 	                    int base, 
 	                    int pc, 

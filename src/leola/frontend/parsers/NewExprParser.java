@@ -65,7 +65,7 @@ public class NewExprParser extends FuncInvocationParser {
 				className += ":";
 			}
 			else {
-				getExceptionHandler().errorToken(token, this, LeolaErrorCode.UNEXPECTED_TOKEN);
+			    throwParseError(token, LeolaErrorCode.UNEXPECTED_TOKEN);
 			}
 
 			token = nextToken();

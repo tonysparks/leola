@@ -58,7 +58,7 @@ public class ChainedArrayAccessExprParser extends ExprParser {
             token = nextToken();  // consume the ]
         }
         else {
-        	getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_RIGHT_BRACKET);
+            throwParseError(token, LeolaErrorCode.MISSING_RIGHT_BRACKET);
         }
 
         Expr expr = null;

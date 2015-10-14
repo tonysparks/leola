@@ -1,5 +1,7 @@
 package leola.frontend;
 
+import java.io.IOException;
+
 import leola.frontend.tokens.LeolaTokenType;
 
 /**
@@ -25,7 +27,7 @@ public class EofToken extends Token {
      * @throws Exception
      *             if an error occurred.
      */
-    public EofToken(Source source) throws Exception {
+    public EofToken(Source source) throws IOException {
         super(source);
         this.type = LeolaTokenType.END_OF_FILE;
     }

@@ -44,7 +44,7 @@ public class NamespaceStmtParser extends StmtParser {
 		token = nextToken();  // consume the NAMESPACE
 
 		if ( ! token.getType().equals(LeolaTokenType.IDENTIFIER) ) {
-			getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_IDENTIFIER);
+		    throwParseError(token, LeolaErrorCode.MISSING_IDENTIFIER);
 		}
 
 		// parse the namespace name

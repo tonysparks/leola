@@ -1,7 +1,10 @@
 package leola.frontend.tokens;
 
+import static leola.frontend.tokens.LeolaTokenType.ERROR;
+
+import java.io.IOException;
+
 import leola.frontend.Source;
-import static leola.frontend.tokens.LeolaTokenType.*;
 
 
 /**
@@ -23,7 +26,7 @@ public class LeolaErrorToken extends LeolaToken {
      * @throws Exception
      *             if an error occurred.
      */
-    public LeolaErrorToken(Source source, LeolaErrorCode errorCode, String tokenText) throws Exception {
+    public LeolaErrorToken(Source source, LeolaErrorCode errorCode, String tokenText) throws IOException {
         super(source);
 
         this.text = tokenText;
@@ -38,6 +41,6 @@ public class LeolaErrorToken extends LeolaToken {
      *             if an error occurred.
      */
     @Override
-    protected void extract() throws Exception {
+    protected void extract() throws IOException {
     }
 }

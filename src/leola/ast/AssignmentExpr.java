@@ -32,7 +32,7 @@ public class AssignmentExpr extends OwnableExpr {
 
 	/**
 	 * @param varName
-	 * @param isComplex
+	 * @param lhsExpr
 	 * @param expr
 	 */
 	public AssignmentExpr(String varName, Expr lhsExpr, Expr expr) {
@@ -41,8 +41,9 @@ public class AssignmentExpr extends OwnableExpr {
 
 
 	/**
+	 * @param owner
 	 * @param varName
-	 * @param isComplex
+	 * @param lhsExpr
 	 * @param expr
 	 */
 	public AssignmentExpr(String owner, String varName, Expr lhsExpr, Expr expr) {

@@ -20,13 +20,13 @@ public class SyntaxErrorEvent extends Event {
     private String tokenText;
     private String errorMessage;
     private Source sourceCode;
-	/**
-	 * @param source
-	 * @param lineNumber
-	 * @param position
-	 * @param tokenText
-	 * @param errorMessage
-	 */
+	
+    /**
+     * @param source
+     * @param sourceCode
+     * @param token
+     * @param errorMessage
+     */
 	public SyntaxErrorEvent(Object source, Source sourceCode, Token token, String errorMessage) {
 		super(source);
 		this.sourceCode = sourceCode;

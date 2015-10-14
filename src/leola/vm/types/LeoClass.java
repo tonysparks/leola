@@ -176,21 +176,21 @@ public class LeoClass extends LeoScopedObject {
 
 	private LeoObject override(LeoString name) {					
 		LeoObject function = getProperty(name);
-		LeoObject result = this.runtime.execute(function);
+		LeoObject result = function.xcall();
 		
 		return result;
 	}
 	
 	private LeoObject override(LeoString name, LeoObject arg1) {
 		LeoObject function = getProperty(name);
-		LeoObject result = this.runtime.execute(function, arg1);
+		LeoObject result = function.xcall(arg1);
 		
 		return result;
 	}
 	
 	private LeoObject override(LeoString name, LeoObject arg1, LeoObject arg2) {
         LeoObject function = getProperty(name);
-        LeoObject result = this.runtime.execute(function, arg1, arg2);
+        LeoObject result = function.xcall(arg1, arg2);
         
         return result;
     }
@@ -207,38 +207,54 @@ public class LeoClass extends LeoScopedObject {
 		
 		StringBuilder sb = new StringBuilder();
 		boolean isFirst = true;
-		sb.append("{ ");
+
 		LeoMap map = this.getScope().getRawObjects();
-		LeoObject[] vars = map.hashKeys;
-		LeoObject[] objs = map.hashValues; 
-		if ( vars != null ) {
-			for(int i = 0; i < vars.length; i++) {
-				if(vars[i] != null) {
-					if ( !isFirst) {
-						sb.append(", ");
-					}
-					sb.append(vars[i]).append(" : ");
-					LeoObject val = objs[i];
-					if ( val != null && val != this) {
-						if(val.isString()) {
-							sb.append("\"").append(val).append("\"");
-						}
-						else if (val.isScopedObject()) {
-							sb.append("<...>");
-						}
-						else {
-							sb.append(val);
-						}
-					}
-					else {
-						sb.append("<...>");
-					}
-					
-					isFirst = false;
-				}
-			}
-		}
-		sb.append(" }");
+		sb.append("{ ");
+		final LeoString THIS = LeoString.valueOf("this");
+        final LeoString SUPER = LeoString.valueOf("super");
+        
+        for(int i = 0; i < map.hashKeys.length; i++) {
+            if(map.hashKeys[i] != null && (!map.hashKeys[i].equals(THIS) && !map.hashKeys[i].equals(SUPER)) ) {
+                if ( !isFirst) {
+                    sb.append(", ");
+                }
+                
+                LeoObject key = map.hashKeys[i];
+                if(key.isString() ) {
+                    sb.append("\"").append(key).append("\"");
+                }
+                else if(key.isNull()) {
+                    sb.append("null");
+                }
+                else {
+                    sb.append(key);
+                }
+                
+                sb.append(" : ");
+                
+                
+                LeoObject val = map.get(map.hashKeys[i]);
+                if ( val != null && val != this) {
+                    if(val.isString()) {
+                        sb.append("\"").append(val).append("\"");
+                    }
+                    else if (val.isScopedObject()) {
+                        sb.append("\"<...>\"");
+                    }
+                    else if(val.isNull()) {
+                        sb.append("null");
+                    }
+                    else {
+                        sb.append(val);
+                    }
+                }
+                else {
+                    sb.append("\"<...>\"");
+                }
+                isFirst = false;
+            }
+        }
+        sb.append(" }");
 		
 		return sb.toString();
 		

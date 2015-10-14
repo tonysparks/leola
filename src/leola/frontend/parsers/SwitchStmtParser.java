@@ -128,7 +128,7 @@ public class SwitchStmtParser extends StmtParser {
 
         }
         else {
-            getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_LEFT_BRACE);
+            throwParseError(token, LeolaErrorCode.MISSING_LEFT_BRACE);
         }
 
         token = currentToken();
@@ -136,7 +136,7 @@ public class SwitchStmtParser extends StmtParser {
             nextToken();
         }
         else if ( hasOpeningBrace ) {
-            getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_RIGHT_BRACE);
+            throwParseError(token, LeolaErrorCode.MISSING_RIGHT_BRACE);
         }
 
         SwitchStmt switchStmt = new SwitchStmt(conditionNode, whenStmts, elseStmt);
@@ -154,7 +154,7 @@ public class SwitchStmtParser extends StmtParser {
 
 	    token = currentToken();
 	    if ( ! token.getType().equals(LeolaTokenType.ARROW)) {
-	        getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_ARROW);
+	        throwParseError(token, LeolaErrorCode.MISSING_ARROW);
 	    }
 	    else {
 	        token = nextToken();

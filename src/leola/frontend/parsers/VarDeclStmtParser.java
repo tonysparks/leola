@@ -38,14 +38,14 @@ public class VarDeclStmtParser extends StmtParser {
 		/* get the identifier */		
 		LeolaTokenType type = token.getType(); 
 		if ( ! type.equals(LeolaTokenType.IDENTIFIER)) {
-			getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_IDENTIFIER);
+		    throwParseError(token, LeolaErrorCode.MISSING_IDENTIFIER);
 		}
 		
 		String varName = token.getText();
 		
 		token = nextToken();
 		if ( !token.getType().equals(LeolaTokenType.EQUALS)) {
-			getExceptionHandler().errorToken(token, this, LeolaErrorCode.INVALID_ASSIGNMENT);
+		    throwParseError(token, LeolaErrorCode.INVALID_ASSIGNMENT);
 		}
 		
 		/* get the value expression */

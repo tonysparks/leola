@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UTFDataFormatException;
 
-import leola.vm.Leola;
 import leola.vm.types.LeoArray;
 import leola.vm.types.LeoObject;
 import leola.vm.types.LeoString;
@@ -24,16 +23,13 @@ import leola.vm.types.LeoString;
 public class LeolaFile {
 
 	private RandomAccessFile raf;
-	private Leola runtime;
-	
-	
+		
 	/**
 	 * @param raf the {@link RandomAccessFile} that has been opened
 	 * @param runtime the Leola runtime 
 	 */
-	public LeolaFile(RandomAccessFile raf, Leola runtime) {	
-		this.raf = raf;
-		this.runtime = runtime;
+	public LeolaFile(RandomAccessFile raf) {	
+		this.raf = raf;	
 	}	
 	
 	/**
@@ -43,14 +39,17 @@ public class LeolaFile {
 	 * @param func
 	 * @throws Exception
 	 */
-	public void with(LeoObject func) throws Exception {
+	public LeoObject with(LeoObject func) throws Exception {
 		try {
-			this.runtime.execute(func, LeoObject.valueOf(this));
+			return func.xcall(LeoObject.valueOf(this));
 		}
 		catch(Exception e) {
 			try {this.raf.close();}
 			catch(Exception ignore) {}
+			
+			LeoObject.rethrow(e);
 		}
+		return LeoObject.NULL;
 	}
 	
 	/**

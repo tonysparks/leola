@@ -58,6 +58,9 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 	 * @return the type of {@link LeoObject} this is
 	 */
 	public String type(LeoObject obj) {
+	    if(obj==null) {
+	        return LeoObject.NULL.getType().name();
+	    }
 		return obj.getType().name();
 	}
 	
@@ -253,7 +256,7 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 					}
 				}
 				
-				LeoObject res = runtime.execute(leoMethod, largs);
+				LeoObject res = leoMethod.xcall(largs);
 				return LeoObject.toJavaObject(method.getReturnType(), res);
 			}
 		});

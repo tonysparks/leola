@@ -1,11 +1,15 @@
 package leola.frontend.tokens;
 
+import static leola.frontend.tokens.LeolaErrorCode.INVALID_NUMBER;
+import static leola.frontend.tokens.LeolaErrorCode.RANGE_INTEGER;
+import static leola.frontend.tokens.LeolaErrorCode.RANGE_LONG;
+import static leola.frontend.tokens.LeolaErrorCode.RANGE_REAL;
 import static leola.frontend.tokens.LeolaTokenType.ERROR;
 import static leola.frontend.tokens.LeolaTokenType.INTEGER;
-import static leola.frontend.tokens.LeolaTokenType.REAL;
 import static leola.frontend.tokens.LeolaTokenType.LONG;
-import static leola.frontend.tokens.LeolaErrorCode.*;
+import static leola.frontend.tokens.LeolaTokenType.REAL;
 
+import java.io.IOException;
 import java.math.BigInteger;
 
 import leola.frontend.Source;
@@ -27,7 +31,7 @@ public class LeolaNumberToken extends LeolaToken {
      * @throws Exception
      *             if an error occurred.
      */
-    public LeolaNumberToken(Source source) throws Exception {
+    public LeolaNumberToken(Source source) throws IOException {
         super(source);
     }
 
@@ -38,7 +42,7 @@ public class LeolaNumberToken extends LeolaToken {
      *             if an error occurred.
      */
     @Override
-    protected void extract() throws Exception {
+    protected void extract() throws IOException {
         StringBuilder textBuffer = new StringBuilder(); // token's characters
         extractNumber(textBuffer);
         text = textBuffer.toString();
@@ -52,7 +56,7 @@ public class LeolaNumberToken extends LeolaToken {
      * @throws Exception
      *             if an error occurred.
      */
-    protected void extractNumber(StringBuilder textBuffer) throws Exception {
+    protected void extractNumber(StringBuilder textBuffer) throws IOException {
         String wholeDigits = null; // digits before the decimal point
         String fractionDigits = null; // digits after the decimal point
         String exponentDigits = null; // exponent digits
@@ -150,7 +154,7 @@ public class LeolaNumberToken extends LeolaToken {
      * @throws Exception
      *             if an error occurred.
      */
-    private String unsignedIntegerDigits(StringBuilder textBuffer) throws Exception {
+    private String unsignedIntegerDigits(StringBuilder textBuffer) throws IOException {
         char currentChar = currentChar();
 
         // Must have at least one digit.

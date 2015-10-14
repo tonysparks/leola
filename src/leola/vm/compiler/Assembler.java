@@ -469,18 +469,30 @@ public class Assembler {
 		});
 		opcodes.put("INVOKE", new Opcode() {			
 			public void invoke(BytecodeEmitter asm, String...  args) {
-				asm.invoke(Integer.parseInt(args[0]));
+			    int expandedIndex = -1;
+			    if(args.length>1) {
+			        expandedIndex = Integer.parseInt(args[1]);
+			    }
+				asm.invoke(Integer.parseInt(args[0]), expandedIndex);
 			}
 		});
 		opcodes.put("TAIL_CALL", new Opcode() {			
 			public void invoke(BytecodeEmitter asm, String...  args) {
-				asm.tailcall(Integer.parseInt(args[0]));
+			    int expandedIndex = -1;
+                if(args.length>1) {
+                    expandedIndex = Integer.parseInt(args[1]);
+                }
+				asm.tailcall(Integer.parseInt(args[0]), expandedIndex);
 			}
 		});
 				
 		opcodes.put("NEW_OBJ", new Opcode() {			
 			public void invoke(BytecodeEmitter asm, String...  args) {
-				asm.newobj(Integer.parseInt(args[0]));				
+			    int expandedIndex = -1;
+                if(args.length>1) {
+                    expandedIndex = Integer.parseInt(args[1]);
+                }
+				asm.newobj(Integer.parseInt(args[0]), expandedIndex);				
 			}
 		});
 		opcodes.put("NEW_ARRAY", new Opcode() {			
@@ -509,7 +521,7 @@ public class Assembler {
 		});
         opcodes.put("CLASS_DEF", new Opcode() {         
             public void invoke(BytecodeEmitter asm, String...  args) {
-                asm.classdef(Integer.parseInt(args[0]));
+                asm.classdef(Integer.parseInt(args[0]), 0, args.length > 1); // TODO: figure out parameters
                 indexStack.add(new Indexes());
             }
         });		
@@ -770,7 +782,8 @@ public class Assembler {
             public void invoke(BytecodeEmitter asm, String...  args) {
                 asm.endblock();
             }
-        });        
+        });      
+        
 	}
 }
 

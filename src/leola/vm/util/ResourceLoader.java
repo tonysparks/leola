@@ -108,7 +108,7 @@ public class ResourceLoader {
 					}
 					/* this is a leola script file */
 					else if ( ext.endsWith("leola") || ext.endsWith("leolac") ) {
-						runtime.eval(libFile, namespace);
+						runtime.eval(libFile, namespace);						
 					}
 					else if(!runtime.isSandboxed()){
 						

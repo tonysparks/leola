@@ -60,7 +60,7 @@ public class SqlLeolaLibrary implements LeolaLibrary {
 	 * @throws Exception
 	 */
 	public Conn connect(LeoObject url, LeoObject username, LeoObject pw) throws Exception {		
-		return new Conn(this.runtime, DriverManager.getConnection(url.toString(), username.toString(), pw.toString()));		
+		return new Conn(DriverManager.getConnection(url.toString(), username.toString(), pw.toString()));		
 	}
 }
 

@@ -16,7 +16,9 @@ import leola.frontend.EvalException;
 public class NamespaceAccessExpr extends MemberAccessExpr {
 
 	/**
-	 * @param name
+	 * @param owner
+	 * @param identifer
+	 * @param access
 	 */
 	public NamespaceAccessExpr(String owner, String identifer, OwnableExpr access) {
 		super(owner, identifer, access);

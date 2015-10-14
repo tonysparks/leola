@@ -18,6 +18,7 @@ import static leola.vm.Opcodes.EQ;
 import static leola.vm.Opcodes.FUNC_DEF;
 import static leola.vm.Opcodes.GEN_DEF;
 import static leola.vm.Opcodes.GET;
+import static leola.vm.Opcodes.GETK;
 import static leola.vm.Opcodes.GET_GLOBAL;
 import static leola.vm.Opcodes.GET_NAMESPACE;
 import static leola.vm.Opcodes.GT;
@@ -59,7 +60,9 @@ import static leola.vm.Opcodes.RET;
 import static leola.vm.Opcodes.ROTL;
 import static leola.vm.Opcodes.ROTR;
 import static leola.vm.Opcodes.SET;
+import static leola.vm.Opcodes.SETK;
 import static leola.vm.Opcodes.SET_ARG1;
+import static leola.vm.Opcodes.SET_ARG2;
 import static leola.vm.Opcodes.SET_ARGsx;
 import static leola.vm.Opcodes.SET_ARGx;
 import static leola.vm.Opcodes.SET_GLOBAL;
@@ -75,7 +78,7 @@ import static leola.vm.Opcodes.XOR;
 import static leola.vm.Opcodes.YIELD;
 import static leola.vm.Opcodes.xLOAD_LOCAL;
 import static leola.vm.Opcodes.xLOAD_OUTER;
-import static leola.vm.Opcodes.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -704,7 +707,18 @@ public class BytecodeEmitter {
 	private void instr1(int opcode, int arg1) {
 		instr(SET_ARG1(opcode, arg1));
 	}
-			
+	
+	/**
+     * Outputs an instruction with 2 arguments
+     * 
+     * @param opcode
+     * @param arg1
+     * @param arg2
+     */
+    private void instr2(int opcode, int arg1, int arg2) {
+        instr(SET_ARG2(SET_ARG1(opcode, arg1), arg2));
+    }
+	
 	/**
 	 * Marks a Label, so it can be eventually calculated for a jmp delta
 	 * 
@@ -715,15 +729,27 @@ public class BytecodeEmitter {
 		instr(opcode); // will eventually be replaced
 		getLabels().markLabel(this, label, opcode);				
 	}
-		
+	
 	/**
-	 * Constructs a new embedded {@link BytecodeEmitter} with the
-	 * object scope.
-	 */
-    private void newObjectScopeEmitter() {
+     * Constructs a new embedded {@link BytecodeEmitter} with the
+     * object scope.
+     */
+	private void newObjectScopeEmitter() {
+	    newObjectScopeEmitter(0, false);
+	}
+	
+	
+	/**
+     * Constructs a new embedded {@link BytecodeEmitter} with the
+     * object scope.
+     * 
+     * @param numberOfParameters
+     * @param hasVarargs 
+     */
+    private void newObjectScopeEmitter(int numberOfParameters, boolean hasVarargs) {
 
         BytecodeEmitter asm = new BytecodeEmitter(this.scopes);
-        asm.start(ScopeType.OBJECT_SCOPE);
+        asm.start(ScopeType.OBJECT_SCOPE, numberOfParameters, hasVarargs);
         asm.setDebug(this.isDebug());
 
         peek().innerEmmitters.add(asm);
@@ -942,8 +968,8 @@ public class BytecodeEmitter {
 		}
 	}
 	
-	public void tailcall(int numberOfParameters) {
-		instrx(TAIL_CALL, numberOfParameters);
+	public void tailcall(int numberOfParameters, int expandArrayIndex) {
+		instr2(TAIL_CALL, numberOfParameters, expandArrayIndex);
 	}
 	
 	public void jmp(String label) {
@@ -969,8 +995,8 @@ public class BytecodeEmitter {
 		jmp(label);
 	}
 	
-	public void newobj(int nargs) {
-		instrx(NEW_OBJ, nargs);
+	public void newobj(int nargs, int expandedArray) {
+		instr2(NEW_OBJ, nargs, expandedArray);
 		incrementMaxstackSize(nargs);
 	}
 	
@@ -1056,11 +1082,11 @@ public class BytecodeEmitter {
         newObjectScopeEmitter();
     }
 	
-	public void classdef(int numberOfInterfaces) {
+	public void classdef(int numberOfInterfaces, int numberOfParameters, boolean isVarargs) {
 		instrx(CLASS_DEF, numberOfInterfaces);
 		incrementMaxstackSize(numberOfInterfaces);		
 		
-		newObjectScopeEmitter();
+		newObjectScopeEmitter(numberOfParameters, isVarargs);
 	}
 	
 	public void gendef(int numberOfParameters, boolean isVarargs) {
@@ -1098,8 +1124,9 @@ public class BytecodeEmitter {
 		return labelName;
 	}
 	
-	public void invoke(int numberOfArgs) {
-		instr1(INVOKE, numberOfArgs);				
+	public void invoke(int numberOfArgs, int argIndex) {
+		//instr1(INVOKE, numberOfArgs);
+	    instr2(INVOKE, numberOfArgs, argIndex);   
 		decrementMaxstackSize(numberOfArgs);
 	}
 	
