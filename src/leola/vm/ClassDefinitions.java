@@ -95,7 +95,7 @@ public class ClassDefinitions {
 	 */
 	public ClassDefinition getDefinition(LeoObject className) {
 	    if ( ! getClassDefinitions().containsKey(className)) {
-            throw new LeolaRuntimeException("NoClassDefinitionError: No class found for: " + className);
+            LeoObject.throwClassNotFoundError("No Leola Class found for '" + className + "'");
         }               
 	    
 		return getClassDefinitions().get(className);

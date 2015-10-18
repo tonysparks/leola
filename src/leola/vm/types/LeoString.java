@@ -234,6 +234,31 @@ public class LeoString extends LeoObject {
         }
         return LeoObject.NULL;
 	}
+
+	/**
+     * Combines the list of arguments (separating them by the supplied delimiter) and appending them
+     * to this string.
+     * 
+     * @param delimiter
+     * @param args
+     * @return the joined string
+     */
+    public LeoString join(String delimiter, Object ... args) {
+        StringBuilder sb = new StringBuilder(this.value);
+        for(int i = 0; i < args.length; i++) {            
+            sb.append(args[i]);
+        }
+        return LeoString.valueOf(sb.toString());
+    }
+	
+	/**
+	 * Formats the current string according to {@link String#format(String, Object...)}.
+	 * @param args
+	 * @return the formatted string
+	 */
+	public LeoString format(Object ...args) {
+	    return LeoString.valueOf(String.format(this.value, args));
+	}
 	
 	/**
 	 * @return a new instance in lower case

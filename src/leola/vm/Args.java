@@ -228,6 +228,22 @@ public class Args {
 		public Args build() {
 			return args;
 		}
+		
+		/**
+		 * A means for creating a {@link Leola} runtime with the {@link Args}
+		 * built from this {@link ArgsBuilder}.
+		 * 
+		 * <p>
+		 * How to use:
+		 * <pre>
+		 *   Leola runtime = Args.builder().newRuntime();
+		 * </pre>
+		 * 
+		 * @return the {@link Leola} instance built with the {@link Args} from {@link ArgsBuilder#build()}.
+		 */
+		public Leola newRuntime() {
+		    return new Leola(build());
+		}
 	}
 	
 	private String fileName;
@@ -285,6 +301,13 @@ public class Args {
 		}
 		
 		return sb.toString();
+	}
+	
+	/**
+	 * @return a new instance of an {@link ArgsBuilder}
+	 */
+	public static ArgsBuilder builder() {
+	    return new ArgsBuilder();
 	}
 	
 	/**

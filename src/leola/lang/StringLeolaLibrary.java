@@ -47,6 +47,25 @@ public class StringLeolaLibrary implements LeolaLibrary {
 		}
 		
 	}
+
+	/**
+     * Combines the list of arguments (separating them by the supplied delimiter).
+     * 
+     * @param delimiter
+     * @param args
+     * @return the joined string
+     */
+	@LeolaMethodVarargs
+    public LeoString join(Object delimiter, Object ... args) {
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < args.length; i++) {
+            if(i>0) {
+                sb.append(delimiter);
+            }
+            sb.append(args[i]);
+        }
+        return LeoString.valueOf(sb.toString());
+    }
 	
 	@LeolaMethodVarargs
 	public LeoString printf(Object str, LeoObject ... args) {

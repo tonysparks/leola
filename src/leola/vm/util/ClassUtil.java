@@ -424,10 +424,9 @@ public class ClassUtil {
 		     * array elements too
 		     */
 			if(hasVarArgs && i>=startOfVarargs && params!=null) {
-			    int len = (params.length - paramTypes.length) + 1;
 			    int varargsIndex = 0;
 			    			    
-			    for(int paramIndex = startOfVarargs; paramIndex <= len; paramIndex++) {
+			    for(int paramIndex = startOfVarargs; paramIndex <  params.length; paramIndex++) {
 			        Object javaArg = LeoObject.toJavaObject(arrayType, params[paramIndex]);
 			        Array.set(varargs, varargsIndex++, javaArg);
 			    }

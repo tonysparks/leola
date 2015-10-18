@@ -91,6 +91,7 @@ import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaLibrary;
 import leola.vm.types.LeoArray;
 import leola.vm.types.LeoBoolean;
+import leola.vm.types.LeoClass;
 import leola.vm.types.LeoError;
 import leola.vm.types.LeoFunction;
 import leola.vm.types.LeoGenerator;
@@ -114,8 +115,8 @@ import leola.vm.util.ClassUtil;
  * <h2>The Stack</h2>
  * 
  * The VM attempts to optimize the allotted stack space by growing it on demand.  Upon initial startup, the VM will default to the {@link VM#DEFAULT_STACKSIZE} 
- * size (this may be altered by {@link Args#getStackSize()}).  The stack size will grow if required (by executing a {@link Bytecode#maxstacksize} which is more 
- * than what is currently available); the stack size does have a max capacity of growth which defaults to <code>({@link #DEFAULT_STACKSIZE} * {@link #DEFAULT_STACKSIZE})</code> 
+ * size (this may be altered by {@link Args#getStackSize()}).  The stack size will grow if required (by checking the {@link Bytecode#maxstacksize}, if it is more 
+ * than what is currently available); the stack size does have a max capacity of growth which defaults to <code>{@link Integer#MAX_VALUE}</code> 
  * - (this can be altered by {@link Args#getMaxStackSize()}).
  * 
  * <p>
@@ -134,7 +135,7 @@ import leola.vm.util.ClassUtil;
  * <p>
  * Given the above, there are plenty of scenarios were I <b>do</b> want to listen for exceptions from the Leola function call.  The common case for this
  * scenario is in the standard library or {@link LeolaLibrary}'s.  The API's will want to know when an exception occurs, and handle them accordingly.  In these
- * scenarios the API author should use the helper methods {@link LeoObject#xcall()}, which will throw a {@link LeolaRuntimeException} is the result of the 
+ * scenarios the API author should use the helper methods {@link LeoObject#xcall()}, which will throw a {@link LeolaRuntimeException} if the result of the 
  * call is a {@link LeoError}.
  * 
  * <p>
@@ -146,7 +147,25 @@ import leola.vm.util.ClassUtil;
  * the marked <code>top</code>.
  * 
  * <p>
- * Since Leola supports closures, we have to be a little more advanced in our stack management and object life cycle.  
+ * Since Leola supports closures, we have to be a little more advanced in our stack management and object life cycle.  When a variable is accessed from
+ * two different scopes, the variable is considered an {@link Outer} (i.e., an outer variable).  These {@link Outer}s can exist in two different flavors,
+ * one in which lives in the direct parent scope and the other, which can live further up (e.g. parent of a parent).
+ * <p>
+ * Example {@link Outer}:
+ * <pre>
+ *  var x = 10
+ *  var myClosure = def() {
+ *    println(x) // x is considered an Outer for the myClosure function
+ *  }
+ * </pre>
+ * After the scope of the closure, the {@link Outer}'s are <i>closed</i> over, this means the variable is still accessible to the closure even though the closure
+ * may go out of scope.  Continuing our example, the <code>myClosure</code> may be called multiple times and it will still retain the reference to the {@link Outer}.
+ * 
+ * <pre>
+ *    myClosure()  // prints 10
+ *    x = 21
+ *    myClosure()  // prints 21
+ * </pre>
  *
  * <p>
  *
@@ -209,7 +228,7 @@ public class VM {
 		int stackSize = runtime.getArgs().getStackSize();
 		stackSize = (stackSize <= 0) ? DEFAULT_STACKSIZE : stackSize;
 
-		this.maxStackSize = Math.max(runtime.getArgs().getMaxStackSize(), stackSize*stackSize);
+		this.maxStackSize = Math.max(runtime.getArgs().getMaxStackSize(), stackSize);
 		
 		this.stack = new LeoObject[stackSize];
 		this.openouters = new Outer[stackSize];
@@ -217,26 +236,48 @@ public class VM {
 	}
 
 
-	/**
-	 * Executes the {@link Bytecode}.
-	 *
-	 * @param code
-	 * @return
-	 * @throws LeolaRuntimeException
-	 */
+    /**
+     * Executes the supplied {@link Bytecode}.  
+     * 
+     * <p>
+     * This method is <b>not</b> thread-safe.  In fact, it <b>will</b> cause a world of hurt if this method is executed in multiple threads.  If thread support
+     * must be had, the preferred way is to have multiple {@link Leola} runtime's, short of that, the {@link Leola} runtime must be configured to enable
+     * thread-locals via {@link Args#allowThreadLocal()}.  This will create a {@link VM} instance per thread.
+     *
+     * @param env the current call site environment. If this is a member function, it will be the owning {@link LeoClass}.  Otherwise, it will be the {@link LeoNamespace}.
+     * @param callee the object which owns the {@link Bytecode}.  This will either be a function, class or namespace
+     * @param code the {@link Bytecode} to be executed
+     * 
+     * @return the result of executing the {@link Bytecode}.  This will always return a value (in Leola all functions return a value, if no return statement
+     * is specified, {@link LeoObject#NULL} is returned.  Furthermore, if an exception is thrown in the Leola code, a {@link LeoError} is returned.
+     * 
+     * @throws LeolaRuntimeException this will only throw if an exception has occurred with the {@link VM}.  That is, this will not throw an 
+     * exception if the {@link Bytecode} operation throws an Leola exception.
+     */
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code) throws LeolaRuntimeException {		
 		return execute(env, callee, code, (LeoObject[])null);
 	}
 
-	/**
-	 * Executes the {@link Bytecode}.
-	 *
-	 * @param scope
-	 * @param code
-	 * @param args - arguments to the function
-	 * @return
-	 * @throws LeolaRuntimeException
-	 */
+    /**
+     * Executes the supplied {@link Bytecode}.  This method should be used if there are more than five arguments (or the number of arguments is unknown), 
+     * otherwise the other variations of <code>execute</code> should be preferred.  
+     * 
+     * <p>
+     * This method is <b>not</b> thread-safe.  In fact, it <b>will</b> cause a world of hurt if this method is executed in multiple threads.  If thread support
+     * must be had, the preferred way is to have multiple {@link Leola} runtime's, short of that, the {@link Leola} runtime must be configured to enable
+     * thread-locals via {@link Args#allowThreadLocal()}.  This will create a {@link VM} instance per thread.
+     *
+     * @param env the current call site environment. If this is a member function, it will be the owning {@link LeoClass}.  Otherwise, it will be the {@link LeoNamespace}.
+     * @param callee the object which owns the {@link Bytecode}.  This will either be a function, class or namespace
+     * @param code the {@link Bytecode} to be executed
+     * @param args the list of arguments.
+     * 
+     * @return the result of executing the {@link Bytecode}.  This will always return a value (in Leola all functions return a value, if no return statement
+     * is specified, {@link LeoObject#NULL} is returned.  Furthermore, if an exception is thrown in the Leola code, a {@link LeoError} is returned.
+     * 
+     * @throws LeolaRuntimeException this will only throw if an exception has occurred with the {@link VM}.  That is, this will not throw an 
+     * exception if the {@link Bytecode} operation throws an Leola exception.
+     */
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject[] args) throws LeolaRuntimeException {
 		final int base = top;
 		prepareStack(code);
@@ -249,15 +290,25 @@ public class VM {
 		return result;
 	}
 
-	/**
-	 * Executes the {@link Bytecode}.
-	 *
-	 * @param callee
-	 * @param code
-	 * @param arg1
-	 * @return
-	 * @throws LeolaRuntimeException
-	 */
+    /**
+     * Executes the supplied {@link Bytecode}.  
+     * 
+     * <p>
+     * This method is <b>not</b> thread-safe.  In fact, it <b>will</b> cause a world of hurt if this method is executed in multiple threads.  If thread support
+     * must be had, the preferred way is to have multiple {@link Leola} runtime's, short of that, the {@link Leola} runtime must be configured to enable
+     * thread-locals via {@link Args#allowThreadLocal()}.  This will create a {@link VM} instance per thread.
+     *
+     * @param env the current call site environment. If this is a member function, it will be the owning {@link LeoClass}.  Otherwise, it will be the {@link LeoNamespace}.
+     * @param callee the object which owns the {@link Bytecode}.  This will either be a function, class or namespace
+     * @param code the {@link Bytecode} to be executed
+     * @param arg1 the first argument
+     * 
+     * @return the result of executing the {@link Bytecode}.  This will always return a value (in Leola all functions return a value, if no return statement
+     * is specified, {@link LeoObject#NULL} is returned.  Furthermore, if an exception is thrown in the Leola code, a {@link LeoError} is returned.
+     * 
+     * @throws LeolaRuntimeException this will only throw if an exception has occurred with the {@link VM}.  That is, this will not throw an 
+     * exception if the {@link Bytecode} operation throws an Leola exception.
+     */
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1) throws LeolaRuntimeException {
 		final int base = top;
 		prepareStack(code);
@@ -268,16 +319,26 @@ public class VM {
 		return result;
 	}
 
-	/**
-	 * Executes the {@link Bytecode}.
-	 *
-	 * @param callee
-	 * @param code
-	 * @param arg1
-	 * @param arg2
-	 * @return
-	 * @throws LeolaRuntimeException
-	 */
+    /**
+     * Executes the supplied {@link Bytecode}.  
+     * 
+     * <p>
+     * This method is <b>not</b> thread-safe.  In fact, it <b>will</b> cause a world of hurt if this method is executed in multiple threads.  If thread support
+     * must be had, the preferred way is to have multiple {@link Leola} runtime's, short of that, the {@link Leola} runtime must be configured to enable
+     * thread-locals via {@link Args#allowThreadLocal()}.  This will create a {@link VM} instance per thread.
+     *
+     * @param env the current call site environment. If this is a member function, it will be the owning {@link LeoClass}.  Otherwise, it will be the {@link LeoNamespace}.
+     * @param callee the object which owns the {@link Bytecode}.  This will either be a function, class or namespace
+     * @param code the {@link Bytecode} to be executed
+     * @param arg1 the first argument
+     * @param arg2 the second argument
+     * 
+     * @return the result of executing the {@link Bytecode}.  This will always return a value (in Leola all functions return a value, if no return statement
+     * is specified, {@link LeoObject#NULL} is returned.  Furthermore, if an exception is thrown in the Leola code, a {@link LeoError} is returned.
+     * 
+     * @throws LeolaRuntimeException this will only throw if an exception has occurred with the {@link VM}.  That is, this will not throw an 
+     * exception if the {@link Bytecode} operation throws an Leola exception.
+     */
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1, LeoObject arg2) throws LeolaRuntimeException {
 		final int base = top;
 		prepareStack(code);
@@ -289,17 +350,27 @@ public class VM {
 		return result;
 	}
 
-	/**
-	 * Executes the {@link Bytecode}.
-	 *
-	 * @param callee
-	 * @param code
-	 * @param arg1
-	 * @param arg2
-	 * @param arg3
-	 * @return
-	 * @throws LeolaRuntimeException
-	 */
+    /**
+     * Executes the supplied {@link Bytecode}.  
+     * 
+     * <p>
+     * This method is <b>not</b> thread-safe.  In fact, it <b>will</b> cause a world of hurt if this method is executed in multiple threads.  If thread support
+     * must be had, the preferred way is to have multiple {@link Leola} runtime's, short of that, the {@link Leola} runtime must be configured to enable
+     * thread-locals via {@link Args#allowThreadLocal()}.  This will create a {@link VM} instance per thread.
+     *
+     * @param env the current call site environment. If this is a member function, it will be the owning {@link LeoClass}.  Otherwise, it will be the {@link LeoNamespace}.
+     * @param callee the object which owns the {@link Bytecode}.  This will either be a function, class or namespace
+     * @param code the {@link Bytecode} to be executed
+     * @param arg1 the first argument
+     * @param arg2 the second argument
+     * @param arg3 the third argument
+     * 
+     * @return the result of executing the {@link Bytecode}.  This will always return a value (in Leola all functions return a value, if no return statement
+     * is specified, {@link LeoObject#NULL} is returned.  Furthermore, if an exception is thrown in the Leola code, a {@link LeoError} is returned.
+     * 
+     * @throws LeolaRuntimeException this will only throw if an exception has occurred with the {@link VM}.  That is, this will not throw an 
+     * exception if the {@link Bytecode} operation throws an Leola exception.
+     */
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1, LeoObject arg2, LeoObject arg3) throws LeolaRuntimeException {
 		final int base = top;
 		prepareStack(code);
@@ -312,18 +383,28 @@ public class VM {
 		return result;
 	}
 
-	/**
-	 * Executes the {@link Bytecode}.
-	 *
-	 * @param callee
-	 * @param code
-	 * @param arg1
-	 * @param arg2
-	 * @param arg3
-	 * @param arg4
-	 * @return
-	 * @throws LeolaRuntimeException
-	 */
+    /**
+     * Executes the supplied {@link Bytecode}.  
+     * 
+     * <p>
+     * This method is <b>not</b> thread-safe.  In fact, it <b>will</b> cause a world of hurt if this method is executed in multiple threads.  If thread support
+     * must be had, the preferred way is to have multiple {@link Leola} runtime's, short of that, the {@link Leola} runtime must be configured to enable
+     * thread-locals via {@link Args#allowThreadLocal()}.  This will create a {@link VM} instance per thread.
+     *
+     * @param env the current call site environment. If this is a member function, it will be the owning {@link LeoClass}.  Otherwise, it will be the {@link LeoNamespace}.
+     * @param callee the object which owns the {@link Bytecode}.  This will either be a function, class or namespace
+     * @param code the {@link Bytecode} to be executed
+     * @param arg1 the first argument
+     * @param arg2 the second argument
+     * @param arg3 the third argument
+     * @param arg4 the fourth argument
+     * 
+     * @return the result of executing the {@link Bytecode}.  This will always return a value (in Leola all functions return a value, if no return statement
+     * is specified, {@link LeoObject#NULL} is returned.  Furthermore, if an exception is thrown in the Leola code, a {@link LeoError} is returned.
+     * 
+     * @throws LeolaRuntimeException this will only throw if an exception has occurred with the {@link VM}.  That is, this will not throw an 
+     * exception if the {@link Bytecode} operation throws an Leola exception.
+     */
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4) throws LeolaRuntimeException {
 		final int base = top;
 		prepareStack(code);
@@ -338,17 +419,27 @@ public class VM {
 	}
 
 	/**
-	 * Executes the {@link Bytecode}.
+	 * Executes the supplied {@link Bytecode}.  
+	 * 
+	 * <p>
+	 * This method is <b>not</b> thread-safe.  In fact, it <b>will</b> cause a world of hurt if this method is executed in multiple threads.  If thread support
+	 * must be had, the preferred way is to have multiple {@link Leola} runtime's, short of that, the {@link Leola} runtime must be configured to enable
+	 * thread-locals via {@link Args#allowThreadLocal()}.  This will create a {@link VM} instance per thread.
 	 *
-	 * @param callee
-	 * @param code
-	 * @param arg1
-	 * @param arg2
-	 * @param arg3
-	 * @param arg4
-	 * @param arg5
-	 * @return
-	 * @throws LeolaRuntimeException
+	 * @param env the current call site environment. If this is a member function, it will be the owning {@link LeoClass}.  Otherwise, it will be the {@link LeoNamespace}.
+	 * @param callee the object which owns the {@link Bytecode}.  This will either be a function, class or namespace
+	 * @param code the {@link Bytecode} to be executed
+	 * @param arg1 the first argument
+	 * @param arg2 the second argument
+	 * @param arg3 the third argument
+	 * @param arg4 the fourth argument
+	 * @param arg5 the fifth argument
+	 * 
+	 * @return the result of executing the {@link Bytecode}.  This will always return a value (in Leola all functions return a value, if no return statement
+	 * is specified, {@link LeoObject#NULL} is returned.  Furthermore, if an exception is thrown in the Leola code, a {@link LeoError} is returned.
+	 * 
+	 * @throws LeolaRuntimeException this will only throw if an exception has occurred with the {@link VM}.  That is, this will not throw an 
+	 * exception if the {@link Bytecode} operation throws an Leola exception.
 	 */
 	public LeoObject execute(LeoObject env, LeoObject callee, Bytecode code, LeoObject arg1, LeoObject arg2, LeoObject arg3, LeoObject arg4, LeoObject arg5) throws LeolaRuntimeException {
 		final int base = top;
@@ -405,13 +496,21 @@ public class VM {
 	        this.openouters = newOuters;
 	    }	    
 	}
-
+	
 	/**
-	 * Executes the {@link Bytecode}
-	 *
-	 * @param code
-	 * @param frame
-	 * @throws LeolaRuntimeException
+	 * The main VM execution loop.
+	 * 
+	 * This is a big f'ing method.  Since this is the hot spot (i.e., the most executed part of the code) there are a number
+	 * of micro optimizations.  The first such optimization is the use of a switch statement for Opcode handling.  My tests have shown a slight
+	 * improvement in speed using the switch over a Map<Opcode, OpcodeHandler> approach.  However, the CPU cost wasn't my primary
+	 * concern.  Using the Map approach required more allocations (all of the local variables within this method need
+	 * to be accessed in the OpcodeHandler, thus requring an allocated object to capture all of the locals).
+	 * 
+	 * Java really needs Value Types -- or I suppose more correctly I should have used a more appropriate implementation language.
+	 * 
+	 * At any rate, this whole codebase has sacrifriced readability/maintainability for these micro-optimizations.  This method
+	 * probably being the worst offender.
+	 * 
 	 */
 	private LeoObject executeStackframe(LeoObject env, Bytecode code, LeoObject callee, int base) throws LeolaRuntimeException {
 		LeoObject result = LeoNull.LEONULL;
@@ -772,7 +871,7 @@ public class VM {
 						     */
 	                        int argIndex = ARG2(i);
 	                        if(argIndex>0) {
-	                            if(!fun.isNativeFunction()) {    	                            
+	                            /*if(!fun.isNativeFunction()) {    	                            
     	                            if(!fun.hasVarargs()) {
     	                                error(fun + " does not accept variable arguments.");
     	                            }
@@ -780,7 +879,7 @@ public class VM {
     	                            if(nargs < expectedNumberOfArguments) {
     	                                error("Invalid number of parameters '" + nargs + "' before the variable arguments expansion '" + expectedNumberOfArguments + "'.");
     	                            }
-	                            }
+	                            }*/
 	                            
                                 nargs += expandArrayArgument() - 1;
 	                        }
@@ -859,6 +958,7 @@ public class VM {
 							else {
 							    LeoObject resolvedClassName = scope.getClassName(className);
                                 ClassDefinition definition = defs.getDefinition(resolvedClassName);
+                                
                                 LeoObject[] args = new LeoObject[definition.getNumberOfParameters()];
                                 args = readArrayFromStack(args, nargs, stack);
                                 for(int j=nargs; j < args.length; j++) {
@@ -1039,16 +1139,6 @@ public class VM {
 							continue;
 						}
 						case THROW: {
-							/* we are not safely returning */
-//							isReturnedSafely = false; 
-//							
-//							LeoObject str = stack[--top];							
-//							errorThrown = buildStackTrace(code, errorThrown, str, lineNumber);
-//	
-//							stack[top++] = errorThrown;
-//							
-//							pc = len; /* exit out of this function */
-						    
 						    LeoObject str = stack[--top];         						    		   
 						    throw new LeolaRuntimeException(new LeoError(str));
 						}

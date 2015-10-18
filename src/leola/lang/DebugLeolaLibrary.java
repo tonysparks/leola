@@ -97,10 +97,10 @@ public class DebugLeolaLibrary implements LeolaLibrary {
 	    final File scriptFile = new File(filename);
 	    
 	    runtime.setDebugListener(new DebugListener() {
-            Leola runtime = new Leola(new Args.ArgsBuilder()
-                .setIncludeDirectories(DebugLeolaLibrary.this.runtime.getIncludePath())
-                .setFileName(filename)
-                .build());
+            Leola runtime = Args.builder()
+                                .setIncludeDirectories(DebugLeolaLibrary.this.runtime.getIncludePath())
+                                .setFileName(filename)
+                                .newRuntime();
 	        LeoObject fun = runtime.eval(scriptFile);
 	        
 	        
