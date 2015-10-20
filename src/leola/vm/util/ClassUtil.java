@@ -13,7 +13,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import leola.vm.exceptions.LeolaRuntimeException;
@@ -104,9 +107,6 @@ public class ClassUtil {
 	    DONT_STOP
 	    ;
 	    
-	    public boolean isStop() {
-	        return !this.equals(DONT_STOP);
-	    }
 	}
 	
 	
@@ -139,7 +139,7 @@ public class ClassUtil {
                         !method.isAnnotationPresent(LeolaIgnore.class)) {
 
                         returnType = it.call(method);
-                        if(returnType.isStop()) {
+                        if(returnType==ReturnType.STOP_METHOD_LOOP) {
                             break;
                         }
                     }
@@ -266,7 +266,7 @@ public class ClassUtil {
      */
     public static Object invokeMethod(List<Method> overloads, Object instance, LeoObject[] args) {
         Method bestMatch = null;
-        int bestScore = -1;
+        int bestScore = Integer.MIN_VALUE;
         
         /* The common case is one method, so
          * let's optimize for it
@@ -292,8 +292,10 @@ public class ClassUtil {
                         for(int k = 0; k < args.length; k++) {
                             Object jObject = args[k].getValue();
                             if(jObject!=null) {
-                                if(jObject.getClass().isAssignableFrom(types[j])) {
+                                //if(jObject.getClass().isAssignableFrom(types[j])) {
+                            	if(isAssignableFrom(jObject.getClass(), types[j])) {
                                     currentScore+=2;
+                                    break;
                                 }                                
                             }
                             currentScore--;
@@ -517,6 +519,122 @@ public class ClassUtil {
 
         return result;
     }	
+    
+    
+    private static final Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<>();
+    static {
+         primitiveWrapperMap.put(Boolean.TYPE, Boolean.class);
+         primitiveWrapperMap.put(Byte.TYPE, Byte.class);
+         primitiveWrapperMap.put(Character.TYPE, Character.class);
+         primitiveWrapperMap.put(Short.TYPE, Short.class);
+         primitiveWrapperMap.put(Integer.TYPE, Integer.class);
+         primitiveWrapperMap.put(Long.TYPE, Long.class);
+         primitiveWrapperMap.put(Double.TYPE, Double.class);
+         primitiveWrapperMap.put(Float.TYPE, Float.class);
+         primitiveWrapperMap.put(Void.TYPE, Void.TYPE);
+    }
+    
+    /**
+     * Maps wrapper <code>Class</code>es to their corresponding primitive types.
+     */
+    private static final Map<Class<?>, Class<?>> wrapperPrimitiveMap = new HashMap<>();
+    static {
+        for (Iterator<Class<?>> it = primitiveWrapperMap.keySet().iterator(); it.hasNext();) {
+            Class<?> primitiveClass = it.next();
+            Class<?> wrapperClass = primitiveWrapperMap.get(primitiveClass);
+            if (!primitiveClass.equals(wrapperClass)) {
+                wrapperPrimitiveMap.put(wrapperClass, primitiveClass);
+            }
+        }
+    }
+    
+    public static Class<?> primitiveToWrapper(Class<?> cls) {
+        Class<?> convertedClass = cls;
+        if (cls != null && cls.isPrimitive()) {
+            convertedClass = primitiveWrapperMap.get(cls);
+        }
+        return convertedClass;
+    }
+    
+    public static Class<?> wrapperToPrimitive(Class<?> cls) {
+        return wrapperPrimitiveMap.get(cls);
+    }
+    
+    public static boolean isAssignableFrom(Class<?> left, Class<?> right) {
+        if (right == null) {
+            return false;
+        }
+        // have to check for null, as isAssignableFrom doesn't
+        if (left == null) {
+            return !(right.isPrimitive());
+        }
+
+        if (left.isPrimitive() && !right.isPrimitive()) {
+            left= primitiveToWrapper(left);
+            if (left== null) {
+                return false;
+            }
+        }
+        if (right.isPrimitive() && !left.isPrimitive()) {
+            left= wrapperToPrimitive(left);
+            if (left== null) {
+                return false;
+            }
+        }
+        
+        if (left.equals(right)) {
+            return true;
+        }
+        if (left.isPrimitive()) {
+            if (right.isPrimitive() == false) {
+                return false;
+            }
+            
+            if (Integer.TYPE.equals(left)) {
+                return Long.TYPE.equals(right)
+                    || Float.TYPE.equals(right)
+                    || Double.TYPE.equals(right);
+            }
+            if (Long.TYPE.equals(left)) {
+                return Float.TYPE.equals(right)
+                    || Double.TYPE.equals(right);
+            }
+            if (Boolean.TYPE.equals(left)) {
+                return Boolean.TYPE.equals(right);
+            }
+            if (Double.TYPE.equals(left)) {
+            	return Integer.TYPE.equals(right)
+                        || Long.TYPE.equals(right)
+                        || Float.TYPE.equals(right)
+                        || Double.TYPE.equals(right);
+            }
+            if (Float.TYPE.equals(left)) {
+                return Double.TYPE.equals(right);
+            }
+            if (Character.TYPE.equals(left)) {
+                return Integer.TYPE.equals(right)
+                    || Long.TYPE.equals(right)
+                    || Float.TYPE.equals(right)
+                    || Double.TYPE.equals(right);
+            }
+            if (Short.TYPE.equals(left)) {
+                return Integer.TYPE.equals(right)
+                    || Long.TYPE.equals(right)
+                    || Float.TYPE.equals(right)
+                    || Double.TYPE.equals(right);
+            }
+            if (Byte.TYPE.equals(left)) {
+                return Short.TYPE.equals(right)
+                    || Integer.TYPE.equals(right)
+                    || Long.TYPE.equals(right)
+                    || Float.TYPE.equals(right)
+                    || Double.TYPE.equals(right);
+            }
+            // should never get here
+            return false;
+        }
+        return right.isAssignableFrom(left);
+    }
 	
     /**
      * Determines if the supplied {@link Class} if of any of the supplied {@link Class} types.
