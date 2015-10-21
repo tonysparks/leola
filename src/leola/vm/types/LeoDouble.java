@@ -207,6 +207,14 @@ public class LeoDouble extends LeoObject {
 		return this.number;
 	}
 
+	@Override
+    public boolean isAssignable(Class<?> javaType) {
+	    if(javaType.isPrimitive()) {
+            javaType = ClassUtil.primitiveToWrapper(javaType);
+        }
+        return Number.class.isAssignableFrom(javaType);
+    }
+	
 	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#clone()
 	 */

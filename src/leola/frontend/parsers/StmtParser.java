@@ -6,12 +6,10 @@
 package leola.frontend.parsers;
 
 import static leola.frontend.tokens.LeolaTokenType.BREAK;
-import static leola.frontend.tokens.LeolaTokenType.CASE;
 import static leola.frontend.tokens.LeolaTokenType.CLASS;
 import static leola.frontend.tokens.LeolaTokenType.CONTINUE;
 import static leola.frontend.tokens.LeolaTokenType.DOT;
 import static leola.frontend.tokens.LeolaTokenType.ELSE;
-import static leola.frontend.tokens.LeolaTokenType.IDENTIFIER;
 import static leola.frontend.tokens.LeolaTokenType.IF;
 import static leola.frontend.tokens.LeolaTokenType.LEFT_BRACE;
 import static leola.frontend.tokens.LeolaTokenType.NAMESPACE;
@@ -20,10 +18,10 @@ import static leola.frontend.tokens.LeolaTokenType.RIGHT_BRACE;
 import static leola.frontend.tokens.LeolaTokenType.SEMICOLON;
 import static leola.frontend.tokens.LeolaTokenType.SWITCH;
 import static leola.frontend.tokens.LeolaTokenType.THROW;
+import static leola.frontend.tokens.LeolaTokenType.TRY;
 import static leola.frontend.tokens.LeolaTokenType.VAR;
 import static leola.frontend.tokens.LeolaTokenType.WHILE;
 import static leola.frontend.tokens.LeolaTokenType.YIELD;
-import static leola.frontend.tokens.LeolaTokenType.TRY;
 
 import java.util.EnumSet;
 
@@ -48,7 +46,7 @@ public class StmtParser extends LeolaParser {
     // Synchronization set for starting a statement.
     protected static final EnumSet<LeolaTokenType> STMT_START_SET =
         EnumSet.of(IF, VAR, WHILE, LEFT_BRACE, SWITCH, YIELD,
-        		   RETURN, BREAK, CONTINUE, IDENTIFIER, SEMICOLON, CLASS, CASE, NAMESPACE, THROW, TRY);
+        		   RETURN, BREAK, CONTINUE, SEMICOLON, CLASS, NAMESPACE, THROW, TRY);
     static {
         STMT_START_SET.addAll(ExprParser.EXPR_START_SET);
     }
@@ -62,6 +60,17 @@ public class StmtParser extends LeolaParser {
 	 */
 	public StmtParser(LeolaParser parser) {
 		super(parser);
+	}
+	
+	/**
+	 * Parses the next {@link Stmt}
+	 * 
+	 * @param token
+	 * @return the {@link Stmt}
+	 * @throws Exception
+	 */
+	public Stmt parseStmt(Token token) throws Exception {
+	    return (Stmt) parse(token);
 	}
 
 	/**
@@ -85,14 +94,6 @@ public class StmtParser extends LeolaParser {
         	}
         	case VAR: {
         		VarDeclStmtParser parser = new VarDeclStmtParser(this);
-        		statementNode = parser.parse(token);
-
-        		eatOptionalStmtEnd(currentToken());
-        		break;
-        	}
-        	case NEW:
-        	case IDENTIFIER: {
-        		ExprParser parser = new ExprParser(this);
         		statementNode = parser.parse(token);
 
         		eatOptionalStmtEnd(currentToken());
@@ -158,10 +159,6 @@ public class StmtParser extends LeolaParser {
         		break;
         	}
             default: {
-                /*
-                statementNode = new EmptyStmt();
-                eatOptionalStmtEnd(currentToken());
-                */
                 ExprParser parser = new ExprParser(this);
                 statementNode = parser.parse(token);
 

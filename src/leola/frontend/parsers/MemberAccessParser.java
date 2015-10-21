@@ -33,7 +33,7 @@ public class MemberAccessParser extends ExprParser {
 		String parentName = token.getText();
 
 		token = nextToken(); // eat the DOT
-
+		
 		ASTNode node = parseIdentifier(token);
 		OwnableExpr expr = (OwnableExpr)node;				
 		MemberAccessExpr memExpr = new MemberAccessExpr(parentName, expr.getOwner(), expr);

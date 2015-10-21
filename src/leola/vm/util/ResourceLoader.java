@@ -110,7 +110,8 @@ public class ResourceLoader {
 					else if ( ext.endsWith("leola") || ext.endsWith("leolac") ) {
 						runtime.eval(libFile, namespace);						
 					}
-					else if(!runtime.isSandboxed()){
+					else {
+						runtime.errorIfSandboxed();
 						
 						/* load the jar file */
 						if (ext.endsWith("jar") ) {

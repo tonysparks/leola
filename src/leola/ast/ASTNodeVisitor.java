@@ -39,6 +39,8 @@ public interface ASTNodeVisitor {
 	void visit(CompoundExpr s) throws EvalException;
 	void visit(ContinueStmt s) throws EvalException;
 	
+	void visit(DecoratorExpr s) throws EvalException;
+	
 	void visit(NamespaceStmt s) throws EvalException;
 	void visit(NamespaceAccessExpr s) throws EvalException;
 	

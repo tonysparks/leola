@@ -235,6 +235,20 @@ public class LeoGenerator extends LeoFunction {
         return result;
     }
 	
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoFunction#clone()
+     */
+    @Override
+    public LeoObject clone() {
+        LeoGenerator clone = new LeoGenerator(this.runtime, this.env, getBytecode());
+        if(clone.outers!=null) {
+            for(int i = 0; i < clone.outers.length; i++) {
+                clone.outers[i] = this.outers[i];
+            }
+        }
+        return clone;
+    }
+    
 	@Override
 	public void write(DataOutput out) throws IOException {
 	}

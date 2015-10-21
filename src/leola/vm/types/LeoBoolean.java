@@ -176,6 +176,14 @@ public class LeoBoolean extends LeoObject {
 		
 		return isTrue();
 	}
+	
+	@Override
+    public boolean isAssignable(Class<?> javaType) {
+        if(javaType.isPrimitive()) {
+            javaType = ClassUtil.primitiveToWrapper(javaType);
+        }
+        return Boolean.class.isAssignableFrom(javaType);
+    }
 
 	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#clone()

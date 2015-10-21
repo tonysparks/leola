@@ -529,11 +529,29 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	@Override
 	public LeoObject getObject(LeoObject key) {
 	    if(key.isNumber()) {
+            return get(key.asInt());
+        }
+        
+	    if(hasNativeMethod(this, key)) {
+	        return getNativeMethod(key);
+	    }
+	    
+	    return LeoObject.NULL;
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#getObject(leola.vm.types.LeoObject)
+	 */
+	@Override
+	public LeoObject xgetObject(LeoObject key) {
+	    if(key.isNumber()) {
 	        return get(key.asInt());
 	    }
 	    
 	    return getNativeMethod(key);
 	}
+	
+	
 	
 	/* (non-Javadoc)
 	 * @see leola.vm.types.LeoObject#hasObject(leola.vm.types.LeoObject)

@@ -43,35 +43,17 @@ public class NamespaceStmtParser extends StmtParser {
 	    Token startingToken = token;
 		token = nextToken();  // consume the NAMESPACE
 
-		if ( ! token.getType().equals(LeolaTokenType.IDENTIFIER) ) {
-		    throwParseError(token, LeolaErrorCode.MISSING_IDENTIFIER);
-		}
-
+		expectToken(token, LeolaTokenType.IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
+		
 		// parse the namespace name
 		String namespaceName = token.getText();
 
 		token = nextToken();
 
-//		if (token.getType() == LeolaTokenType.LEFT_BRACE) {
-//	        token = nextToken();  // consume the {
-//	    }
-//	    else {
-//	        getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_LEFT_BRACE);
-//	    }
-
-
         StmtParser statementParser = new StmtParser(this);
         Stmt stmt = (Stmt) statementParser.parse(token);
 
         token = currentToken();
-
-        // Look for an }
-//        if (token.getType() == LeolaTokenType.RIGHT_BRACE) {
-//            token = nextToken();  // consume the }
-//        }
-//        else {
-//	        getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_RIGHT_BRACE);
-//        }
 
         NamespaceStmt namespaceStmt = new NamespaceStmt(stmt, namespaceName);
         setLineNumber(namespaceStmt, startingToken);

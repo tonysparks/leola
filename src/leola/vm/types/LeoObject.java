@@ -736,6 +736,7 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	public LeoObject $bor(long other) { return null; }
 	public LeoObject $band(long other) { return null; }
 
+		
 	/**
 	 * Sets a property on this object.
 	 * 
@@ -757,10 +758,37 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	}
 	
 	/**
-	 * Retrieves a property from this object.
+	 * Similar to {@link LeoObject#getObject(LeoObject)} in every way, with the exception that
+	 * this will throw a {@link LeolaRuntimeException} is the attribute is not found.
 	 * 
 	 * @param key
-	 * @return
+	 * @return the object associated with the supplied key
+	 * @throws LeolaRuntimeException if the key is not bound
+	 */
+	public LeoObject xgetObject(LeoObject key) throws LeolaRuntimeException {
+	    throw new LeolaRuntimeException("AccessError: " + this + " is not a complex object; unable to access: '" + key + "'");
+	}
+	
+	/**
+     * Similar to {@link LeoObject#getObject(String)} in every way, with the exception that
+     * this will throw a {@link LeolaRuntimeException} is the attribute is not found.
+     * 
+     * 
+     * @param key
+     * @return the object associated with the supplied key
+     * @throws LeolaRuntimeException if the key is not bound
+     */
+	public LeoObject xgetObject(String key) throws LeolaRuntimeException {
+	    return xgetObject(LeoString.valueOf(key));
+	}
+	
+	/**
+	 * Retrieves a property from this object.  If this {@link LeoObject} supports associations, this
+	 * will attempt to find the object with the associated key. If the key is not found, this will return {@link LeoObject#NULL}.
+	 * 
+	 * @see LeoObject#xgetObject(LeoObject)
+	 * @param key
+	 * @return the associated object if found; otherwise {@link LeoObject#NULL}
 	 */
 	public LeoObject getObject(LeoObject key) {
 		throw new LeolaRuntimeException("AccessError: " + this + " is not a complex object; unable to access: '" + key + "'");
@@ -1006,6 +1034,22 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	}
 	
 	/**
+	 * Determines if the supplied Java type can be assigned to this
+	 * {@link LeoObject}.
+	 * 
+	 * @param javaType
+	 * @return true if the supplied type can be represented (assigned) to
+	 * this {@link LeoObject}
+	 */
+	public boolean isAssignable(Class<?> javaType) {
+	    Object obj = getValue();
+	    if(obj!=null) {
+	        return javaType.isAssignableFrom(obj.getClass());
+	    }
+	    return false;
+	}
+	
+	/**
 	 * @return a deep copy clone of this object
 	 */
 	@Override
@@ -1242,10 +1286,21 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	 * @return true if the supplied object (owner) has a method by the supplied name
 	 */
 	protected static boolean hasNativeMethod(Object owner, LeoObject methodName) {
-	    List<Method> methods = ClassUtil.getMethodsByName(owner.getClass(), methodName.toString());
+	    return hasNativeMethod(owner.getClass(), methodName);
+	}
+	
+	/**
+     * Determines if the supplied class has a method by the supplied method name.
+     * 
+     * @param aClass
+     * @param methodName
+     * @return true if the supplied object (owner) has a method by the supplied name
+     */
+    protected static boolean hasNativeMethod(Class<?> aClass, LeoObject methodName) {
+        List<Method> methods = ClassUtil.getMethodsByName(aClass, methodName.toString());
         removeInterfaceMethods(methods);
         return !methods.isEmpty();
-	}
+    }
 	
     /**
      * Retrieve the native methods or fields from the owner public method listings.  This will query the owner class

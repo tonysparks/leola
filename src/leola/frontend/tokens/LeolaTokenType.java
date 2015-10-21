@@ -27,7 +27,7 @@ public enum LeolaTokenType implements TokenType
 
     // Special symbols.
     PLUS("+"), MINUS("-"), STAR("*"), MOD("%"), SLASH("/"), D_EQUALS("=="), REF_EQUALS("==="),
-    DOT("."), VAR_ARGS("..."), COMMA(","), SEMICOLON(";"), COLON(":"),
+    DOT("."), VAR_ARGS("..."), AT("@"), COMMA(","), SEMICOLON(";"), COLON(":"),
     EQUALS("="), NOT_EQUALS("!="), LESS_THAN("<"), LESS_EQUALS("<="),
     GREATER_EQUALS(">="), GREATER_THAN(">"), LEFT_PAREN("("), RIGHT_PAREN(")"),
     LEFT_BRACKET("["), RIGHT_BRACKET("]"), LEFT_BRACE("{"), RIGHT_BRACE("}"),

@@ -206,14 +206,8 @@ public class ParserUtils {
 
             ASTNode key = expressionParser.parse(token);
             element.setFirst( (Expr)key );
-
-            token = expressionParser.currentToken();
-            if ( token.getType() != ARROW ) {
-                parser.throwParseError(token, LeolaErrorCode.MISSING_ARROW);
-            }
-            else {
-                token = expressionParser.nextToken(); // eat the Arrow
-            }
+            
+            token = expressionParser.expectTokenNext(expressionParser.currentToken(), ARROW, LeolaErrorCode.MISSING_ARROW);
 
             ASTNode value = expressionParser.parse(token);
             element.setSecond( (Expr)value );

@@ -57,12 +57,6 @@ public class WhileStmtParser extends StmtParser {
 
         // Synchronize at the DO.
         token = synchronize(DO_SET);
-//        if (token.getType() == LeolaTokenType.LEFT_BRACE) {
-//            token = nextToken();  // consume the DO
-//        }
-//        else {
-//            getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_LEFT_BRACE);
-//        }
 
         // Parse the statement.
         // The LOOP node adopts the statement subtree as its second child.

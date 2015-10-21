@@ -152,14 +152,8 @@ public class SwitchStmtParser extends StmtParser {
 	    Expr whenExpr = (Expr)expressionParser.parse(token);
 	    whenExprPair.setFirst(whenExpr);
 
-	    token = currentToken();
-	    if ( ! token.getType().equals(LeolaTokenType.ARROW)) {
-	        throwParseError(token, LeolaErrorCode.MISSING_ARROW);
-	    }
-	    else {
-	        token = nextToken();
-	    }
-
+	    token = expectTokenNext(currentToken(), LeolaTokenType.ARROW, LeolaErrorCode.MISSING_ARROW);
+	    
 	    Stmt valueStmt = (Stmt)(new StmtParser(this).parse(token));
 	    whenExprPair.setSecond(valueStmt);
 

@@ -52,13 +52,7 @@ public class IfStmtParser extends StmtParser {
         
         // Synchronize at the THEN.
         token = synchronize(THEN_SET);
-        /*if (token.getType() == LeolaTokenType.LEFT_BRACE) {
-            token = nextToken();  // consume the {
-        }
-        else {            
-            getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_LEFT_BRACE);
-        }*/
-
+        
         // Parse the THEN statement.
         // The IF node adopts the statement subtree as its second child.
         StmtParser statementParser = new StmtParser(this);

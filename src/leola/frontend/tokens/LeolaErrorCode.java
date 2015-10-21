@@ -16,6 +16,7 @@ public enum LeolaErrorCode {
     INVALID_ARGS_EXPANSION("Invalid variable argument expansion; can only be used in function arguments"),
     INVALID_MULTI_ARGS_EXPANSION("Invalid variable argument expansion; can only expand one argument"),
     
+    
     MISSING_ARROW("Missing ->"),
     MISSING_COMMA("Missing ,"),
     MISSING_RIGHT_BRACE("Missing Right Brace"),
@@ -25,7 +26,8 @@ public enum LeolaErrorCode {
     MISSING_RIGHT_PAREN("Missing )"),
     MISSING_LEFT_PAREN("Missing ("),
     MISSING_LEFT_BRACE("Missing {"),
-    MISSING_ON_OR_FINALLY("Missing an 'on' or 'finally' block"),
+    MISSING_CATCH_OR_FINALLY("Missing an 'catch' or 'finally' block"),
+    MISSING_INTERFACE("Missing interface definition on class."),
     
     RANGE_INTEGER("Integer literal out of range"),
     RANGE_LONG("Long literal out of range"),
