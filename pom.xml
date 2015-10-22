@@ -7,7 +7,7 @@
         <version>7</version>
     </parent>
     
-	<groupId>leola</groupId>
+	<groupId>com.github.tonysparks.leola</groupId>
 	<artifactId>leola</artifactId>
 	<version>0.9.6-SNAPSHOT</version>
 
