@@ -149,9 +149,11 @@ public class LeoNativeClass extends LeoObject {
 	 */
 	@Override
 	public LeoObject getObject(LeoObject key) {
-	    if(hasNativeMethod(nativeClass, key)) {
-	        return getMember(key);
+	    LeoObject member = getMember(key);
+	    if(member!=null) {
+	    	return member;
 	    }
+	    
 	    return LeoObject.NULL;
 	}
 	
