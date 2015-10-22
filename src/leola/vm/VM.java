@@ -1167,7 +1167,7 @@ public class VM {
 							LeoObject index = stack[--top];
 							LeoObject obj = stack[--top];
 	
-							LeoObject value = obj.getObject(index);
+							LeoObject value = obj.xgetObject(index);
 							stack[top++] = value;
 	
 							continue;
@@ -1176,7 +1176,7 @@ public class VM {
 						    int iname = ARGx(i);
 						    LeoObject obj = stack[--top];
 						    
-                            LeoObject value = obj.getObject(constants[iname]);
+                            LeoObject value = obj.xgetObject(constants[iname]);
                             stack[top++] = value;
 						    continue;
 						}

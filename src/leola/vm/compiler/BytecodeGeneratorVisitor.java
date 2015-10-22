@@ -32,6 +32,7 @@ import leola.ast.ClassDeclStmt;
 import leola.ast.CompoundExpr;
 import leola.ast.CompoundStmt;
 import leola.ast.ContinueStmt;
+import leola.ast.DecoratorExpr;
 import leola.ast.EmptyStmt;
 import leola.ast.Expr;
 import leola.ast.FuncDefExpr;
@@ -796,6 +797,27 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		asm.cont(label);
 	}
 
+	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.DecoratorExpr)
+	 */
+	@Override
+	public void visit(DecoratorExpr s) throws EvalException {
+	    asm.line(s.getLineNumber());
+	    
+	    Expr[] existingParams = s.getParameters();
+	    Expr[] parameters = new Expr[(existingParams != null ? existingParams.length : 0) + 1];
+	    if(existingParams != null) {
+	        for(int i = 0; i < existingParams.length;i++) {
+	            parameters[i] = existingParams[i];
+	        }	        
+	    }
+	    parameters[parameters.length-1] = s.getFollowingExpr();
+	    
+	    FuncInvocationExpr functionInvokeExpr = new FuncInvocationExpr(s.getDecoratorName(), parameters);
+	    functionInvokeExpr.setLineNumber(s.getLineNumber());
+	    
+	    visit(functionInvokeExpr);
+	}
 	
 	/* (non-Javadoc)
 	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.NamespaceStmt)
@@ -1396,16 +1418,17 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 		asm.line(s.getLineNumber());
 				
 		String endOn = asm.nextLabelName();													
-		Stmt stmt = s.getBody();
-		//asm.dup();
+		
+		asm.markLexicalScope();
 		asm.addAndstorelocal(s.getIdentifier());
 		
+		Stmt stmt = s.getBody();
 		stmt.visit(this);
 		
 		if( stmt instanceof Expr) {
 			asm.oppop(); /* remove any pushed items */
 		}
-		
+		asm.unmarkLexicalScope();
 		asm.jmp(endOn);										
 		asm.label(endOn);		
 	}

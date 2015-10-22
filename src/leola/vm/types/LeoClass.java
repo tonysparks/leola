@@ -175,21 +175,21 @@ public class LeoClass extends LeoScopedObject {
 	}
 
 	private LeoObject override(LeoString name) {					
-		LeoObject function = getProperty(name);
+		LeoObject function = xgetProperty(name);
 		LeoObject result = function.xcall();
 		
 		return result;
 	}
 	
 	private LeoObject override(LeoString name, LeoObject arg1) {
-		LeoObject function = getProperty(name);
+		LeoObject function = xgetProperty(name);
 		LeoObject result = function.xcall(arg1);
 		
 		return result;
 	}
 	
 	private LeoObject override(LeoString name, LeoObject arg1, LeoObject arg2) {
-        LeoObject function = getProperty(name);
+        LeoObject function = xgetProperty(name);
         LeoObject result = function.xcall(arg1, arg2);
         
         return result;

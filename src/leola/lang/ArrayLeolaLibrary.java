@@ -17,7 +17,7 @@ import leola.vm.types.LeoNamespace;
 import leola.vm.types.LeoObject;
 
 /**
- * Standard array library
+ * Standard array library.  Most of these functions can be called directly on the {@link LeoArray} instance itself.
  * 
  * @author Tony
  *
@@ -43,7 +43,7 @@ public class ArrayLeolaLibrary implements LeolaLibrary {
 
 
 	public void add(LeoArray array, LeoObject v) {
-		array.$add(v);
+		array.add(v);
 	}
 	public void addAll(LeoArray array, LeoObject values) {
 		array.addAll(values);

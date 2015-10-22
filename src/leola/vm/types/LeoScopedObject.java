@@ -10,6 +10,7 @@ import java.util.Map;
 
 import leola.vm.NamespaceDefinitions;
 import leola.vm.Scope;
+import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaMethod;
 
 /**
@@ -131,6 +132,14 @@ public abstract class LeoScopedObject extends LeoOuterObject {
 	}
 	
 	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#xgetObject(leola.vm.types.LeoObject)
+	 */
+	@Override
+	public LeoObject xgetObject(LeoObject key) throws LeolaRuntimeException {
+	    return xgetProperty(key);
+	}
+	
+	/* (non-Javadoc)
 	 * @see leola.vm.types.LeoObject#hasObject(leola.vm.types.LeoObject)
 	 */
 	@Override
@@ -178,6 +187,21 @@ public abstract class LeoScopedObject extends LeoOuterObject {
 	}
 	
 	/**
+     * Attempts to look up the data member with the supplied name.
+     * 
+     * @param member - the name of the property
+     * @return the property value if found, otherwise this will throw  {@link LeolaRuntimeException}
+     */
+    public LeoObject xgetProperty(LeoObject member) throws LeolaRuntimeException {
+        LeoObject result = this.scope.getObjectNoGlobal(member);
+        if(result == null) {
+            throwAttributeError(member);
+        }
+        return result;
+    }
+    
+	
+	/**
 	 * Attempts to look up the data member with the supplied name.
 	 * 
 	 * @param member - the name of the property
@@ -185,8 +209,8 @@ public abstract class LeoScopedObject extends LeoOuterObject {
 	 */
 	public LeoObject getProperty(LeoObject member) {
 		LeoObject result = this.scope.getObjectNoGlobal(member);
-		if(result == null) {
-		    throwAttributeError(member);
+		if(result==null) {
+		    return LeoObject.NULL;
 		}
 		return result;
 	}

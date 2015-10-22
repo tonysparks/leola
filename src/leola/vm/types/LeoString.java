@@ -352,8 +352,19 @@ public class LeoString extends LeoObject {
      * @see leola.vm.types.LeoObject#getObject(leola.vm.types.LeoObject)
      */
     @Override
-    public LeoObject getObject(LeoObject key) {
+    public LeoObject xgetObject(LeoObject key) {
         return getNativeMethod(key);
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#getObject(leola.vm.types.LeoObject)
+     */
+    @Override
+    public LeoObject getObject(LeoObject key) {
+        if(hasNativeMethod(this, key)) {
+            return getNativeMethod(key);
+        }
+        return LeoObject.NULL;
     }
     
     /* (non-Javadoc)
@@ -729,6 +740,11 @@ public class LeoString extends LeoObject {
 		return resultJavaObj;
 	}
 
+	@Override
+    public boolean isAssignable(Class<?> javaType) {
+        return String.class.isAssignableFrom(javaType);
+    }
+	
 	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#clone()
 	 */

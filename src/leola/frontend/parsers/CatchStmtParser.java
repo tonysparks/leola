@@ -42,10 +42,9 @@ public class CatchStmtParser extends StmtParser {
         throws Exception {		
 	       
 	    Token startingToken = token;
-        token = nextToken(); // eat the CATCH token
-        if(! token.getType().equals(LeolaTokenType.IDENTIFIER)) {
-            throwParseError(token, LeolaErrorCode.MISSING_IDENTIFIER);
-        }                        
+        token = nextToken(); // eat the CATCH token        
+        expectToken(token, LeolaTokenType.IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
+        
         String identifier = token.getText();
         
         Stmt stmt = (Stmt) (new StmtParser(this)).parse(nextToken());

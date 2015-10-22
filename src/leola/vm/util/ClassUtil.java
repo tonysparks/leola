@@ -279,8 +279,9 @@ public class ClassUtil {
             /* Look for the best possible score.  The score
              * is calculated by the following logic:
              * 
-             * 1) give a +1 for parameters that match in type
-             * 2) give a -1 for parameters that do not match in type
+             * 1) give a + for parameters that match in type
+             * 2) give a - for parameters that do not match in type
+             * 3) give a smaller negative for missing arguments
              */
             for(int i = 0; i < overloads.size(); i++) {
                 Method method = overloads.get(i);
@@ -289,16 +290,20 @@ public class ClassUtil {
                 if(args!=null) {
                     int currentScore = 0;                    
                     for(int j = 0; j < types.length; j++) {
-                        for(int k = 0; k < args.length; k++) {
-                            Object jObject = args[k].getValue();
-                            if(jObject!=null) {
-                                //if(jObject.getClass().isAssignableFrom(types[j])) {
-                            	if(isAssignableFrom(jObject.getClass(), types[j])) {
-                                    currentScore+=2;
-                                    break;
-                                }                                
+                        if(j>=args.length) {
+                            currentScore--; // Nulls will be assumed for missing parameters
+                        }
+                        else {
+                            /* Determine if the supplied argument type is assignable
+                             * to the expected type
+                             */
+                            if(args[j].isAssignable(types[j])) {
+                                currentScore+=3;                                    
+                            }                   
+                            else {
+                                currentScore-=5;
                             }
-                            currentScore--;
+                                                                                   
                         }
                     }
                     
@@ -560,82 +565,7 @@ public class ClassUtil {
         return wrapperPrimitiveMap.get(cls);
     }
     
-    public static boolean isAssignableFrom(Class<?> left, Class<?> right) {
-        if (right == null) {
-            return false;
-        }
-        // have to check for null, as isAssignableFrom doesn't
-        if (left == null) {
-            return !(right.isPrimitive());
-        }
-
-        if (left.isPrimitive() && !right.isPrimitive()) {
-            left= primitiveToWrapper(left);
-            if (left== null) {
-                return false;
-            }
-        }
-        if (right.isPrimitive() && !left.isPrimitive()) {
-            left= wrapperToPrimitive(left);
-            if (left== null) {
-                return false;
-            }
-        }
-        
-        if (left.equals(right)) {
-            return true;
-        }
-        if (left.isPrimitive()) {
-            if (right.isPrimitive() == false) {
-                return false;
-            }
-            
-            if (Integer.TYPE.equals(left)) {
-                return Long.TYPE.equals(right)
-                    || Float.TYPE.equals(right)
-                    || Double.TYPE.equals(right);
-            }
-            if (Long.TYPE.equals(left)) {
-                return Float.TYPE.equals(right)
-                    || Double.TYPE.equals(right);
-            }
-            if (Boolean.TYPE.equals(left)) {
-                return Boolean.TYPE.equals(right);
-            }
-            if (Double.TYPE.equals(left)) {
-            	return Integer.TYPE.equals(right)
-                        || Long.TYPE.equals(right)
-                        || Float.TYPE.equals(right)
-                        || Double.TYPE.equals(right);
-            }
-            if (Float.TYPE.equals(left)) {
-                return Double.TYPE.equals(right);
-            }
-            if (Character.TYPE.equals(left)) {
-                return Integer.TYPE.equals(right)
-                    || Long.TYPE.equals(right)
-                    || Float.TYPE.equals(right)
-                    || Double.TYPE.equals(right);
-            }
-            if (Short.TYPE.equals(left)) {
-                return Integer.TYPE.equals(right)
-                    || Long.TYPE.equals(right)
-                    || Float.TYPE.equals(right)
-                    || Double.TYPE.equals(right);
-            }
-            if (Byte.TYPE.equals(left)) {
-                return Short.TYPE.equals(right)
-                    || Integer.TYPE.equals(right)
-                    || Long.TYPE.equals(right)
-                    || Float.TYPE.equals(right)
-                    || Double.TYPE.equals(right);
-            }
-            // should never get here
-            return false;
-        }
-        return right.isAssignableFrom(left);
-    }
-	
+    
     /**
      * Determines if the supplied {@link Class} if of any of the supplied {@link Class} types.
      * 

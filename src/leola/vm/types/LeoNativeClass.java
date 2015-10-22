@@ -36,15 +36,22 @@ public class LeoNativeClass extends LeoObject {
 	 */
 	private Object instance;
 	
-	   /**
+	/**
      * Adds ability to reference the public API of this class
      */
-    private Map<LeoObject, LeoObject> arrayApi; 
-    private LeoObject getNativeMember(LeoObject key) {
-        if(this.arrayApi == null) {
-            this.arrayApi = new LeoMap();
+    private Map<LeoObject, LeoObject> nativeApi; 
+    private Map<LeoObject, LeoObject> getApiMappings() {
+        if(this.nativeApi == null) {
+            synchronized (this) {                
+                if(this.nativeApi == null) {    
+                    this.nativeApi = new LeoMap();
+                }
+            }
         }
-        return getNativeMember(this.nativeClass, this.instance, this.arrayApi, key);
+        return this.nativeApi;
+    }    
+    private LeoObject getNativeMember(LeoObject key) {        
+        return getNativeMember(this.nativeClass, this.instance, getApiMappings(), key);
     }
 	
 	/**
@@ -133,10 +140,21 @@ public class LeoNativeClass extends LeoObject {
 	 * @see leola.vm.types.LeoObject#getObject(leola.vm.types.LeoObject)
 	 */
 	@Override
-	public LeoObject getObject(LeoObject key) {
+	public LeoObject xgetObject(LeoObject key) {
 		return getMember(key);
 	}
 
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#getObject(leola.vm.types.LeoObject)
+	 */
+	@Override
+	public LeoObject getObject(LeoObject key) {
+	    if(hasNativeMethod(nativeClass, key)) {
+	        return getMember(key);
+	    }
+	    return LeoObject.NULL;
+	}
+	
 	/* (non-Javadoc)
 	 * @see leola.vm.types.LeoObject#hasObject(leola.vm.types.LeoObject)
 	 */
@@ -342,6 +360,12 @@ public class LeoNativeClass extends LeoObject {
 		
 		return narrowType.isInstance(this.instance) ? narrowType.cast(this.instance) : this.instance;
 	}
+	
+
+    @Override
+    public boolean isAssignable(Class<?> javaType) {    
+        return javaType.isAssignableFrom(this.nativeClass);
+    }
 
 	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#clone()

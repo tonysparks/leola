@@ -162,10 +162,12 @@ public class LeoNativeFunction extends LeoObject {
 		    result = ClassUtil.invokeMethod(this.overloads, this.instance, args);			
 		} 
 		catch(LeolaRuntimeException e) {
-			throw e;
+			//throw e;
+		    return ((LeolaRuntimeException)e).getLeoError();
 		}
 		catch (Exception e) {
-			LeoObject.rethrow(e); 
+			//LeoObject.rethrow(e);
+		    return new LeoError(e);
 		}
 		
 		return LeoObject.valueOf(result);

@@ -12,9 +12,9 @@ import leola.ast.ASTNode;
 import leola.ast.ClassDeclStmt;
 import leola.ast.Expr;
 import leola.ast.Stmt;
-import leola.frontend.EvalException;
 import leola.frontend.LeolaParser;
 import leola.frontend.Token;
+import leola.frontend.tokens.LeolaErrorCode;
 import leola.frontend.tokens.LeolaTokenType;
 
 /**
@@ -38,10 +38,8 @@ public class ClassDefStmtParser extends StmtParser {
 	    Token startingToken = token;
 		token = this.nextToken(); // eat the CLASS token
 		
-		LeolaTokenType type = token.getType();
-		if ( ! type.equals(LeolaTokenType.IDENTIFIER) ) {
-			throw new EvalException("No class name defined!");
-		}
+		LeolaTokenType type = token.getType();		
+		expectToken(token, LeolaTokenType.IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
 		
 		String className = token.getText();
 		token = this.nextToken();
@@ -82,8 +80,8 @@ public class ClassDefStmtParser extends StmtParser {
 																 , LeolaTokenType.COMMA
 																 , LeolaTokenType.LEFT_BRACE);
 				if ( interfaceName == null ||
-					 interfaceName.equals("")) {
-					throw new EvalException("Illegal use of interface token ':'.  You must specify an interface to implement from.");
+					 interfaceName.equals("")) {					
+					throwParseError(token, LeolaErrorCode.MISSING_INTERFACE);
 				}
 				
 				interfaceNameList.add(interfaceName);

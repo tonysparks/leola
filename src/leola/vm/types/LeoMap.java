@@ -314,12 +314,11 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	 */
 	@Override
 	public void setObject(LeoObject key, LeoObject value) {
-	    if(has(key)) {
-	        put(key,value);
+	    if( hasNativeMethod(this, key)) {
+	        getApiMappings().put(key, value);
 	    }
-	    else {	    
-    	    getApiMappings().put(key, value);
-	    }
+	    
+	    put(key,value);	    
 	}
 	
 	/* (non-Javadoc)
@@ -331,8 +330,25 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 	        return get(key);
 	    }
 	    else {
-	        return getNativeMethod(key);
+	        if(hasNativeMethod(this, key)) {
+	            return getNativeMethod(key);
+	        }
 	    }
+	    
+	    return LeoObject.NULL;
+	}
+	
+	/* (non-Javadoc)
+	 * @see leola.vm.types.LeoObject#xgetObject(leola.vm.types.LeoObject)
+	 */
+	@Override
+	public LeoObject xgetObject(LeoObject key) throws LeolaRuntimeException {
+	    if(has(key)) {
+            return get(key);
+        }
+        else {         
+            return getNativeMethod(key);            
+        }                
 	}
 	
 	/* (non-Javadoc)

@@ -52,7 +52,7 @@ public class TryStmtParser extends StmtParser {
 		}
 		
 		if(!hasProperEnding) {
-		    throwParseError(currentToken(), LeolaErrorCode.MISSING_ON_OR_FINALLY);
+		    throwParseError(currentToken(), LeolaErrorCode.MISSING_CATCH_OR_FINALLY);
 		}
 		
 		TryStmt tryStmt = new TryStmt(stmt, onStmt, finallyStmt);

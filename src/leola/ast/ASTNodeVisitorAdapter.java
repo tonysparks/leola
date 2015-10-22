@@ -136,6 +136,11 @@ public class ASTNodeVisitorAdapter implements ASTNodeVisitor {
 	@Override
 	public void visit(ContinueStmt s) throws EvalException {}
 
+	/* (non-Javadoc)
+	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.DecoratorExpr)
+	 */
+	@Override
+	public void visit(DecoratorExpr s) throws EvalException {}
 	
 	/* (non-Javadoc)
 	 * @see leola.ast.ASTNodeVisitor#visit(leola.ast.NamespaceStmt)

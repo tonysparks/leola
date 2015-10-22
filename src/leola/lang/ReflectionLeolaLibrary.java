@@ -65,6 +65,15 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 	}
 	
 	/**
+	 * Converts the supplied object to a {@link LeoNativeClass}
+	 * @param obj
+	 * @return the {@link LeoNativeClass} representation
+	 */
+	public LeoNativeClass asNativeClass(Object obj) {
+	    return new LeoNativeClass(obj);
+	}
+	
+	/**
 	 * Reflectively create a new instance of a class.
 	 * 
 	 * @param classname
@@ -82,6 +91,13 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 		return result;
 	}
 
+	/**
+	 * Retrieves all of the names of the supplied objects attributes.
+	 * 
+	 * @param obj 
+	 * @return the list of names of attributes
+	 * @throws Exception
+	 */
 	public LeoArray instrospectNames(Object obj) throws Exception {
 		Class<?> aClass = obj.getClass();//obj.getValue().getClass();		
 		LeoArray result = new LeoArray();
@@ -100,6 +116,13 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 		return result;
 	}
 	
+	/**
+	 * Introspects the supplied object.
+	 * 
+	 * @param obj the object to inspect
+	 * @return the list of attributes the object contains
+	 * @throws Exception
+	 */
 	public LeoArray instrospect(Object obj) throws Exception {
 		Class<?> aClass = obj.getClass();//obj.getValue().getClass();
 		Object jObj = obj;
@@ -132,7 +155,6 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 	 * Retrieves the all static methods of the supplied class
 	 * 
 	 * @param className
-	 * @param methodName
 	 * @return a {@link LeoArray} or {@link LeoNativeFunction}'s that match the supplied methodName
 	 * @throws Exception
 	 */
@@ -152,8 +174,7 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Retrieves the all instance methods of the supplied class
 	 * 
-	 * @param className
-	 * @param methodName
+	 * @param instance
 	 * @return a {@link LeoArray} or {@link LeoNativeFunction}'s that match the supplied methodName
 	 * @throws Exception
 	 */
@@ -194,7 +215,7 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Retrieves the instance methods of the supplied object
 	 * 
-	 * @param className
+	 * @param instance
 	 * @param methodName
 	 * @return a {@link LeoArray} or {@link LeoNativeFunction}'s that match the supplied methodName
 	 * @throws Exception
@@ -214,9 +235,9 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Implements a Java Interface
 	 * 
-	 * @param aClass
 	 * @param interfaceName
-	 * @return
+	 * @param leoMethods
+	 * @return the wrapped interface
 	 * @throws Exception
 	 */
 	@LeolaMethod(alias="implements")
@@ -278,7 +299,7 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Clones the object
 	 * @param obj
-	 * @return
+	 * @return the cloned object
 	 */
 	public final LeoObject clone(LeoObject obj) {
 		if(obj==null) {
@@ -291,10 +312,9 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
 	/**
 	 * Calls the function and applies the array as function arguments to this function.
 	 * 
-	 * @param interpreter
 	 * @param func
 	 * @param params
-	 * @return
+	 * @return the result from executing the function
 	 */
 	@LeolaMethodVarargs
 	public final LeoObject call(LeoObject func, LeoObject ... params) {

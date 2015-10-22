@@ -148,14 +148,8 @@ public class CaseExprParser extends StmtParser {
 	    Expr whenExpr = (Expr)expressionParser.parse(token);
 	    whenExprPair.setFirst(whenExpr);
 
-	    token = currentToken();
-	    if ( ! token.getType().equals(LeolaTokenType.ARROW)) {
-	        throwParseError(token, LeolaErrorCode.MISSING_ARROW);
-	    }
-	    else {
-	        token = nextToken();
-	    }
-
+	    token = expectTokenNext(currentToken(), LeolaTokenType.ARROW, LeolaErrorCode.MISSING_ARROW);
+	    
 	    Expr valueExpr = (Expr)expressionParser.parse(token);
 	    whenExprPair.setSecond(valueExpr);
 

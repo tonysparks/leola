@@ -5,7 +5,46 @@
 */
 package leola.frontend.parsers;
 
-import static leola.frontend.tokens.LeolaTokenType.*;
+import static leola.frontend.tokens.LeolaTokenType.AT;
+import static leola.frontend.tokens.LeolaTokenType.BITWISE_AND;
+import static leola.frontend.tokens.LeolaTokenType.BITWISE_NOT;
+import static leola.frontend.tokens.LeolaTokenType.BITWISE_OR;
+import static leola.frontend.tokens.LeolaTokenType.BITWISE_XOR;
+import static leola.frontend.tokens.LeolaTokenType.BIT_SHIFT_LEFT;
+import static leola.frontend.tokens.LeolaTokenType.BIT_SHIFT_RIGHT;
+import static leola.frontend.tokens.LeolaTokenType.CASE;
+import static leola.frontend.tokens.LeolaTokenType.DEF;
+import static leola.frontend.tokens.LeolaTokenType.DOT;
+import static leola.frontend.tokens.LeolaTokenType.D_EQUALS;
+import static leola.frontend.tokens.LeolaTokenType.FALSE;
+import static leola.frontend.tokens.LeolaTokenType.GEN;
+import static leola.frontend.tokens.LeolaTokenType.GREATER_EQUALS;
+import static leola.frontend.tokens.LeolaTokenType.GREATER_THAN;
+import static leola.frontend.tokens.LeolaTokenType.IDENTIFIER;
+import static leola.frontend.tokens.LeolaTokenType.INTEGER;
+import static leola.frontend.tokens.LeolaTokenType.LEFT_BRACE;
+import static leola.frontend.tokens.LeolaTokenType.LEFT_BRACKET;
+import static leola.frontend.tokens.LeolaTokenType.LEFT_PAREN;
+import static leola.frontend.tokens.LeolaTokenType.LESS_EQUALS;
+import static leola.frontend.tokens.LeolaTokenType.LESS_THAN;
+import static leola.frontend.tokens.LeolaTokenType.LOGICAL_AND;
+import static leola.frontend.tokens.LeolaTokenType.LOGICAL_OR;
+import static leola.frontend.tokens.LeolaTokenType.LONG;
+import static leola.frontend.tokens.LeolaTokenType.MINUS;
+import static leola.frontend.tokens.LeolaTokenType.MOD;
+import static leola.frontend.tokens.LeolaTokenType.NEW;
+import static leola.frontend.tokens.LeolaTokenType.NOT;
+import static leola.frontend.tokens.LeolaTokenType.NOT_EQUALS;
+import static leola.frontend.tokens.LeolaTokenType.NULL;
+import static leola.frontend.tokens.LeolaTokenType.PLUS;
+import static leola.frontend.tokens.LeolaTokenType.REAL;
+import static leola.frontend.tokens.LeolaTokenType.REF_EQUALS;
+import static leola.frontend.tokens.LeolaTokenType.RIGHT_BRACKET;
+import static leola.frontend.tokens.LeolaTokenType.RIGHT_PAREN;
+import static leola.frontend.tokens.LeolaTokenType.SLASH;
+import static leola.frontend.tokens.LeolaTokenType.STAR;
+import static leola.frontend.tokens.LeolaTokenType.STRING;
+import static leola.frontend.tokens.LeolaTokenType.TRUE;
 
 import java.util.EnumSet;
 
@@ -25,7 +64,6 @@ import leola.ast.StringExpr;
 import leola.ast.UnaryExpr;
 import leola.ast.UnaryExpr.UnaryOp;
 import leola.ast.VarExpr;
-import leola.frontend.EvalException;
 import leola.frontend.LeolaParser;
 import leola.frontend.Token;
 import leola.frontend.tokens.LeolaErrorCode;
@@ -39,7 +77,7 @@ public class ExprParser extends StmtParser {
 
     // Synchronization set for starting an expression.
     public static final EnumSet<LeolaTokenType> EXPR_START_SET =
-        EnumSet.of(PLUS, MINUS, 
+        EnumSet.of(PLUS, MINUS, AT, 
                    IDENTIFIER, STRING, LONG, INTEGER, REAL, TRUE, FALSE,  
                    DEF, GEN, CASE, NEW, NULL, NOT, BITWISE_NOT, 
                    LEFT_PAREN, LEFT_BRACE, LEFT_BRACKET);
@@ -90,6 +128,17 @@ public class ExprParser extends StmtParser {
 		this.isNamedParameter = isNamedParameter;
 	}
 
+	/**
+	 * Parses the next {@link Expr}
+	 * 
+	 * @param token
+	 * @return the {@link Expr} 
+	 * @throws Exception
+	 */
+	public Expr parseExpr(Token token) throws Exception {
+	    return (Expr) parse(token);
+	}
+	
 	/**
      * Parse an expression.
      * To be overridden by the specialized statement parser subclasses.
@@ -359,7 +408,11 @@ public class ExprParser extends StmtParser {
         ASTNode rootNode = null;
 
         switch (tokenType) {
-
+            case AT: {
+                DecoratorExprParser parser = new DecoratorExprParser(this);
+                rootNode = parser.parse(token);
+                break;
+            }
             case IDENTIFIER: {
                 return parseIdentifier(token);
             }
@@ -452,14 +505,9 @@ public class ExprParser extends StmtParser {
                 // Parse an expression and make its node the root node.
                 rootNode = parseExpression(token);
 
-                // Look for the matching ) token.
-                token = currentToken();
-                if (token.getType() == LeolaTokenType.RIGHT_PAREN) {
-                    token = nextToken();  // consume the )
-                }
-                else {
-                    throwParseError(token, LeolaErrorCode.MISSING_RIGHT_PAREN);
-                }
+                // Look for the matching ) token.                
+                token = expectTokenNext(currentToken(), LeolaTokenType.RIGHT_PAREN, LeolaErrorCode.MISSING_RIGHT_PAREN);
+                
                 break;
             }
             case LEFT_BRACE: {
@@ -600,8 +648,9 @@ public class ExprParser extends StmtParser {
     		result = parser.parse(token);
     		break;
     	}
-    	case COLON: {
-    		throw new EvalException("Chained Namespace not implemented!");
+    	case COLON: {    		
+    		throwParseError(token, LeolaErrorCode.UNIMPLEMENTED);
+    		break;
     	}
     	case EQUALS: {
     		/* assignment */

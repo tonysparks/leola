@@ -47,7 +47,7 @@ public class LeolaWordToken extends LeolaToken {
 		if ( !isValid ) {
 			switch(c) {
 			case '$':
-			case '@':
+			//case '@':
 			case '_':
 				isValid = true;
 				break;

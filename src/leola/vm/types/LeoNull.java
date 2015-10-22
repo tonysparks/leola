@@ -102,6 +102,11 @@ public class LeoNull extends LeoObject {
 		return null;
 	}
 	
+	@Override
+    public boolean isAssignable(Class<?> javaType) {
+        return true;
+    }
+	
 	/* (non-Javadoc)
 	 * @see leola.types.LeoObject#clone()
 	 */

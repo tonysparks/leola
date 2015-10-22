@@ -42,7 +42,7 @@ public class LeolaSpecialSymbolToken extends LeolaToken {
             // Single-character special symbols.
             case ',':  case ';':  case '(':  case ')': 
             case '[':  case ']':  case '{':  case '}': case ':':
-            case '~':  
+            case '@':  case '~':  
             // case '^':
             {
                 nextChar();  // consume character
@@ -241,8 +241,7 @@ public class LeolaSpecialSymbolToken extends LeolaToken {
                 }
 
                 break;
-            }
-
+            }            
             default: {
                 nextChar();  // consume bad character
                 type = ERROR;

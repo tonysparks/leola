@@ -26,7 +26,7 @@ public class LeoFunction extends LeoOuterObject {
     /**
      * The Runtime
      */
-    private Leola runtime;
+    protected Leola runtime;
 	
 	/**
 	 * Arguments
@@ -41,7 +41,7 @@ public class LeoFunction extends LeoOuterObject {
 	/**
 	 * The environment it was created in
 	 */
-	private LeoObject env;
+	protected LeoObject env;
 	/**
 	 * @param runtime
 	 * @param env
