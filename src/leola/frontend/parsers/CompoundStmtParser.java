@@ -36,11 +36,8 @@ public class CompoundStmtParser extends StmtParser {
         // Create the COMPOUND node.
         CompoundStmt compoundNode = new CompoundStmt();
 
-        // Parse the statement list terminated by the } token.
-        StmtParser statementParser = new StmtParser(this);
-        statementParser.parseList(token, compoundNode
-        							, LeolaTokenType.RIGHT_BRACE
-        							, LeolaErrorCode.MISSING_RIGHT_BRACE);
+        // Parse the statement list terminated by the } token.        
+        parseList(token, compoundNode, LeolaTokenType.RIGHT_BRACE, LeolaErrorCode.MISSING_RIGHT_BRACE);
 
         setLineNumber(compoundNode, startingToken);
         return compoundNode;

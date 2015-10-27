@@ -54,7 +54,7 @@ public class IsExprParser extends ExprParser {
 		if ( this.lhsExpr == null ) {
 
 	    	// the left hand side (array or map) expr
-	    	lhsExpr = (Expr) new ExprParser(this).parse(token);
+	    	lhsExpr = parseExpr(token);
 	    	if ( lhsExpr instanceof AssignmentExpr ) {
 	    		((ArrayAccessSetExpr)lhsExpr).setVariableName(varName);
 	    	}

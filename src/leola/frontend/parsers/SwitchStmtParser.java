@@ -39,7 +39,7 @@ import leola.vm.util.Pair;
  * @author Tony
  *
  */
-public class SwitchStmtParser extends StmtParser {
+public class SwitchStmtParser extends ExprParser {
 
 	/*
 	 * TODO - Merge code from CASE statement parser
@@ -76,14 +76,13 @@ public class SwitchStmtParser extends StmtParser {
 		else {
 	        // Parse the expression.
 	        // The CASE node adopts the expression subtree as its first child.
-	        ExprParser expressionParser = new ExprParser(this);
-	        conditionNode = (Expr)expressionParser.parse(token);
+	        conditionNode = parseExpr(token);
 		}
 
         boolean hasOpeningBrace = false;
 
         // Synchronize at the { or WHEN.
-        token = synchronize(SWITCH_SET);
+        token = expectedTokens(SWITCH_SET);
         type = token.getType();
 
         if ( type.equals(WHEN) ) {
@@ -98,7 +97,7 @@ public class SwitchStmtParser extends StmtParser {
 
             if ( token.getType().equals(ELSE) ) {
                 token = nextToken(); // eat ELSE
-                elseStmt = (Stmt)(new StmtParser(this).parse(token));
+                elseStmt = parseStmt(token);
             }
 
         }
@@ -123,7 +122,7 @@ public class SwitchStmtParser extends StmtParser {
 
             if ( token.getType().equals(ELSE) ) {
                 token = nextToken(); // eat ELSE
-                elseStmt = (Stmt)(new StmtParser(this).parse(token));
+                elseStmt = parseStmt(token);
             }
 
         }
@@ -148,13 +147,12 @@ public class SwitchStmtParser extends StmtParser {
 	private Pair<Expr, Stmt> parseWhen(Token token) throws Exception {
 	    Pair<Expr, Stmt> whenExprPair = new Pair<Expr, Stmt>();
 
-	    ExprParser expressionParser = new ExprParser(this);
-	    Expr whenExpr = (Expr)expressionParser.parse(token);
+	    Expr whenExpr = parseExpr(token);
 	    whenExprPair.setFirst(whenExpr);
 
 	    token = expectTokenNext(currentToken(), LeolaTokenType.ARROW, LeolaErrorCode.MISSING_ARROW);
 	    
-	    Stmt valueStmt = (Stmt)(new StmtParser(this).parse(token));
+	    Stmt valueStmt = parseStmt(token);
 	    whenExprPair.setSecond(valueStmt);
 
 	    return whenExprPair;

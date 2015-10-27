@@ -33,9 +33,8 @@ public class TryStmtParser extends StmtParser {
 	@Override
 	public ASTNode parse(Token token) throws Exception {
 	    Token startingToken = token;
-		Token next = nextToken(); // eat the TRY keyword
-		StmtParser stmtParser = new StmtParser(this);
-		Stmt stmt = (Stmt)stmtParser.parse(next);
+		Token next = nextToken(); // eat the TRY keyword		
+		Stmt stmt = parseStmt(next);
 		
 		boolean hasProperEnding = false;
 		
@@ -47,7 +46,7 @@ public class TryStmtParser extends StmtParser {
 		
 		Stmt finallyStmt = null;
 		if(currentToken().getType().equals(LeolaTokenType.FINALLY)) {		
-			finallyStmt = (Stmt)new StmtParser(this).parse(nextToken()); // eat the finally key word
+			finallyStmt = parseStmt(nextToken()); // eat the finally key word
 			hasProperEnding = true;
 		}
 		

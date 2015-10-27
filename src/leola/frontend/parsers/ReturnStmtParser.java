@@ -15,7 +15,7 @@ import leola.frontend.Token;
  * @author Tony
  *
  */
-public class ReturnStmtParser extends StmtParser {
+public class ReturnStmtParser extends ExprParser {
 
 	/**
 	 * @param parser
@@ -30,9 +30,8 @@ public class ReturnStmtParser extends StmtParser {
 	@Override
 	public ASTNode parse(Token token) throws Exception {
 	    Token startingToken = token;
-		Token next = nextToken(); // eat the RETURN keyword
-		ExprParser retExpr = new ExprParser(this);
-		Expr expr = (Expr)retExpr.parse(next);
+		Token next = nextToken(); // eat the RETURN keyword		
+		Expr expr = parseExpr(next);
 		
 		ReturnStmt retStmt = new ReturnStmt(expr);
 		setLineNumber(retStmt, startingToken);

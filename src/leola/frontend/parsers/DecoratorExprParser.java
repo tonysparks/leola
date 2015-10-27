@@ -56,8 +56,7 @@ public class DecoratorExprParser extends ExprParser {
 		}
 		
 		// finally, lets now parse the decorated expression
-        ExprParser expressionParser = new ExprParser(this);
-        Expr exprNode = (Expr)expressionParser.parse(currentToken());
+        Expr exprNode = parseExpr(currentToken());
         
         DecoratorExpr decoratorExpr = new DecoratorExpr(decoratorName, parameters, exprNode);
         

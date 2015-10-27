@@ -5,21 +5,18 @@
 */
 package leola.frontend.parsers;
 
-import java.util.EnumSet;
-
 import leola.ast.ASTNode;
 import leola.ast.Expr;
 import leola.ast.Stmt;
 import leola.ast.WhileStmt;
 import leola.frontend.LeolaParser;
 import leola.frontend.Token;
-import leola.frontend.tokens.LeolaTokenType;
 
 /**
  * @author Tony
  *
  */
-public class WhileStmtParser extends StmtParser {
+public class WhileStmtParser extends ExprParser {
 
 	/**
 	 * @param parser
@@ -27,14 +24,6 @@ public class WhileStmtParser extends StmtParser {
 	public WhileStmtParser(LeolaParser parser) {
 		super(parser);
 	}
-
-	 // Synchronization set for DO.
-    private static final EnumSet<LeolaTokenType> DO_SET =
-        StmtParser.STMT_START_SET.clone();
-    static {
-//        DO_SET.add(DO);
-        DO_SET.addAll(StmtParser.STMT_FOLLOW_SET);
-    }
 
     /**
      * Parse a WHILE statement.
@@ -49,19 +38,11 @@ public class WhileStmtParser extends StmtParser {
         Token startingToken = token;
         token = nextToken();  // consume the WHILE
 
-        // Parse the expression.
-        // The NOT node adopts the expression subtree as its only child.
-        ExprParser expressionParser = new ExprParser(this);
-        Expr exprNode = (Expr)expressionParser.parse(token);
+        // Parse the expression; while EXPR
+        Expr exprNode = parseExpr(token);
 
-
-        // Synchronize at the DO.
-        token = synchronize(DO_SET);
-
-        // Parse the statement.
-        // The LOOP node adopts the statement subtree as its second child.
-        StmtParser statementParser = new StmtParser(this);
-        Stmt stmt = (Stmt)statementParser.parse(token);
+        // Parse the statement; while EXPR STMT 
+        Stmt stmt = parseStmt(currentToken());
 
         WhileStmt whileStmt = new WhileStmt(exprNode, stmt);
         setLineNumber(whileStmt, startingToken);

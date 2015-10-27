@@ -55,13 +55,12 @@ public class AssignmentExprParser extends ExprParser {
     	// the left hand side (array or map) expr
     	Expr lhsExpr = null;
     	
-        // Synchronize on the = token.
-        token = synchronize(COLON_EQUALS_SET);
+    	token = currentToken();
         if (token.getType() == LeolaTokenType.EQUALS) {
             token = nextToken();  // consume the =
         }
         else if ( token.getType() == LeolaTokenType.LEFT_BRACKET) {
-        	lhsExpr = (Expr) new ExprParser(this).parse(token);
+        	lhsExpr = parseExpr(token);
         	if ( lhsExpr instanceof AssignmentExpr ) {
         		((ArrayAccessSetExpr)lhsExpr).setVariableName(varName);
         	}
@@ -74,8 +73,7 @@ public class AssignmentExprParser extends ExprParser {
 
         // Parse the expression.  The ASSIGN node adopts the expression's
         // node as its second child.
-        ExprParser expressionParser = new ExprParser(this);
-        Expr exprNode = (Expr)expressionParser.parse(token);
+        Expr exprNode = parseExpr(token);
 
         // Create the ASSIGN node.
         AssignmentExpr assignNode = new AssignmentExpr(varName, lhsExpr, exprNode);

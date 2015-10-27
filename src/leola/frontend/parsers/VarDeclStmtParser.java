@@ -17,7 +17,7 @@ import leola.frontend.tokens.LeolaTokenType;
  * @author Tony
  *
  */
-public class VarDeclStmtParser extends StmtParser {
+public class VarDeclStmtParser extends ExprParser {
 
 	/**
 	 * @param parser
@@ -44,8 +44,7 @@ public class VarDeclStmtParser extends StmtParser {
 		expectToken(token, LeolaTokenType.EQUALS, LeolaErrorCode.INVALID_ASSIGNMENT);
 		
 		/* get the value expression */
-		ExprParser expr = new ExprParser(this);
-		Expr value = (Expr)expr.parse(nextToken());
+		Expr value = parseExpr(nextToken());
 		
 		ASTNode varDecl = new VarDeclStmt(varName, value);		
 		

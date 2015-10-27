@@ -5,12 +5,10 @@
 */
 package leola.frontend.parsers;
 
-import java.util.EnumSet;
-
 import leola.ast.ASTNode;
+import leola.ast.BinaryExpr.BinaryOp;
 import leola.ast.ChainedBinaryAssignmentExpr;
 import leola.ast.Expr;
-import leola.ast.BinaryExpr.BinaryOp;
 import leola.frontend.LeolaParser;
 import leola.frontend.Token;
 import leola.frontend.tokens.LeolaErrorCode;
@@ -29,16 +27,6 @@ public class ChainedBinaryAssignmentExprParser extends ExprParser {
 		super(parser);
 	}
 
-	 // Synchronization set for the := token.
-    private static final EnumSet<LeolaTokenType> BINARY_ASSIGNMENT_OPS =
-        ExprParser.EXPR_START_SET.clone();
-    static {
-    	BINARY_ASSIGNMENT_OPS.addAll(LeolaTokenType.BINARY_ASSIGNMENT.values());
-        BINARY_ASSIGNMENT_OPS.add(LeolaTokenType.EQUALS);		// assignment
-        BINARY_ASSIGNMENT_OPS.add(LeolaTokenType.LEFT_BRACKET); 	// array or map
-        BINARY_ASSIGNMENT_OPS.addAll(StmtParser.STMT_FOLLOW_SET);
-    }
-
     /**
      * Parse an assignment statement.
      * @param token the initial token.
@@ -55,8 +43,7 @@ public class ChainedBinaryAssignmentExprParser extends ExprParser {
 
     	BinaryOp binaryOp = null;
 
-        // Synchronize on the binary assignemnt token.
-        token = synchronize(BINARY_ASSIGNMENT_OPS);
+        token = currentToken();
         if (LeolaTokenType.BINARY_ASSIGNMENT.containsValue(token.getType()) ) {
         	LeolaTokenType type = token.getType();
         	binaryOp = type.toBinaryOp();
@@ -64,7 +51,7 @@ public class ChainedBinaryAssignmentExprParser extends ExprParser {
             token = nextToken();
         }
         else if ( token.getType() == LeolaTokenType.LEFT_BRACKET) {
-        	lhsExpr = (Expr) new ExprParser(this).parse(token);
+        	lhsExpr = parseExpr(token);
         	token = currentToken();
         }
         else {
@@ -73,8 +60,7 @@ public class ChainedBinaryAssignmentExprParser extends ExprParser {
 
         // Parse the expression.  The ASSIGN node adopts the expression's
         // node as its second child.
-        ExprParser expressionParser = new ExprParser(this);
-        Expr exprNode = (Expr)expressionParser.parse(token);
+        Expr exprNode = parseExpr(token);
 
         // Create the ASSIGN node.
         ChainedBinaryAssignmentExpr assignNode = new ChainedBinaryAssignmentExpr(lhsExpr, exprNode, binaryOp);

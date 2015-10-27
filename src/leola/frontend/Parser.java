@@ -4,8 +4,6 @@ import java.io.IOException;
 
 import leola.ast.ASTNode;
 import leola.frontend.listener.EventDispatcher;
-import leola.frontend.tokens.LeolaErrorCode;
-import leola.frontend.tokens.LeolaTokenType;
 
 /**
  * <h1>Parser</h1>
@@ -34,7 +32,10 @@ public abstract class Parser {
      */
     private ExceptionHandler exceptionHandler;
 
-    protected Scanner scanner; // scanner used with this parser
+    /**
+     * The Scanner
+     */
+    protected Scanner scanner; 
 
     /**
      * Constructor.
@@ -64,6 +65,9 @@ public abstract class Parser {
         return scanner;
     }
 
+    /**
+     * @return the {@link Source} file currently being parsed
+     */
     public Source getSource() {
         return scanner.getSource();
     }
@@ -117,48 +121,6 @@ public abstract class Parser {
      */
     public Token nextToken() throws IOException {
         return scanner.nextToken();
-    }
-    
-    
-    /**
-     * Issues a parsing exception.
-     * 
-     * @param token
-     * @param errorCode
-     */
-    public void throwParseError(Token token, LeolaErrorCode errorCode) {
-        getExceptionHandler().errorToken(token, this, errorCode);
-    }
-    
-    
-    /**
-     * Expect that the current token is of the supplied {@link LeolaTokenType}. If the expected token is
-     * not a match, a parser error is thrown (parser{@link #throwParseError(Token, LeolaErrorCode)}.
-     * 
-     * @param currentToken the current {@link Token}, that will be validated 
-     * @param expectedType the expected {@link LeolaTokenType}, which should match the currentToken
-     * @param errorCode the {@link LeolaErrorCode} that will be raised if the current token does not match the expected type
-     */
-    public void expectToken(Token currentToken, LeolaTokenType expectedType, LeolaErrorCode errorCode) {
-        if ( ! currentToken.getType().equals(expectedType) ) {
-            throwParseError(currentToken, errorCode);
-        }
-    }
-    
-    /**
-     * Expect that the current token is of the supplied {@link LeolaTokenType}. If the expected token is
-     * not a match, a parser error is thrown (parser{@link #throwParseError(Token, LeolaErrorCode)}.  If there is a 
-     * match, {@link Parser#nextToken()} is called.
-     * 
-     * @param currentToken the current {@link Token}, that will be validated 
-     * @param expectedType the expected {@link LeolaTokenType}, which should match the currentToken
-     * @param errorCode the {@link LeolaErrorCode} that will be raised if the current token does not match the expected type
-     * @return calls {@link Parser#nextToken()} and returns the {@link Token}
-     * @throws IOException
-     */
-    public Token expectTokenNext(Token currentToken, LeolaTokenType expectedType, LeolaErrorCode errorCode) throws IOException {
-        expectToken(currentToken, expectedType, errorCode);
-        return nextToken();
     }
 
 }

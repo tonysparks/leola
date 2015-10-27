@@ -36,8 +36,7 @@ public class FuncDefExprParser extends ExprParser {
 		ParameterList parameters = ParserUtils.parseParameterListings(this, next);
 		
 		/* now parse the body */
-		StmtParser parser = new StmtParser(this);
-		Stmt body = (Stmt)parser.parse(currentToken());
+		Stmt body = parseStmt(currentToken());
 		
 		FuncDefExpr defExpr = new FuncDefExpr(body, parameters);
 		setLineNumber(defExpr, startingToken);

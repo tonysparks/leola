@@ -65,14 +65,7 @@ public class Scope {
 		this.parent = parent;
 	}
 
-	/**
-	 * @param parent the parent to set
-	 */
-	public void setParent(Scope parent) {
-		this.parent = parent;
-
-	}
-
+	
 	/**
 	 * This will clear out (i.e., remove) all data elements from this {@link Scope}.
 	 * 
@@ -488,6 +481,8 @@ public class Scope {
 
     /**
      * Looks up the appropriate {@link ClassDefinitions} containing the className
+     * 
+     * @param currentScope
      * @param className
      * @return the {@link ClassDefinitions} or null if not found
      */
@@ -528,7 +523,8 @@ public class Scope {
     }
     
     /**
-     * Looks up the appropriate {@link ClassDefinitions} containing the className
+     * Looks up the appropriate {@link ClassDefinitions} containing the className.
+     * 
      * @param className
      * @return the {@link ClassDefinitions} or null if not found
      */
@@ -540,7 +536,7 @@ public class Scope {
      * Gets just the class name, removing any package or namespaces.
      * 
      * @param fullyQualifiedClassName
-     * @return
+     * @return just the class name (the simple class name).
      */
     public LeoObject getClassName(LeoObject fullyQualifiedClassName) {
         return LeoString.valueOf(getClassName(fullyQualifiedClassName.toString()));
@@ -551,7 +547,7 @@ public class Scope {
      * Gets just the class name, removing any package or namespaces.
      * 
      * @param fullyQualifiedClassName
-     * @return
+     * @return just the class name (the simple class name).
      */
     public String getClassName(String fullyQualifiedClassName) {
         String result = fullyQualifiedClassName;

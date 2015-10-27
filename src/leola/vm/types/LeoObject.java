@@ -676,65 +676,65 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	}
 	
 
-	public LeoObject $add(LeoObject other) { return null; }
-	public LeoObject $sub(LeoObject other) { return null; }
-	public LeoObject $mul(LeoObject other) { return null; }
-	public LeoObject $div(LeoObject other) { return null; }
-	public LeoObject $mod(LeoObject other) { return null; }
+	public LeoObject $add(LeoObject other) { throwNotImplementedError("$add"); return null; }
+	public LeoObject $sub(LeoObject other) { throwNotImplementedError("$sub"); return null; }
+	public LeoObject $mul(LeoObject other) { throwNotImplementedError("$mul"); return null; }
+	public LeoObject $div(LeoObject other) { throwNotImplementedError("$div"); return null; }
+	public LeoObject $mod(LeoObject other) { throwNotImplementedError("$mod"); return null; }
 	
-	public LeoObject $add(int other) { return null; }
-	public LeoObject $sub(int other) { return null; }
-	public LeoObject $mul(int other) { return null; }
-	public LeoObject $div(int other) { return null; }
-	public LeoObject $mod(int other) { return null; }
+	public LeoObject $add(int other) { throwNotImplementedError("$add"); return null; }
+	public LeoObject $sub(int other) { throwNotImplementedError("$sub"); return null; }
+	public LeoObject $mul(int other) { throwNotImplementedError("$mul"); return null; }
+	public LeoObject $div(int other) { throwNotImplementedError("$div"); return null; }
+	public LeoObject $mod(int other) { throwNotImplementedError("$mod"); return null; }
 	
-	public LeoObject $add(double other) { return null; }
-	public LeoObject $sub(double other) { return null; }
-	public LeoObject $mul(double other) { return null; }
-	public LeoObject $div(double other) { return null; }
-	public LeoObject $mod(double other) { return null; }
+	public LeoObject $add(double other) { throwNotImplementedError("$add"); return null; }
+	public LeoObject $sub(double other) { throwNotImplementedError("$sub"); return null; }
+	public LeoObject $mul(double other) { throwNotImplementedError("$mul"); return null; }
+	public LeoObject $div(double other) { throwNotImplementedError("$div"); return null; }
+	public LeoObject $mod(double other) { throwNotImplementedError("$mod"); return null; }
 	
 	
-	public LeoObject $add(long other) { return null; }
-	public LeoObject $sub(long other) { return null; }
-	public LeoObject $mul(long other) { return null; }
-	public LeoObject $div(long other) { return null; }
-	public LeoObject $mod(long other) { return null; }
+	public LeoObject $add(long other) { throwNotImplementedError("$add"); return null; }
+	public LeoObject $sub(long other) { throwNotImplementedError("$sub"); return null; }
+	public LeoObject $mul(long other) { throwNotImplementedError("$mul"); return null; }
+	public LeoObject $div(long other) { throwNotImplementedError("$div"); return null; }
+	public LeoObject $mod(long other) { throwNotImplementedError("$mod"); return null; }
 	
-	public LeoObject $neg() { return null; }
+	public LeoObject $neg() { throwNotImplementedError("$neg"); return null; }
 //	public LeoObject not() { return null; }
-	public LeoObject $bnot() { return null; }
+	public LeoObject $bnot() { throwNotImplementedError("$bnot"); return null; }
 	
-	public LeoObject $index(LeoObject other) { return null; }
-	public void      $sindex(LeoObject key, LeoObject other) {}
-	public LeoObject $bsl(LeoObject other) { return null; }
-	public LeoObject $bsr(LeoObject other) { return null; }
-	public LeoObject $xor(LeoObject other) { return null; }
-	public LeoObject $bor(LeoObject other) { return null; }
-	public LeoObject $band(LeoObject other) { return null; }
+	public LeoObject $index(LeoObject other) { throwNotImplementedError("$index"); return null; }
+	public void      $sindex(LeoObject key, LeoObject other) { throwNotImplementedError("$sindex"); }
+	public LeoObject $bsl(LeoObject other) { throwNotImplementedError("$bsl"); return null; }
+	public LeoObject $bsr(LeoObject other) { throwNotImplementedError("$bsr"); return null; }
+	public LeoObject $xor(LeoObject other) { throwNotImplementedError("$xor"); return null; }
+	public LeoObject $bor(LeoObject other) { throwNotImplementedError("$bor"); return null; }
+	public LeoObject $band(LeoObject other) { throwNotImplementedError("$band"); return null; }
 	
 	
-	public LeoObject $index(int other) { return null; }
-	public LeoObject $bsl(int other) { return null; }
-	public LeoObject $bsr(int other) { return null; }
-	public LeoObject $xor(int other) { return null; }
-	public LeoObject $bor(int other) { return null; }
-	public LeoObject $band(int other) { return null; }
+	public LeoObject $index(int other) { throwNotImplementedError("$index"); return null; }
+	public LeoObject $bsl(int other) { throwNotImplementedError("$bsl"); return null; }
+	public LeoObject $bsr(int other) { throwNotImplementedError("$bsr"); return null; }
+	public LeoObject $xor(int other) { throwNotImplementedError("$xor"); return null; }
+	public LeoObject $bor(int other) { throwNotImplementedError("$bor"); return null; }
+	public LeoObject $band(int other) { throwNotImplementedError("$band"); return null; }
 	
-	public LeoObject $index(double other) { return null; }
-	public LeoObject $bsl(double other) { return null; }
-	public LeoObject $bsr(double other) { return null; }
-	public LeoObject $xor(double other) { return null; }
-	public LeoObject $bor(double other) { return null; }
-	public LeoObject $band(double other) { return null; }
+	public LeoObject $index(double other) { throwNotImplementedError("$index"); return null; }
+	public LeoObject $bsl(double other) { throwNotImplementedError("$bsl"); return null; }
+	public LeoObject $bsr(double other) { throwNotImplementedError("$bsr"); return null; }
+	public LeoObject $xor(double other) { throwNotImplementedError("$xor"); return null; }
+	public LeoObject $bor(double other) { throwNotImplementedError("$bor"); return null; }
+	public LeoObject $band(double other) { throwNotImplementedError("$band"); return null; }
 
 	
-	public LeoObject $index(long other) { return null; }
-	public LeoObject $bsl(long other) { return null; }
-	public LeoObject $bsr(long other) { return null; }
-	public LeoObject $xor(long other) { return null; }
-	public LeoObject $bor(long other) { return null; }
-	public LeoObject $band(long other) { return null; }
+	public LeoObject $index(long other) { throwNotImplementedError("$index"); return null; }
+	public LeoObject $bsl(long other) { throwNotImplementedError("$bsl"); return null; }
+	public LeoObject $bsr(long other) { throwNotImplementedError("$bsr"); return null; }
+	public LeoObject $xor(long other) { throwNotImplementedError("$xor"); return null; }
+	public LeoObject $bor(long other) { throwNotImplementedError("$bor"); return null; }
+	public LeoObject $band(long other) { throwNotImplementedError("$band"); return null; }
 
 		
 	/**
@@ -1183,8 +1183,9 @@ public abstract class LeoObject implements Comparable<LeoObject> {
      * Throws a ClassNotFoundError
      * 
      * @param message the error message
+     * @throws LeolaRuntimeException
      */
-    public static void throwClassNotFoundError(String message) {
+    public static void throwClassNotFoundError(String message) throws LeolaRuntimeException {
         throw new LeolaRuntimeException("NoClassDefinitionError: " + message);
     }
     
@@ -1192,8 +1193,9 @@ public abstract class LeoObject implements Comparable<LeoObject> {
      * Throws a MethodError
      * 
      * @param message the error message
+     * @throws LeolaRuntimeException
      */
-    public static void throwMethodError(String message) {
+    public static void throwMethodError(String message) throws LeolaRuntimeException {
         throw new LeolaRuntimeException("MethodError: " + message);
     }
     
@@ -1202,16 +1204,26 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	 * Throws a NativeMethodError 
 	 * 
 	 * @param message the error message
+	 * @throws LeolaRuntimeException
 	 */
-	public static void throwNativeMethodError(String message) {
+	public static void throwNativeMethodError(String message) throws LeolaRuntimeException {
 	    throw new LeolaRuntimeException("NativeMethodError: " + message);
 	}
 	
 	/**
 	 * Throws a {@link LeolaRuntimeException} denoting a DivideByZeroError.
+	 * @throws LeolaRuntimeException
 	 */
-	public static void throwDivideByZeroError() {
+	public static void throwDivideByZeroError() throws LeolaRuntimeException {
 	    throw new LeolaRuntimeException("DivideByZeroError: Can't divide by zero.");
+	}
+	
+	/**
+	 * Throws a {@link LeolaRuntimeException} denoting a NotImplemetnedError.
+	 * @throws LeolaRuntimeException
+	 */
+	public void throwNotImplementedError(String functionName) throws LeolaRuntimeException {
+	    throw new LeolaRuntimeException("NotImplementedError: '" + getType() + "' does not implement the '" + functionName + "' method.");
 	}
 	
 	/**
@@ -1219,8 +1231,9 @@ public abstract class LeoObject implements Comparable<LeoObject> {
      * does not exist in the owned scope.
      * 
      * @param name the name of the attribute
+     * @throws LeolaRuntimeException
      */
-    public void throwAttributeError(LeoObject name) {
+    public void throwAttributeError(LeoObject name) throws LeolaRuntimeException {
         if(isClass()) {
             if(isNativeClass()) {
                 LeoNativeClass nClass = as();
@@ -1249,8 +1262,9 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	 * 
 	 * @param ownerClass the containing class in which the attribute was requested.
 	 * @param name the name of the attribute
+	 * @throws LeolaRuntimeException
 	 */
-	public static void throwAttributeError(Class<?> ownerClass, LeoObject name) {
+	public static void throwAttributeError(Class<?> ownerClass, LeoObject name) throws LeolaRuntimeException {
 	    throw new LeolaRuntimeException
 	        ("AttributeError: '" + ownerClass.getSimpleName() + "' has no attribute with the name '" + name + "'");
 	}
@@ -1262,8 +1276,9 @@ public abstract class LeoObject implements Comparable<LeoObject> {
      * 
      * @param ownerClass the containing class in which the attribute was requested.
      * @param name the name of the attribute
+     * @throws LeolaRuntimeException
      */
-	public static void throwAttributeAccessError(Class<?> ownerClass, LeoObject name) {
+	public static void throwAttributeAccessError(Class<?> ownerClass, LeoObject name) throws LeolaRuntimeException {
 	    throw new LeolaRuntimeException
 	        ("AttributeAccessError: '" + ownerClass.getSimpleName() + "' could not access attribute with the name '" + name + "'");
     }

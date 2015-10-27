@@ -24,7 +24,7 @@ import leola.ast.ASTAttributes;
 import leola.ast.ASTNode;
 import leola.ast.Expr;
 import leola.ast.NamedParameterExpr;
-import leola.frontend.Parser;
+import leola.frontend.LeolaParser;
 import leola.frontend.Token;
 import leola.frontend.tokens.LeolaErrorCode;
 import leola.frontend.tokens.LeolaTokenType;
@@ -91,8 +91,8 @@ public class ParserUtils {
         
         // Loop to parse each actual parameter.
         while (token.getType() != endToken) {
-            ASTNode actualNode = expressionParser.parse(token);
-            paramsNode.add( (Expr)actualNode);
+            Expr actualNode = expressionParser.parseExpr(token);
+            paramsNode.add(actualNode);
                         
             /* Ensure we only have one array expansion in the parameter
              * listings
@@ -115,7 +115,7 @@ public class ParserUtils {
                 isArrayExpanded = true;
             }
 
-            token = parser.synchronize(commaDelimeter);
+            token = parser.expectedTokens(commaDelimeter);
             LeolaTokenType tokenType = token.getType();
 
             // Look for the comma.
@@ -126,7 +126,7 @@ public class ParserUtils {
                 parser.throwParseError(token, LeolaErrorCode.MISSING_COMMA);
             }
             else if (tokenType != endToken) {
-                token = parser.synchronize(ExprParser.EXPR_START_SET);
+                token = parser.expectedTokens(ExprParser.EXPR_START_SET);
             }
         }
 
@@ -204,17 +204,17 @@ public class ParserUtils {
             Pair<Expr, Expr> element = new Pair<Expr, Expr>();
 
 
-            ASTNode key = expressionParser.parse(token);
-            element.setFirst( (Expr)key );
+            Expr key = expressionParser.parseExpr(token);
+            element.setFirst(key);
             
             token = expressionParser.expectTokenNext(expressionParser.currentToken(), ARROW, LeolaErrorCode.MISSING_ARROW);
 
-            ASTNode value = expressionParser.parse(token);
-            element.setSecond( (Expr)value );
+            Expr value = expressionParser.parseExpr(token);
+            element.setSecond(value);
 
             paramsNode.add( element );
 
-            token = parser.synchronize(commaDelimeter);
+            token = parser.expectedTokens(commaDelimeter);
             LeolaTokenType tokenType = token.getType();
 
             // Look for the comma.
@@ -225,7 +225,7 @@ public class ParserUtils {
                 parser.throwParseError(token, LeolaErrorCode.MISSING_COMMA);
             }
             else if (tokenType != endToken) {
-                token = parser.synchronize(ExprParser.EXPR_START_SET);
+                token = parser.expectedTokens(ExprParser.EXPR_START_SET);
             }
         }
 
@@ -246,7 +246,7 @@ public class ParserUtils {
      * @return the expression list
      * @throws Exception
 	 */
-	public static ParameterList parseParameterListings(Parser parser, Token next) throws Exception {
+	public static ParameterList parseParameterListings(LeolaParser parser, Token next) throws Exception {
 		LeolaTokenType type = next.getType();
 
 		/* If the is no left brace, fail */
@@ -334,7 +334,7 @@ public class ParserUtils {
      * @return the class name
      * @throws Exception
 	 */
-	public static String parseClassName(Parser parser, Token token, LeolaTokenType ... endTokenTypes) throws Exception {
+	public static String parseClassName(LeolaParser parser, Token token, LeolaTokenType ... endTokenTypes) throws Exception {
 		EnumSet<LeolaTokenType> quitSet = EnumSet.copyOf(Arrays.asList(endTokenTypes));
 
 
@@ -370,7 +370,7 @@ public class ParserUtils {
 	 * @return the class name
 	 * @throws Exception
 	 */
-    public static String parseClassName(Parser parser, Token token) throws Exception {
+    public static String parseClassName(LeolaParser parser, Token token) throws Exception {
         EnumSet<LeolaTokenType> continueSet = EnumSet.copyOf(Arrays.asList(IDENTIFIER, DOT, COLON));
 
         String className = "";

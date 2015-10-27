@@ -5,8 +5,6 @@
 */
 package leola.frontend.parsers;
 
-import java.util.EnumSet;
-
 import leola.ast.ASTNode;
 import leola.ast.Expr;
 import leola.ast.IfStmt;
@@ -19,15 +17,8 @@ import leola.frontend.tokens.LeolaTokenType;
  * @author Tony
  *
  */
-public class IfStmtParser extends StmtParser {
+public class IfStmtParser extends ExprParser {
 
-	// Synchronization set for THEN.
-    private static final EnumSet<LeolaTokenType> THEN_SET =
-        StmtParser.STMT_START_SET.clone();
-    static {        
-        THEN_SET.addAll(StmtParser.STMT_FOLLOW_SET);
-    }
-	
 	/**
 	 * @param parser
 	 */
@@ -45,18 +36,13 @@ public class IfStmtParser extends StmtParser {
 		
 		IfStmt ifStmt = null;
 		
-        // Parse the expression.
-        // The IF node adopts the expression subtree as its first child.
-        ExprParser expressionParser = new ExprParser(this);
-        Expr exprNode = (Expr)expressionParser.parse(token);
+		// the expression if EXPR
+        Expr exprNode = parseExpr(token);
         
-        // Synchronize at the THEN.
-        token = synchronize(THEN_SET);
-        
-        // Parse the THEN statement.
-        // The IF node adopts the statement subtree as its second child.
-        StmtParser statementParser = new StmtParser(this);
-        Stmt thenStmt = (Stmt)statementParser.parse(token);
+        token = currentToken();
+                
+        // the statement if EXPR STMT
+        Stmt thenStmt = parseStmt(token);
         token = currentToken();
 
         // Look for an ELSE.
@@ -65,7 +51,7 @@ public class IfStmtParser extends StmtParser {
 
             // Parse the ELSE statement.
             // The IF node adopts the statement subtree as its third child.
-            Stmt elseStmt = (Stmt)statementParser.parse(token);
+            Stmt elseStmt = parseStmt(token);
             ifStmt = new IfStmt(exprNode, thenStmt, elseStmt);
         }
         else {

@@ -47,7 +47,7 @@ public class CatchStmtParser extends StmtParser {
         
         String identifier = token.getText();
         
-        Stmt stmt = (Stmt) (new StmtParser(this)).parse(nextToken());
+        Stmt stmt = parseStmt(nextToken());
 	    
 		
         // Create the Catch node.

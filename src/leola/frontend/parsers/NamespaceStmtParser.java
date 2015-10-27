@@ -5,8 +5,6 @@
 */
 package leola.frontend.parsers;
 
-import java.util.EnumSet;
-
 import leola.ast.ASTNode;
 import leola.ast.NamespaceStmt;
 import leola.ast.Stmt;
@@ -20,13 +18,6 @@ import leola.frontend.tokens.LeolaTokenType;
  *
  */
 public class NamespaceStmtParser extends StmtParser {
-
-	// Synchronization set for THEN.
-    private static final EnumSet<LeolaTokenType> THEN_SET =
-        StmtParser.STMT_START_SET.clone();
-    static {
-        THEN_SET.addAll(StmtParser.STMT_FOLLOW_SET);
-    }
 
 	/**
 	 * @param parser
@@ -50,8 +41,7 @@ public class NamespaceStmtParser extends StmtParser {
 
 		token = nextToken();
 
-        StmtParser statementParser = new StmtParser(this);
-        Stmt stmt = (Stmt) statementParser.parse(token);
+        Stmt stmt = parseStmt(token);
 
         token = currentToken();
 

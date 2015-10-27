@@ -912,7 +912,7 @@ public class Leola {
 			Bytecode bytecode = Bytecode.read(ns, in);
 			bytecode.setSourceFile(file);
 
-			result = execute(bytecode);
+			result = execute(ns, bytecode);
 		}
 		else {
 			Bytecode bytecode = compile(new BufferedReader(new FileReader(file)), this.exceptionHandler);
@@ -925,9 +925,7 @@ public class Leola {
 	}
 
 	public LeoObject eval(Reader reader) throws Exception {
-		Bytecode bytecode = compile(reader, this.exceptionHandler);
-		LeoObject result = execute(bytecode);
-		return result;
+		return eval(reader, this.global);
 	}
 
 	public LeoObject eval(Reader reader, LeoNamespace namespace) throws Exception {

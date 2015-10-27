@@ -168,12 +168,14 @@ public class ClassDefinitions {
             parentClass = newInstance(runtime, definition.getSuperClassDefinition().getClassName(), superParams);
         }
         
-        Scope scope = new Scope(definition.getDeclaredScope());
-        if ( parentClass != LeoNull.LEONULL ) {
-            LeoClass p = parentClass.as();
-            scope.setParent(p.getScope());
-        }       
-        
+        /* The parent scope is either the parent Class, or the scope in which this class
+         * is defined in
+         */
+        Scope parentScope = parentClass != LeoNull.LEONULL ? 
+                                ((LeoClass)parentClass).getScope() : definition.getDeclaredScope();
+
+                                
+        Scope scope = new Scope(parentScope);        
         LeoClass klass = new LeoClass(runtime
                                     , scope
                                     , definition

@@ -94,9 +94,8 @@ public class ClassDefStmtParser extends StmtParser {
 		}
 				
 		
-		/* now parse the body */
-		StmtParser parser = new StmtParser(this);
-		Stmt classBodyStmt = (Stmt)parser.parse(currentToken());
+		/* now parse the body */		
+		Stmt classBodyStmt = parseStmt(currentToken());
 		
 		ClassDeclStmt classDefStmt = new ClassDeclStmt(className, classParams, classBodyStmt
 													 , parentClassName, parentClassParams, interfaceNames);

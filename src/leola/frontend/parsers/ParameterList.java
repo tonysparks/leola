@@ -39,13 +39,6 @@ public class ParameterList {
 	/**
 	 * @return the parameters
 	 */
-//	public String[] getParameters() {
-//		return parameters.toArray(new String[parameters.size()]);
-//	}
-	
-	/**
-	 * @return the parameters
-	 */
 	public List<String> getParameters() {
 		return parameters;
 	}

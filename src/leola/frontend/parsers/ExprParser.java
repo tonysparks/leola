@@ -70,6 +70,8 @@ import leola.frontend.tokens.LeolaErrorCode;
 import leola.frontend.tokens.LeolaTokenType;
 
 /**
+ * Parses an Expression
+ * 
  * @author Tony
  *
  */
@@ -77,10 +79,9 @@ public class ExprParser extends StmtParser {
 
     // Synchronization set for starting an expression.
     public static final EnumSet<LeolaTokenType> EXPR_START_SET =
-        EnumSet.of(PLUS, MINUS, AT, 
-                   IDENTIFIER, STRING, LONG, INTEGER, REAL, TRUE, FALSE,  
-                   DEF, GEN, CASE, NEW, NULL, NOT, BITWISE_NOT, 
-                   LEFT_PAREN, LEFT_BRACE, LEFT_BRACKET);
+            EnumSet.of(CASE, DEF, GEN, LEFT_BRACKET, LEFT_BRACE, NEW, IDENTIFIER,
+                       AT, NULL, TRUE, FALSE, STRING, LONG, INTEGER, REAL,
+                       PLUS, MINUS, NOT, BITWISE_NOT, LEFT_PAREN);    
 
     public static final EnumSet<LeolaTokenType> EXPR_END_SET =
         EnumSet.of(IDENTIFIER, /*INTEGER, REAL, STRING, DEF, $ME,
@@ -127,17 +128,6 @@ public class ExprParser extends StmtParser {
 		super(parser);
 		this.isNamedParameter = isNamedParameter;
 	}
-
-	/**
-	 * Parses the next {@link Expr}
-	 * 
-	 * @param token
-	 * @return the {@link Expr} 
-	 * @throws Exception
-	 */
-	public Expr parseExpr(Token token) throws Exception {
-	    return (Expr) parse(token);
-	}
 	
 	/**
      * Parse an expression.
@@ -146,22 +136,19 @@ public class ExprParser extends StmtParser {
      * @return the root node of the generated parse tree.
      * @throws Exception if an error occurred.
      */
-    public ASTNode parse(Token token)
-        throws Exception
-    {
-        ASTNode statementNode = parseExpression(token);
+    public ASTNode parse(Token token) throws Exception {
+        ASTNode statementNode = parseExpr(token);
         return statementNode;
     }
-
+        
     /**
-     * Parse an expression.
-     * @param token the initial token.
-     * @return the root node of the generated parse tree.
-     * @throws Exception if an error occurred.
+     * Parses the next {@link Expr}
+     * 
+     * @param token
+     * @return the {@link Expr} 
+     * @throws Exception
      */
-    private ASTNode parseExpression(Token currToken)
-        throws Exception
-    {
+    public Expr parseExpr(Token currToken) throws Exception {
         // Parse a simple expression and make the root of its tree
         // the root node.
         ASTNode rootNode = parseSimpleExpression(currToken);
@@ -215,7 +202,7 @@ public class ExprParser extends StmtParser {
 
             // Parse the second simple expression.  The operator node adopts
             // the simple expression's tree as its second child.
-            ASTNode simExprNode = parseExpression(token);
+            ASTNode simExprNode = parseExpr(token);
 
             BinaryExpr bExpr = new BinaryExpr( (Expr)rootNode
             								  ,(Expr)simExprNode
@@ -252,7 +239,7 @@ public class ExprParser extends StmtParser {
         token = currentToken();
         tokenType = token.getType();
        
-        return rootNode;
+        return (Expr)rootNode;
     }
 
     /**
@@ -503,7 +490,7 @@ public class ExprParser extends StmtParser {
                 token = nextToken();      // consume the (
 
                 // Parse an expression and make its node the root node.
-                rootNode = parseExpression(token);
+                rootNode = parseExpr(token);
 
                 // Look for the matching ) token.                
                 token = expectTokenNext(currentToken(), LeolaTokenType.RIGHT_PAREN, LeolaErrorCode.MISSING_RIGHT_PAREN);

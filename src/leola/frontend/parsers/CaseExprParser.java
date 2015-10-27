@@ -38,9 +38,8 @@ import leola.vm.util.Pair;
  * @author Tony
  *
  */
-public class CaseExprParser extends StmtParser {
+public class CaseExprParser extends ExprParser {
 
-	// Synchronization set for THEN.
     private static final EnumSet<LeolaTokenType> CASE_SET =
         EnumSet.of(LEFT_BRACE, WHEN);
 
@@ -63,8 +62,6 @@ public class CaseExprParser extends StmtParser {
 		Expr elseExpr = null;
 		List<Pair<Expr, Expr>> whenExprs = new ArrayList<Pair<Expr,Expr>>();
 
-		ExprParser expressionParser = new ExprParser(this);
-		
 		// if { or WHEN, put in a TRUE
 		LeolaTokenType type = token.getType();
 		if ( CASE_SET.contains(type) ) {
@@ -73,13 +70,13 @@ public class CaseExprParser extends StmtParser {
 		else {
 	        // Parse the expression.
 	        // The CASE node adopts the expression subtree as its first child.
-	        conditionNode = (Expr)expressionParser.parse(token);
+	        conditionNode = parseExpr(token);
 		}
 
         boolean hasOpeningBrace = false;
 
-        // Synchronize at the { or WHEN.
-        token = synchronize(CASE_SET);
+        // expect either the { or WHEN.
+        token = expectedTokens(CASE_SET);
         type = token.getType();
 
         if ( type.equals(WHEN) ) {
@@ -94,7 +91,7 @@ public class CaseExprParser extends StmtParser {
 
             if ( token.getType().equals(ELSE) ) {
                 token = nextToken(); // eat ELSE
-                elseExpr = (Expr)expressionParser.parse(token);
+                elseExpr = parseExpr(token);
             }
 
         }
@@ -119,7 +116,7 @@ public class CaseExprParser extends StmtParser {
 
             if ( token.getType().equals(ELSE) ) {
                 token = nextToken(); // eat ELSE
-                elseExpr = (Expr)expressionParser.parse(token);
+                elseExpr = parseExpr(token);
             }
 
         }
@@ -144,13 +141,12 @@ public class CaseExprParser extends StmtParser {
 	private Pair<Expr, Expr> parseWhen(Token token) throws Exception {
 	    Pair<Expr, Expr> whenExprPair = new Pair<Expr, Expr>();
 
-	    ExprParser expressionParser = new ExprParser(this);
-	    Expr whenExpr = (Expr)expressionParser.parse(token);
+	    Expr whenExpr = parseExpr(token);
 	    whenExprPair.setFirst(whenExpr);
 
 	    token = expectTokenNext(currentToken(), LeolaTokenType.ARROW, LeolaErrorCode.MISSING_ARROW);
 	    
-	    Expr valueExpr = (Expr)expressionParser.parse(token);
+	    Expr valueExpr = parseExpr(token);
 	    whenExprPair.setSecond(valueExpr);
 
 	    return whenExprPair;

@@ -45,8 +45,8 @@ public class StmtParser extends LeolaParser {
 
     // Synchronization set for starting a statement.
     protected static final EnumSet<LeolaTokenType> STMT_START_SET =
-        EnumSet.of(IF, VAR, WHILE, LEFT_BRACE, SWITCH, YIELD,
-        		   RETURN, BREAK, CONTINUE, SEMICOLON, CLASS, NAMESPACE, THROW, TRY);
+            EnumSet.of(VAR, IF, WHILE, SWITCH, YIELD, RETURN, BREAK, 
+                       CONTINUE, SEMICOLON, CLASS, NAMESPACE, THROW, TRY, LEFT_BRACE);            
     static {
         STMT_START_SET.addAll(ExprParser.EXPR_START_SET);
     }
@@ -63,26 +63,25 @@ public class StmtParser extends LeolaParser {
 	}
 	
 	/**
-	 * Parses the next {@link Stmt}
-	 * 
-	 * @param token
-	 * @return the {@link Stmt}
-	 * @throws Exception
-	 */
-	public Stmt parseStmt(Token token) throws Exception {
-	    return (Stmt) parse(token);
-	}
-
-	/**
      * Parse a statement.
      * To be overridden by the specialized statement parser subclasses.
      * @param token the initial token.
      * @return the root node of the generated parse tree.
      * @throws Exception if an error occurred.
      */
-    public ASTNode parse(Token token)
-        throws Exception
-    {
+    public ASTNode parse(Token token) throws Exception {
+        Stmt stmt = parseStmt(token);
+        return stmt;
+    }
+    
+    /**
+     * Parses the next {@link Stmt}
+     * 
+     * @param token
+     * @return the {@link Stmt}
+     * @throws Exception
+     */
+    public Stmt parseStmt(Token token) throws Exception {            
         ASTNode statementNode = null;
 
         LeolaTokenType type = token.getType();
@@ -170,7 +169,7 @@ public class StmtParser extends LeolaParser {
         // Set the current line number as an attribute.
         setLineNumber(statementNode, token);
 
-        return statementNode;
+        return (Stmt)statementNode;
     }
 
     /**
@@ -215,7 +214,7 @@ public class StmtParser extends LeolaParser {
                (token.getType() != terminator)) {
 
             // Parse a statement.  The parent node adopts the statement node.
-            ASTNode statementNode = parse(token);
+            ASTNode statementNode = parseStmt(token);
             parentNode.addChild(statementNode);
 
             token = currentToken();
@@ -226,14 +225,9 @@ public class StmtParser extends LeolaParser {
                 token = nextToken();  // consume the ;
             }
 
-            // If at the start of the next statement, then missing a semicolon.
-//            else if (STMT_START_SET.contains(tokenType)) {
-//                getExceptionHandler().errorToken(token, this, LeolaErrorCode.MISSING_SEMICOLON);
-//            }
-
             // Synchronize at the start of the next statement
             // or at the terminator.
-            token = synchronize(terminatorSet);
+            token = expectedTokens(terminatorSet);
         }
 
         // Look for the terminator token.
@@ -247,29 +241,20 @@ public class StmtParser extends LeolaParser {
 
 
     /**
-     * Synchronize the parser.
-     * @param syncSet the set of token types for synchronizing the parser.
-     * @return the token where the parser has synchronized.
-     * @throws Exception if an error occurred.
+     * Determines if the current token is within the supplied expected set, if it isn't
+     * and error is thrown.
+     * 
+     * @see StmtParser#throwParseError(Token, LeolaErrorCode)
+     * @param expectedSet the set of tokens the parser expects
+     * @return the current token
      */
-    public Token synchronize(EnumSet<LeolaTokenType> syncSet)
-        throws Exception
-    {
+    public Token expectedTokens(EnumSet<LeolaTokenType> expectedSet) {
         Token token = currentToken();
 
         // If the current token is not in the synchronization set,
         // then it is unexpected and the parser must recover.
-        if (!syncSet.contains(token.getType())) {
-
-            // Flag the unexpected token.
+        if (!expectedSet.contains(token.getType())) {
             throwParseError(token, LeolaErrorCode.UNEXPECTED_TOKEN);
-
-            // Recover by skipping tokens that are not
-            // in the synchronization set.
-            do {
-                token = nextToken();
-            } while (!(token instanceof EofToken) &&
-                     !syncSet.contains(token.getType()));
        }
 
        return token;

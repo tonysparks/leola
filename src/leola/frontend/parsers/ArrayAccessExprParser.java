@@ -5,10 +5,6 @@
 */
 package leola.frontend.parsers;
 
-import static leola.frontend.tokens.LeolaTokenType.COMMA;
-
-import java.util.EnumSet;
-
 import leola.ast.ASTNode;
 import leola.ast.ArrayAccessExpr;
 import leola.ast.ArrayAccessSetExpr;
@@ -28,14 +24,6 @@ import leola.frontend.tokens.LeolaTokenType;
  */
 public class ArrayAccessExprParser extends ExprParser {
 
-    // Synchronization set for the , token.
-    protected static final EnumSet<LeolaTokenType> COMMA_SET =
-        ExprParser.EXPR_START_SET.clone();
-    static {
-        COMMA_SET.add(COMMA);
-        COMMA_SET.add(LeolaTokenType.RIGHT_BRACKET);
-    };
-
 	/**
 	 * @param parser
 	 */
@@ -52,7 +40,7 @@ public class ArrayAccessExprParser extends ExprParser {
 
 		Token token = nextToken(); // eat the [
 
-		Expr index = new ExprParser(this).parseExpr(token);
+		Expr index = parseExpr(token);
 
         // Look for the matching ] token.        
         token = expectTokenNext(currentToken(), LeolaTokenType.RIGHT_BRACKET, LeolaErrorCode.MISSING_RIGHT_BRACKET);

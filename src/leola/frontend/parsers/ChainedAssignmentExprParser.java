@@ -5,8 +5,6 @@
 */
 package leola.frontend.parsers;
 
-import java.util.EnumSet;
-
 import leola.ast.ASTNode;
 import leola.ast.ChainedAssignmentExpr;
 import leola.ast.Expr;
@@ -28,15 +26,6 @@ public class ChainedAssignmentExprParser extends ExprParser {
 		super(parser);
 	}
 
-	 // Synchronization set for the := token.
-    private static final EnumSet<LeolaTokenType> COLON_EQUALS_SET =
-        ExprParser.EXPR_START_SET.clone();
-    static {
-        COLON_EQUALS_SET.add(LeolaTokenType.EQUALS);		// assignment
-        COLON_EQUALS_SET.add(LeolaTokenType.LEFT_BRACKET); 	// array or map
-        COLON_EQUALS_SET.addAll(StmtParser.STMT_FOLLOW_SET);
-    }
-
     /**
      * Parse an assignment statement.
      * @param token the initial token.
@@ -52,12 +41,12 @@ public class ChainedAssignmentExprParser extends ExprParser {
     	Expr lhsExpr = null;
 
         // Synchronize on the = token.
-        token = synchronize(COLON_EQUALS_SET);
+        token = currentToken();
         if (token.getType() == LeolaTokenType.EQUALS) {
             token = nextToken();  // consume the =
         }
         else if ( token.getType() == LeolaTokenType.LEFT_BRACKET) {
-        	lhsExpr = (Expr) new ExprParser(this).parse(token);
+        	lhsExpr = parseExpr(token);
         	token = currentToken();
         }
         else {
@@ -66,8 +55,7 @@ public class ChainedAssignmentExprParser extends ExprParser {
 
         // Parse the expression.  The ASSIGN node adopts the expression's
         // node as its second child.
-        ExprParser expressionParser = new ExprParser(this);
-        Expr exprNode = (Expr)expressionParser.parse(token);
+        Expr exprNode = parseExpr(token);
 
         // Create the ASSIGN node.
         ChainedAssignmentExpr assignNode = new ChainedAssignmentExpr(lhsExpr, exprNode);
