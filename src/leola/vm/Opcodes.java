@@ -67,7 +67,7 @@ public class Opcodes {
      * @param instr
      * @return
      */
-    public static int OPCODE(int instr) {
+    public static final int OPCODE(int instr) {
 //      return (instr >> OP_POS) & MAX_OP;
         return instr & MAX_OP;
     }
@@ -77,7 +77,7 @@ public class Opcodes {
      * @param instr
      * @return arg1 one value
      */
-    public static int ARG1(int instr) {
+    public static final int ARG1(int instr) {
         return (instr >>>  ARG1_POS) & MAX_ARG1;
     }
 
@@ -86,7 +86,7 @@ public class Opcodes {
      * @param instr
      * @return arg2 value
      */
-    public static int ARG2(int instr) {
+    public static final int ARG2(int instr) {
         return (instr >>> ARG2_POS) & MAX_ARG2;     
     }
     
@@ -95,7 +95,7 @@ public class Opcodes {
      * @param instr 
      * @return the x argument
      */
-    public static int ARGx(int instr) {
+    public static final int ARGx(int instr) {
         return ((instr >>> ARGx_POS) & MAX_ARGx);
     }
     
@@ -104,7 +104,7 @@ public class Opcodes {
      * @param instr
      * @return the signed x argument
      */
-    public static int ARGsx(int instr) {
+    public static final int ARGsx(int instr) {
         return ((instr >> ARGx_POS) & MAX_ARGx) - MAX_ARGsx;
     }
     
@@ -114,7 +114,7 @@ public class Opcodes {
      * @param x
      * @return the instruction with the set value
      */
-    public static int SET_ARGsx(int instr, int sx) {
+    public static final int SET_ARGsx(int instr, int sx) {
         return (instr & (NOT_ARGx_MASK)) | (( (sx + MAX_ARGsx) << ARGx_POS) & ARGx_MASK);
     }
     
@@ -124,7 +124,7 @@ public class Opcodes {
      * @param x
      * @return the instruction with the set value
      */
-    public static int SET_ARGx(int instr, int argx) {
+    public static final int SET_ARGx(int instr, int argx) {
         return (instr & (NOT_ARGx_MASK)) | (( argx << ARGx_POS) & ARGx_MASK);
     }
     
@@ -134,7 +134,7 @@ public class Opcodes {
      * @param x
      * @return the instruction with the set value
      */
-    public static int SET_ARG1(int instr, int arg1) {
+    public static final int SET_ARG1(int instr, int arg1) {
         return (instr & NOT_ARG1_MASK) | (( arg1 << ARG1_POS) & ARG1_MASK);
     }
     
@@ -144,7 +144,7 @@ public class Opcodes {
      * @param x
      * @return the instruction with the set value
      */
-    public static int SET_ARG2(int instr, int arg2) {
+    public static final int SET_ARG2(int instr, int arg2) {
         return (instr & NOT_ARG2_MASK) | (( arg2 << ARG2_POS) & ARG2_MASK);
     }
 	
@@ -154,7 +154,7 @@ public class Opcodes {
 	 * @param opcode
 	 * @return the opcode represented by the string, or -1 if not found.
 	 */
-	public static int str2op(String opcode) {
+	public static final int str2op(String opcode) {
 		Integer op = opcodes.get(opcode.toUpperCase());
 		return (op != null) ? op : -1;
 	}
@@ -165,7 +165,7 @@ public class Opcodes {
 	 * @param opcode
 	 * @return a string
 	 */
-	public static String op2str(int opcode) {
+	public static final String op2str(int opcode) {
 		String op = "";
 		switch(opcode) {
             /* stack operators */            
@@ -347,10 +347,14 @@ public class Opcodes {
 				break;
 			}
 			            
-            case INIT_BLOCK: {
+            case INIT_CATCH_BLOCK: {
                 op = "INIT_BLOCK";
                 break;
             }            
+            case INIT_FINALLY_BLOCK: {
+                op = "INIT_FINALLY_BLOCK";
+                break;
+            }
             case END_BLOCK: {
                 op = "END_BLOCK";
                 break;
@@ -544,40 +548,42 @@ public class Opcodes {
 		GET_NAMESPACE = 38,           /* ARGx */
 		
         /* Exception handling */        
-        INIT_BLOCK = 39,              /* ARGsx*/        
-        END_BLOCK = 40,               /* ARG1 (0=pop index;1=clear error;2=exit if error)*/
-		THROW = 41,                   /*      */
+        INIT_CATCH_BLOCK = 39,        /* ARGsx*/    
+        INIT_FINALLY_BLOCK = 40,      /* ARGsx*/
+        END_BLOCK = 41,               /* ARG1 (0=pop index;1=clear error;2=exit if error)*/
+		THROW = 42,                   /*      */
 						
 		/* arithmetic operators */
-		ADD = 42,                     /*      */
-		SUB = 43,                     /*      */
-		MUL = 44,                     /*      */
-		DIV = 45,                     /*      */
-		MOD = 46,                     /*      */
-		NEG = 47,                     /*      */
+		ADD = 43,                     /*      */
+		SUB = 44,                     /*      */
+		MUL = 45,                     /*      */
+		DIV = 46,                     /*      */
+		MOD = 47,                     /*      */
+		NEG = 48,                     /*      */
 	
-		BSL = 48,                     /*      */
-		BSR = 49,                     /*      */
-		BNOT = 50,                    /*      */
-		XOR = 51,                     /*      */
-		LOR = 52,                     /*      */
-		LAND = 53,                    /*      */
+		BSL = 49,                     /*      */
+		BSR = 50,                     /*      */
+		BNOT = 51,                    /*      */
+		XOR = 52,                     /*      */
+		LOR = 53,                     /*      */
+		LAND = 54,                    /*      */
 		
-		OR = 54,                      /*      */
-		AND = 55,                     /*      */
-		NOT = 56,                     /*      */
+		OR = 55,                      /*      */
+		AND = 56,                     /*      */
+		NOT = 57,                     /*      */
 		
-		REQ = 57,                     /*      */
-		EQ = 58,                      /*      */
-		NEQ = 59,                     /*      */
-		GT = 60,                      /*      */
-		GTE = 61,                     /*      */
-		LT = 62,                      /*      */
-		LTE = 63,                     /*      */
+		REQ = 58,                     /*      */
+		EQ = 59,                      /*      */
+		NEQ = 60,                     /*      */
+		GT = 61,                      /*      */
+		GTE = 62,                     /*      */
+		LT = 63,                      /*      */
+		LTE = 64,                     /*      */
 				
-		IDX = 64,                     /*      */
-		SIDX = 65,                    /*      */
+		IDX = 65,                     /*      */
+		SIDX = 66,                    /*      */
 				
+		
 		/* debug */
 		LINE = 67                     /* ARGx */
 		;
@@ -644,7 +650,8 @@ public class Opcodes {
 		
 		
         /* exception handling */        
-        opcodes.put("INIT_BLOCK", INIT_BLOCK);                
+        opcodes.put("INIT_CATCH_BLOCK", INIT_CATCH_BLOCK);
+        opcodes.put("INIT_FINALLY_BLOCK", INIT_FINALLY_BLOCK);  
         opcodes.put("END_BLOCK", END_BLOCK);		
 		opcodes.put("THROW", THROW);
 

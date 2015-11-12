@@ -25,7 +25,8 @@ import static leola.vm.Opcodes.GT;
 import static leola.vm.Opcodes.GTE;
 import static leola.vm.Opcodes.IDX;
 import static leola.vm.Opcodes.IFEQ;
-import static leola.vm.Opcodes.INIT_BLOCK;
+import static leola.vm.Opcodes.INIT_CATCH_BLOCK;
+import static leola.vm.Opcodes.INIT_FINALLY_BLOCK;
 import static leola.vm.Opcodes.INVOKE;
 import static leola.vm.Opcodes.IS_A;
 import static leola.vm.Opcodes.JMP;
@@ -329,6 +330,7 @@ public class BytecodeEmitter {
                               
         this.localScope.setNumArgs(numberOfArguments);
         this.localScope.setVarargs(hasVarargs);
+        this.localScope.setDebug(isDebugMode);
         
         this.innerEmitterStack.push(this);
     }
@@ -1139,31 +1141,31 @@ public class BytecodeEmitter {
 	    peek().localScope.activateBlocks(getInstructionCount());
 		
 		// this will be populated with the correct offset
-		instrsx(INIT_BLOCK, 0); 
+		instrsx(INIT_FINALLY_BLOCK, 0); 
 		
 	}
 	public void initfinally(int offset) {
 	    peek().localScope.activateBlocks();
-	    instrsx(INIT_BLOCK, offset);
+	    instrsx(INIT_FINALLY_BLOCK, offset);
 	}
 	public void initfinally(String label) {
 	    peek().localScope.activateBlocks();        
-        markLabel(INIT_BLOCK, label);
+        markLabel(INIT_FINALLY_BLOCK, label);
     }
 	
 	public void initcatch() {
 	    peek().localScope.activateBlocks(getInstructionCount());
 		// this will be populated with the correct offset
-		instrsx(INIT_BLOCK, 0); 		
+		instrsx(INIT_CATCH_BLOCK, 0); 		
 	}
 	
 	public void initcatch(int offset) {
 	    peek().localScope.activateBlocks();
-        instrsx(INIT_BLOCK, offset); 
+        instrsx(INIT_CATCH_BLOCK, offset); 
 	}
 	public void initcatch(String label) {
 	    peek().localScope.activateBlocks();
-        markLabel(INIT_BLOCK, label);
+        markLabel(INIT_CATCH_BLOCK, label);
     }
 	
 	public void endfinally() {				
@@ -1171,13 +1173,13 @@ public class BytecodeEmitter {
 	}
 	public void taginitfinally() {
 		int startPC = peek().localScope.popBlock();
-		getInstructions().set(startPC, SET_ARGsx(INIT_BLOCK, getInstructionCount()));
+		getInstructions().set(startPC, SET_ARGsx(INIT_FINALLY_BLOCK, getInstructionCount()));
 		instr1(END_BLOCK, 0);
 	}
 	
 	public void taginitcatch() {
 	    int startPC = peek().localScope.popBlock();
-		getInstructions().set(startPC, SET_ARGsx(INIT_BLOCK, getInstructionCount()));
+		getInstructions().set(startPC, SET_ARGsx(INIT_CATCH_BLOCK, getInstructionCount()));
 		instr1(END_BLOCK, 1);
 	}
 	

@@ -351,7 +351,10 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
         b.append('[');
         for (int i = 0; ; i++) {
             LeoObject v = this.array[i];
-            if(v.isString()) {
+            if(v==null) {
+                b.append("null");
+            }
+            else if(v.isString()) {
                 b.append("\"").append(this.array[i].toString()).append("\"");
             }
             else if(v.isNull()) {
@@ -361,7 +364,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
                 b.append(this.array[i].toString());
             }
             
-            if (i == iMax)
+            if (i >= iMax)
             	return b.append(']').toString();
             b.append(", ");
         }        
@@ -636,7 +639,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 * @return
 	 */
 	public LeoObject rest() {
-		if (this.size < 2 ) return LeoNull.LEONULL;
+		if (this.size < 2 ) return new LeoArray(0);
 		return slice(1, this.size);
 	}
 

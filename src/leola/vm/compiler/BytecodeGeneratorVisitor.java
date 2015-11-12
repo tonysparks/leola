@@ -1385,9 +1385,9 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 					
 		
 		if(hasCatch) {
-			asm.taginitcatch();
-			s.getCatchStmt().visit(this);
+			asm.taginitcatch();			
 			asm.endcatch();
+			s.getCatchStmt().visit(this);
 		}
 						
 		if(hasFinally) {

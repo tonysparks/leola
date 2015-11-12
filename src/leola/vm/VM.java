@@ -29,7 +29,8 @@ import static leola.vm.Opcodes.GT;
 import static leola.vm.Opcodes.GTE;
 import static leola.vm.Opcodes.IDX;
 import static leola.vm.Opcodes.IFEQ;
-import static leola.vm.Opcodes.INIT_BLOCK;
+import static leola.vm.Opcodes.INIT_CATCH_BLOCK;
+import static leola.vm.Opcodes.INIT_FINALLY_BLOCK;
 import static leola.vm.Opcodes.INVOKE;
 import static leola.vm.Opcodes.IS_A;
 import static leola.vm.Opcodes.JMP;
@@ -80,7 +81,6 @@ import static leola.vm.Opcodes.xLOAD_OUTER;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 import leola.vm.compiler.Bytecode;
 import leola.vm.compiler.Outer;
@@ -552,6 +552,7 @@ public class VM {
 		boolean closeOuters = false;
 		boolean yield = false;
 		boolean isReturnedSafely = true;
+		boolean exitFunction = false;
 				
 		Scope scope = null;
 		
@@ -585,12 +586,11 @@ public class VM {
 		}
 		
 		
-		
 		/* exception handling, keeps track of the catch program 
 		 * counter */
-		Stack<Integer> blockStack = null;
+		ExceptionStack blockStack = null;
 		if(code.hasBlocks()) {
-		    blockStack = new Stack<Integer>();
+		    blockStack = new ExceptionStack();
 		}
 		
 		
@@ -694,6 +694,7 @@ public class VM {
 						}
 						case RET:	{
 							isReturnedSafely = true; 
+							exitFunction = true;
 							
 							pc = len;  /* Break out of the bytecode */
 							if ( top>topStack) {
@@ -704,7 +705,8 @@ public class VM {
 						case YIELD: {
 							yield = true; /* lets not expire the generator */
 							isReturnedSafely = true; 
-							
+							exitFunction = true;
+														
 							/* copy what was stored on the stack, back to the
 							 * generators local copy
 							 */
@@ -1222,14 +1224,23 @@ public class VM {
 							stack[top++] = ns;
 							
 							continue;
-						}						
-						case INIT_BLOCK: {
-						    /*
-						     * Denote that we are entering a TRY
-						     * block that may contain a CATCH and/or FINALLY
-						     * blocks
-						     */
-							blockStack.add(ARGsx(i));
+						}		
+						case INIT_FINALLY_BLOCK: {
+	                        /* Denote that we are entering a TRY
+                             * block that may contain a FINALLY
+                             * block
+                             */
+						    int address = ARGsx(i);
+						    blockStack.pushFinally(address);
+						    continue;
+						}
+						case INIT_CATCH_BLOCK: {
+						    /* Denote that we are entering a TRY
+                             * block that may contain a CATCH 
+                             * block
+                             */
+						    int address = ARGsx(i);
+                            blockStack.pushCatch(address);
 							continue;
 						}						
 						case END_BLOCK: {						    							
@@ -1267,7 +1278,7 @@ public class VM {
     	                             *   .. // the error is still present and
     	                             *      // must be bubbled up
     	                             */
-    	                            if(errorThrown.isError()) {
+    	                            if(errorThrown.isError() || exitFunction) {
     	                                pc = len;
     	                            }    
     	                            break;
@@ -1450,9 +1461,7 @@ public class VM {
 				/* clear out result in an ON block */
 				isReturnedSafely = false; 
 				
-				/**
-				 * Return the error
-				 */
+				/* build up the stack trace */
 				errorThrown = buildStackTrace(code, errorThrown, e, lineNumber);								
 				
 				stack[top++] = errorThrown;
@@ -1461,7 +1470,39 @@ public class VM {
 			finally {
 				
 				if(blockStack != null && !blockStack.isEmpty()) {
-					pc = blockStack.peek();
+				    
+				    /* If we explicitly exited out of this function
+				     * either via a RETURN or YIELD statement inside
+				     * of a TRY..CATCH..FINALLY block, we need to jump
+				     * over any CATCH blocks, but still execute any
+				     * FINALLY blocks
+				     */
+				    if(exitFunction) {
+				        
+				        /* Skip over any catch blocks, we can
+				         * do this because we are exiting the function
+				         * cleanly via the RETURN/YIELD statements
+				         */
+				        while(blockStack.peekIsCatch()) {
+				            blockStack.pop();
+				        }
+				        
+				        /* If we have a FINALLY block, go ahead
+				         * and execute it
+				         */
+				        if(blockStack.peekIsFinally()) {
+				            pc = blockStack.peekAddress();
+				        }
+				    }
+				    else {
+				        
+				        /* We did not invoke a RETURN/YIELD,
+				         * so we can proceed as normal (i.e.,
+				         * if an exception is thrown, go to a CATCH
+				         * block and then FINALLY blocks)
+				         */
+				        pc = blockStack.peekAddress();
+				    }
 				}
 				else {
 				    final int stackSize = Math.min(stack.length, base+code.maxstacksize);
@@ -1747,7 +1788,7 @@ public class VM {
                 args[topArgs+i] = LeoObject.NULL;
         }
     }
-	
+    
 	/**
 	 * Close over the outer variables for closures.
 	 * 

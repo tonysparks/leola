@@ -332,7 +332,7 @@ public class Bytecode {
                     sb.append(".end\n");
 					break;
 				}				
-                case Opcodes.INIT_BLOCK:
+                case Opcodes.INIT_CATCH_BLOCK:
 				case Opcodes.IFEQ:
 				case Opcodes.JMP: {
 				    String argsx = Integer.toString(Opcodes.ARGsx(code));                                                     
