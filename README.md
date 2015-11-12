@@ -176,7 +176,7 @@ Leola uses Exceptions much like Javascript, Java, etc.
 try {
   throw "Some Error"
 }
-catch(e) {
+catch e {
   println(e) // prints 'Some Error'
 }
 ````
