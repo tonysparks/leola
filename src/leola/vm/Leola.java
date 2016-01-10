@@ -905,20 +905,23 @@ public class Leola {
 		LeoObject result = LeoNull.LEONULL;
 		boolean isCompiled = hasLeolaCompiledExtension(file);
 		if(isCompiled) {
-			BufferedInputStream iStream = new BufferedInputStream(new FileInputStream(file));
-			DataInput in = new DataInputStream(iStream);
-
-
-			Bytecode bytecode = Bytecode.read(ns, in);
-			bytecode.setSourceFile(file);
-
-			result = execute(ns, bytecode);
+			try(BufferedInputStream iStream = new BufferedInputStream(new FileInputStream(file))) {
+				DataInput in = new DataInputStream(iStream);
+	
+	
+				Bytecode bytecode = Bytecode.read(ns, in);
+				bytecode.setSourceFile(file);
+	
+				result = execute(ns, bytecode);
+			}
 		}
 		else {
-			Bytecode bytecode = compile(new BufferedReader(new FileReader(file)), this.exceptionHandler);
-			bytecode.setSourceFile(file);
-
-			result = execute(ns, bytecode);
+			try(Reader reader = new BufferedReader(new FileReader(file))) {
+				Bytecode bytecode = compile(reader, this.exceptionHandler);
+				bytecode.setSourceFile(file);
+	
+				result = execute(ns, bytecode);
+			}
 		}
 
 		return result;
@@ -942,12 +945,13 @@ public class Leola {
 	 * @throws Exception
 	 */
 	public Bytecode read(File scriptFile) throws Exception {
-	    Bytecode code = read(new BufferedInputStream(new FileInputStream(scriptFile)));
-	    if(code != null) {
-	        code.setSourceFile(scriptFile);
-	    }
-	    
-	    return code;
+		try(InputStream iStream = new BufferedInputStream(new FileInputStream(scriptFile))) {
+		    Bytecode code = read(iStream);
+		    if(code != null) {
+		        code.setSourceFile(scriptFile);
+		    }
+		    return code;
+		}
 	}
 	
 	
