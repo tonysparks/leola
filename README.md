@@ -176,7 +176,7 @@ Leola uses Exceptions much like Javascript, Java, etc.
 try {
   throw "Some Error"
 }
-catch(e) {
+catch e {
   println(e) // prints 'Some Error'
 }
 ````
@@ -320,7 +320,7 @@ You can download the latest version of Leola by using these Maven coordinates:
 <dependency>
   <groupId>leola</groupId>
   <artifactId>leola</artifactId>
-  <version>0.9.5</version>
+  <version>0.9.6</version>
 </dependency>
 ```
 
