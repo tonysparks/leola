@@ -8,6 +8,7 @@ package leola.lang;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Scanner;
@@ -193,6 +194,31 @@ public class LangLeolaLibrary implements LeolaLibrary {
 
 		return result;
 	}
+	
+	private void printf(PrintStream out, Object x, LeoObject ... args) {
+        if(args!=null) {
+            int len = args.length;
+            Object[] params = new Object[len];                      
+            for(int i = 0; i < len; i++) {
+                params[i] = args[i].getValue();
+            }
+            out.printf(x.toString(), params);
+        }
+        else {
+            out.printf(x.toString());
+        }
+    }
+	
+	/**
+	 * Print format to system error
+	 * 
+	 * @param x
+	 * @param args
+	 */
+	@LeolaMethodVarargs
+	public final void eprintf(Object x, LeoObject ...args) {
+	    printf(System.err, x, args);
+	}
 
 	/**
 	 * Print format
@@ -202,30 +228,38 @@ public class LangLeolaLibrary implements LeolaLibrary {
 	 */
 	@LeolaMethodVarargs
 	public final void printf(Object x, LeoObject ... args) {
-	    if(args!=null) {
-            int len = args.length;
-            Object[] params = new Object[len];                      
-            for(int i = 0; i < len; i++) {
-                params[i] = args[i].getValue();
-            }
-            System.out.printf(x.toString(), params);
-        }
-        else {
-            System.out.printf(x.toString());
-        }
+	    printf(System.out, x, args);
 	}
 	
 	/**
-	 * Prints to the console with a new line
+     * Prints to system error with a new line
+     *
+     * @param x
+     */
+	public final void eprintln(Object x) {
+	    System.err.println(x);
+	}
+	
+	/**
+	 * Prints to system out with a new line
 	 *
 	 * @param x
 	 */
 	public final void println(Object x) {
 		java.lang.System.out.println(x);
 	}
+	
+	/**
+	 * Prints to system error.
+	 * 
+	 * @param x
+	 */
+	public final void eprint(Object x) {
+	    System.err.print(x);
+	}
 
 	/**
-	 * Prints to the console.
+	 * Prints to system out.
 	 *
 	 * @param x
 	 */

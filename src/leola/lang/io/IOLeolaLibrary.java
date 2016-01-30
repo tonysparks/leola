@@ -16,6 +16,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -233,6 +234,51 @@ public class IOLeolaLibrary implements LeolaLibrary {
 		return new Buffer(capacity);
 	}
 
+	/**
+	 * Read the full contents of the file as a String.  This will assume the {@link Charset}
+	 * of the default for the JVM.
+	 * 
+	 * @param filename
+	 * @return the file contents as a {@link String}
+	 * @throws Exception
+	 */
+	public String readFully(String filename) throws Exception {
+	    LeolaFile file = null;
+	    try {
+	        file = fopen(filename, "r");
+	        return file.readFully();
+	    }
+	    finally {
+	        if(file!=null) {
+	            file.close();
+	        }
+	    }
+	}
+	
+	/**
+	 * Writes out the String contents to the supplied filename.  This will create the file if it doesn't exit.
+	 * 
+	 * @param filename
+	 * @param contents
+	 * @param append optional parameter to append the the contents, default to false
+	 * @throws Exception
+	 */
+	public void writeFully(String filename, String contents, Boolean append) throws Exception {
+	    LeolaFile file = null;
+        try {
+            file = fopen(filename, "rw");
+            if(append == null || !append.booleanValue()) {
+                file.setLength(0);
+            }
+            file.writeBytes(contents.getBytes());
+        }
+        finally {
+            if(file!=null) {
+                file.close();
+            }
+        }
+	}
+	
 	/**
 	 * Opens a file.  Standard modes are "r" for open as read only, and "rw" for open as 
 	 * read-write.

@@ -56,6 +56,22 @@ public class Conn {
 			this.sqlConn.close();
 		}
 	}
+	
+	/**
+	 * Executes the supplied function and will always close out the connection after executing it.
+	 * 
+	 * @param function
+	 * @return anything returned from the supplied function
+	 * @throws Exception
+	 */
+	public LeoObject with(LeoObject function) throws Exception {
+	    try {
+	        return function.call(LeoObject.valueOf(this));
+	    }
+	    finally {
+	        close();
+	    }
+	}
 		
 	public void commit() throws Exception {
 		this.sqlConn.commit();
