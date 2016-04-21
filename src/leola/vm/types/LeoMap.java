@@ -588,32 +588,32 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
 
 
 	public String getString(String key) {
-		LeoObject obj = get(LeoString.valueOf(key));
+		LeoObject obj = getWithJNull(LeoString.valueOf(key));
 		return obj != null ? obj.toString() : "";
 	}
 	
 	public int getInt(String key) {
-		LeoObject obj = get(LeoString.valueOf(key));
+		LeoObject obj = getWithJNull(LeoString.valueOf(key));
 		return obj != null ? obj.asInt() : 0;
 	}
 
 	public long getLong(String key) {
-        LeoObject obj = get(LeoString.valueOf(key));
+        LeoObject obj = getWithJNull(LeoString.valueOf(key));
         return obj != null ? obj.asLong() : 0;
     }
 
     public double getDouble(String key) {
-        LeoObject obj = get(LeoString.valueOf(key));
+        LeoObject obj = getWithJNull(LeoString.valueOf(key));
         return obj != null ? obj.asDouble() : 0;
     }
     
     public LeoMap getMap(String key) {
-        LeoObject obj = get(LeoString.valueOf(key));
+        LeoObject obj = getWithJNull(LeoString.valueOf(key));
         return obj != null ? ((LeoMap)obj.as()) : null;
     }
     
     public LeoArray getArray(String key) {
-        LeoObject obj = get(LeoString.valueOf(key));
+        LeoObject obj = getWithJNull(LeoString.valueOf(key));
         return obj != null ? ((LeoArray)obj.as()) : null;
     }   
     
