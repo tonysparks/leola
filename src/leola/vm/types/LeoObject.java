@@ -1355,7 +1355,7 @@ public abstract class LeoObject implements Comparable<LeoObject> {
                                 try {
                                     Object value = field.get(owner);
                                     func = LeoObject.valueOf(value);
-                                    nativeApi.put(key, func);
+                                    //nativeApi.put(key, func);
                                     
                                     return (func);
                                 }

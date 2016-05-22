@@ -138,6 +138,6 @@ public class LeoUserFunction extends LeoObject {
      */
     @Override
     public LeoObject call(LeoObject[] args) {
-        return super.call(args);
+        return LeoObject.NULL;
     }
 }
