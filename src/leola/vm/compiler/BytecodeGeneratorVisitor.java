@@ -293,6 +293,10 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
 				asm.req();
 				break;
 			}
+			case RNEQ: {
+                asm.rneq();
+                break;
+            }
 			case EQ: {
 				asm.eq();
 				break;

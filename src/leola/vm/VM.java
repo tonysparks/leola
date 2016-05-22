@@ -60,6 +60,7 @@ import static leola.vm.Opcodes.OR;
 import static leola.vm.Opcodes.PARAM_END;
 import static leola.vm.Opcodes.POP;
 import static leola.vm.Opcodes.REQ;
+import static leola.vm.Opcodes.RNEQ;
 import static leola.vm.Opcodes.RET;
 import static leola.vm.Opcodes.ROTL;
 import static leola.vm.Opcodes.ROTR;
@@ -1408,6 +1409,13 @@ public class VM {
 							stack[top++] = c;
 							continue;
 						}
+						case RNEQ: {
+                            LeoObject r = stack[--top];
+                            LeoObject l = stack[--top];
+                            LeoObject c = LeoBoolean.valueOf(l.$rneq(r));
+                            stack[top++] = c;
+                            continue;
+                        }
 						case EQ:	{
 							LeoObject r = stack[--top];
 							LeoObject l = stack[--top];

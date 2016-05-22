@@ -587,6 +587,15 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	}
 	
 	/**
+	 * Tests if the references are not the same. Java equivalent to ! '=='
+	 * @param other
+	 * @return true if they are not the same references
+	 */
+	public boolean $rneq(LeoObject other) {
+        return (this != other);
+    }
+	
+	/**
 	 * Determines if it equals another object.
 	 *
 	 * @param other
@@ -1355,7 +1364,13 @@ public abstract class LeoObject implements Comparable<LeoObject> {
                                 try {
                                     Object value = field.get(owner);
                                     func = LeoObject.valueOf(value);
-                                    nativeApi.put(key, func);
+                                    /* Do not cache this value, as it 
+                                     * may change by calling methods
+                                     * on this native object, so we 
+                                     * must grab the latest value
+                                     * every time
+                                     */
+                                    //nativeApi.put(key, func);
                                     
                                     return (func);
                                 }

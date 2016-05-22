@@ -26,7 +26,8 @@ public enum LeolaTokenType implements TokenType
     // end Reserved words
 
     // Special symbols.
-    PLUS("+"), MINUS("-"), STAR("*"), MOD("%"), SLASH("/"), D_EQUALS("=="), REF_EQUALS("==="),
+    PLUS("+"), MINUS("-"), STAR("*"), MOD("%"), SLASH("/"), D_EQUALS("=="), 
+    REF_EQUALS("==="), REF_NOT_EQUALS("!=="),
     DOT("."), VAR_ARGS("..."), AT("@"), COMMA(","), SEMICOLON(";"), COLON(":"),
     EQUALS("="), NOT_EQUALS("!="), LESS_THAN("<"), LESS_EQUALS("<="),
     GREATER_EQUALS(">="), GREATER_THAN(">"), LEFT_PAREN("("), RIGHT_PAREN(")"),
@@ -118,6 +119,10 @@ public enum LeolaTokenType implements TokenType
     		result = BinaryOp.REQ;
     		break;
     	}
+    	case REF_NOT_EQUALS: {
+            result = BinaryOp.RNEQ;
+            break;
+        }
     	case D_EQUALS:
     		result = BinaryOp.EQ;
     		break;

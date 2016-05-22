@@ -432,6 +432,10 @@ public class Opcodes {
 				op = "REQ";
 				break;
 			}
+			case RNEQ:    {
+                op = "RNEQ";
+                break;
+            }
 			case EQ:	{
 				op = "EQ";
 				break;
@@ -573,19 +577,20 @@ public class Opcodes {
 		NOT = 57,                     /*      */
 		
 		REQ = 58,                     /*      */
-		EQ = 59,                      /*      */
-		NEQ = 60,                     /*      */
-		GT = 61,                      /*      */
-		GTE = 62,                     /*      */
-		LT = 63,                      /*      */
-		LTE = 64,                     /*      */
+		RNEQ = 59,                    /*      */
+		EQ = 60,                      /*      */
+		NEQ = 61,                     /*      */
+		GT = 62,                      /*      */
+		GTE = 63,                     /*      */
+		LT = 64,                      /*      */
+		LTE = 65,                     /*      */
 				
-		IDX = 65,                     /*      */
-		SIDX = 66,                    /*      */
+		IDX = 66,                     /*      */
+		SIDX = 67,                    /*      */
 				
 		
 		/* debug */
-		LINE = 67                     /* ARGx */
+		LINE = 68                     /* ARGx */
 		;
 	
 	
@@ -676,6 +681,7 @@ public class Opcodes {
 		opcodes.put("NOT", NOT);
 		
 		opcodes.put("REQ", REQ);
+		opcodes.put("RNEQ", RNEQ);
 		opcodes.put("EQ", EQ);
 		opcodes.put("NEQ", NEQ);
 		opcodes.put("GT", GT);

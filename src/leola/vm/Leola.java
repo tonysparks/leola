@@ -1055,6 +1055,8 @@ public class Leola {
 	 */
 	public Bytecode compile(Reader reader, ExceptionHandler exceptionHandler) throws Exception {
 		ASTNode program = generateAST(reader, exceptionHandler);
+		//program.visit(new DeadcodeOptimizerVisitor());
+		
 		BytecodeGeneratorVisitor gen = new BytecodeGeneratorVisitor(this, new EmitterScopes());
 		program.visit(gen);
 		BytecodeEmitter asm = gen.getAsm();

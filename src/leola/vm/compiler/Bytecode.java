@@ -376,6 +376,7 @@ public class Bytecode {
 				case Opcodes.NOT:
 				    
 				case Opcodes.REQ:
+				case Opcodes.RNEQ:
 				case Opcodes.EQ:
                 case Opcodes.NEQ:
                 case Opcodes.GT:

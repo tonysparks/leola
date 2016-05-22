@@ -730,6 +730,10 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
 	 */
 	@Override
 	public boolean $eq(LeoObject other) {
+	    if(other==this) {
+	        return true;
+	    }
+	    
 		if ( other != null && other.isOfType(LeoType.ARRAY)) {
 			LeoArray otherarray = other.as();
 			if ( otherarray.size == this.size) {

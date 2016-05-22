@@ -57,6 +57,7 @@ import static leola.vm.Opcodes.OR;
 import static leola.vm.Opcodes.PARAM_END;
 import static leola.vm.Opcodes.POP;
 import static leola.vm.Opcodes.REQ;
+import static leola.vm.Opcodes.RNEQ;
 import static leola.vm.Opcodes.RET;
 import static leola.vm.Opcodes.ROTL;
 import static leola.vm.Opcodes.ROTR;
@@ -1265,6 +1266,11 @@ public class BytecodeEmitter {
 		instr(REQ);
 		decrementMaxstackSize();
 	}
+	
+	public void rneq() {
+        instr(RNEQ);
+        decrementMaxstackSize();
+    }
 	
 	public void eq() {
 		instr(EQ);
