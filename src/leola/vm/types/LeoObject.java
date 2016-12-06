@@ -540,6 +540,18 @@ public abstract class LeoObject implements Comparable<LeoObject> {
 	}
 
 	/**
+	 * Determines if the supplied object is either a Java <code>null</code> or
+	 * a {@link LeoNull} instance. 
+	 * 
+	 * @param obj
+	 * @return true if either <code>null</code> or
+	 * a {@link LeoNull} instance. 
+	 */
+	public static boolean isNull(LeoObject obj) {
+		return obj == null || obj == LeoNull.NULL;
+	}
+	
+	/**
 	 * Determines if the supplied object is of type TRUE.
 	 *
 	 * @param obj
