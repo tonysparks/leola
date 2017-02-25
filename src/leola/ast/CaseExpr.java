@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.ast;
 
@@ -18,11 +18,11 @@ import leola.vm.util.Pair;
  */
 public class CaseExpr extends Expr {
 
-	private Expr condition;
-	private List<Pair<Expr, Expr>> whenExprs;
-	private Expr elseExpr;
+    private Expr condition;
+    private List<Pair<Expr, Expr>> whenExprs;
+    private Expr elseExpr;
 
-	/**
+    /**
      * @param condition
      * @param whenExprs
      */
@@ -30,7 +30,7 @@ public class CaseExpr extends Expr {
         this(condition, whenExprs, null);
     }
 
-	/**
+    /**
      * @param condition
      * @param whenExprs
      * @param elseExpr
@@ -41,26 +41,26 @@ public class CaseExpr extends Expr {
         this.elseExpr = becomeParentOf(elseExpr);
         
         for(Pair<Expr, Expr> p : whenExprs) {
-        	becomeParentOf(p.getFirst());
-        	becomeParentOf(p.getSecond());
+            becomeParentOf(p.getFirst());
+            becomeParentOf(p.getSecond());
         }
     }
 
 
     /* (non-Javadoc)
-	 * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-	 */
-	@Override
-	public void visit(ASTNodeVisitor v) throws EvalException {
-		v.visit(this);
-	}
+     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
+     */
+    @Override
+    public void visit(ASTNodeVisitor v) throws EvalException {
+        v.visit(this);
+    }
 
-	/**
-	 * @return the condition
-	 */
-	public Expr getCondition() {
-		return condition;
-	}
+    /**
+     * @return the condition
+     */
+    public Expr getCondition() {
+        return condition;
+    }
 
     /**
      * @return the whenExprs

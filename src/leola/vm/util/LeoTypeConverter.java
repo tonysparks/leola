@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.vm.util;
 
@@ -148,44 +148,44 @@ public class LeoTypeConverter {
         
      
     
-	/**
-	 * Converts the supplied java object into a {@link LeoObject}.
-	 *
-	 * @param javaObj
-	 * @return
-	 * @throws LeolaRuntimeException
-	 */
-	public static LeoObject convertToLeolaType(Object javaObj) /*throws EvalException*/ {
-		LeoObject result = null;
-		if(javaObj == null) {
-		    result = LeoNull.LEONULL;
-		}
-		else {
-		    Class<?> type = javaObj.getClass();
-		    Converter converter = CONVERTERS.get(type);
-		    result = (converter!=null) ? converter.convert(type, javaObj) 
-		                               : objectConverter.convert(type, javaObj);
-		}
+    /**
+     * Converts the supplied java object into a {@link LeoObject}.
+     *
+     * @param javaObj
+     * @return
+     * @throws LeolaRuntimeException
+     */
+    public static LeoObject convertToLeolaType(Object javaObj) /*throws EvalException*/ {
+        LeoObject result = null;
+        if(javaObj == null) {
+            result = LeoNull.LEONULL;
+        }
+        else {
+            Class<?> type = javaObj.getClass();
+            Converter converter = CONVERTERS.get(type);
+            result = (converter!=null) ? converter.convert(type, javaObj) 
+                                       : objectConverter.convert(type, javaObj);
+        }
 
-		return result;
-	}
-	
-	/**
-	 * Convert to the specified type.
-	 *
-	 * @param v
-	 * @param type
-	 * @param obj
-	 * @throws Exception
-	 */
-	public static Object convertLeoObjectToJavaObj(Class<?> type
-											   , LeoObject obj) throws LeolaRuntimeException {
+        return result;
+    }
+    
+    /**
+     * Convert to the specified type.
+     *
+     * @param v
+     * @param type
+     * @param obj
+     * @throws Exception
+     */
+    public static Object convertLeoObjectToJavaObj(Class<?> type
+                                               , LeoObject obj) throws LeolaRuntimeException {
 
-		Object jObj = null;
-		if(obj!=null) {
-			jObj = obj.getValue(type);
-		}
-		return jObj;
-	}
+        Object jObj = null;
+        if(obj!=null) {
+            jObj = obj.getValue(type);
+        }
+        return jObj;
+    }
 }
 

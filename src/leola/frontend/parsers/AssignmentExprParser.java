@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -22,19 +22,19 @@ import leola.frontend.tokens.LeolaTokenType;
  */
 public class AssignmentExprParser extends ExprParser {
     
-	/**
-	 * @param parser
-	 */
-	public AssignmentExprParser(LeolaParser parser) {
-		super(parser);
-	}
+    /**
+     * @param parser
+     */
+    public AssignmentExprParser(LeolaParser parser) {
+        super(parser);
+    }
 
-	 // Synchronization set for the := token.
+     // Synchronization set for the := token.
     private static final EnumSet<LeolaTokenType> COLON_EQUALS_SET =
         ExprParser.EXPR_START_SET.clone();
     static {
-        COLON_EQUALS_SET.add(LeolaTokenType.EQUALS);		// assignment
-        COLON_EQUALS_SET.add(LeolaTokenType.LEFT_BRACKET); 	// array or map
+        COLON_EQUALS_SET.add(LeolaTokenType.EQUALS);        // assignment
+        COLON_EQUALS_SET.add(LeolaTokenType.LEFT_BRACKET);     // array or map
         COLON_EQUALS_SET.addAll(StmtParser.STMT_FOLLOW_SET);        
     }
 
@@ -50,22 +50,22 @@ public class AssignmentExprParser extends ExprParser {
         Token startingToken = token;
         
         // Parse the target variable.
-    	String varName = token.getText();
+        String varName = token.getText();
 
-    	// the left hand side (array or map) expr
-    	Expr lhsExpr = null;
-    	
-    	token = currentToken();
+        // the left hand side (array or map) expr
+        Expr lhsExpr = null;
+        
+        token = currentToken();
         if (token.getType() == LeolaTokenType.EQUALS) {
             token = nextToken();  // consume the =
         }
         else if ( token.getType() == LeolaTokenType.LEFT_BRACKET) {
-        	lhsExpr = parseExpr(token);
-        	if ( lhsExpr instanceof AssignmentExpr ) {
-        		((ArrayAccessSetExpr)lhsExpr).setVariableName(varName);
-        	}
-        	
-        	token = currentToken();
+            lhsExpr = parseExpr(token);
+            if ( lhsExpr instanceof AssignmentExpr ) {
+                ((ArrayAccessSetExpr)lhsExpr).setVariableName(varName);
+            }
+            
+            token = currentToken();
         }
         else {            
             throwParseError(token, LeolaErrorCode.MISSING_EQUALS);

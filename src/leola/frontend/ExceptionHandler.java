@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend;
 
@@ -59,20 +59,20 @@ public interface ExceptionHandler {
      */
     public int getErrorCount();
     
-	/**
-	 * Handles an exception.
-	 * 
-	 * @param e
-	 */
-	public void onException(Exception e);
-	
-	/**
-	 * Handles a erroneous token.
-	 * 
-	 * @param token
-	 * @param parser
-	 * @param errorCode
-	 */
-	public void errorToken(Token token, Parser parser, LeolaErrorCode errorCode);
+    /**
+     * Handles an exception.
+     * 
+     * @param e
+     */
+    public void onException(Exception e);
+    
+    /**
+     * Handles a erroneous token.
+     * 
+     * @param token
+     * @param parser
+     * @param errorCode
+     */
+    public void errorToken(Token token, Parser parser, LeolaErrorCode errorCode);
 }
 

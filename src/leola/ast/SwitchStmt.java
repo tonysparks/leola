@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.ast;
 
@@ -18,11 +18,11 @@ import leola.vm.util.Pair;
  */
 public class SwitchStmt extends Stmt {
 
-	private Expr condition;
-	private List<Pair<Expr, Stmt>> whenStmts;
-	private Stmt elseStmt;
+    private Expr condition;
+    private List<Pair<Expr, Stmt>> whenStmts;
+    private Stmt elseStmt;
 
-	/**
+    /**
      * @param condition
      * @param whenStmts
      */
@@ -30,7 +30,7 @@ public class SwitchStmt extends Stmt {
         this(condition, whenStmts, null);
     }
 
-	/**
+    /**
      * @param condition
      * @param whenStmts
      * @param elseStmt
@@ -41,40 +41,40 @@ public class SwitchStmt extends Stmt {
         this.elseStmt = becomeParentOf(elseStmt);
         
         for(Pair<Expr, Stmt> p : whenStmts) {
-        	becomeParentOf(p.getFirst());
-        	becomeParentOf(p.getSecond());
+            becomeParentOf(p.getFirst());
+            becomeParentOf(p.getSecond());
         }
     }
 
 
     /* (non-Javadoc)
-	 * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-	 */
-	@Override
-	public void visit(ASTNodeVisitor v) throws EvalException {
-		v.visit(this);
-	}
+     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
+     */
+    @Override
+    public void visit(ASTNodeVisitor v) throws EvalException {
+        v.visit(this);
+    }
 
-	/**
-	 * @return the condition
-	 */
-	public Expr getCondition() {
-		return condition;
-	}
+    /**
+     * @return the condition
+     */
+    public Expr getCondition() {
+        return condition;
+    }
 
-	/**
-	 * @return the elseStmt
-	 */
-	public Stmt getElseStmt() {
-		return elseStmt;
-	}
+    /**
+     * @return the elseStmt
+     */
+    public Stmt getElseStmt() {
+        return elseStmt;
+    }
 
-	/**
-	 * @return the whenStmts
-	 */
-	public List<Pair<Expr, Stmt>> getWhenStmts() {
-		return whenStmts;
-	}
+    /**
+     * @return the whenStmts
+     */
+    public List<Pair<Expr, Stmt>> getWhenStmts() {
+        return whenStmts;
+    }
 
 }
 

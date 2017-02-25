@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -235,141 +235,141 @@ public class ParserUtils {
     }
 
     /**
-	 * Parses a parameter listings, for classes, functions and generators.
-	 * 
-	 * <pre>
-	 *   class Person(name, age); // this parses out the name, age list
-	 * </pre>
-	 *
-	 * @param parser
+     * Parses a parameter listings, for classes, functions and generators.
+     * 
+     * <pre>
+     *   class Person(name, age); // this parses out the name, age list
+     * </pre>
+     *
+     * @param parser
      * @param next the current token.
      * @return the expression list
      * @throws Exception
-	 */
-	public static ParameterList parseParameterListings(LeolaParser parser, Token next) throws Exception {
-		LeolaTokenType type = next.getType();
+     */
+    public static ParameterList parseParameterListings(LeolaParser parser, Token next) throws Exception {
+        LeolaTokenType type = next.getType();
 
-		/* If the is no left brace, fail */
-		if ( ! type.equals(LEFT_PAREN)) {
-			parser.throwParseError(next, LeolaErrorCode.MISSING_LEFT_PAREN);
-		}
+        /* If the is no left brace, fail */
+        if ( ! type.equals(LEFT_PAREN)) {
+            parser.throwParseError(next, LeolaErrorCode.MISSING_LEFT_PAREN);
+        }
 
-		next = parser.nextToken(); // consume the (
-		type = next.getType();
+        next = parser.nextToken(); // consume the (
+        type = next.getType();
 
-		ParameterList parameters = new ParameterList();
+        ParameterList parameters = new ParameterList();
 
-		boolean needsComma = false;
-		boolean isVarargs = false;
-		boolean isIdentifier = false;
-		
-		while(PARAM_OPS.contains(type)) {
-			if ( type.equals(IDENTIFIER)) {
-				String paramName = next.getText();
-				parameters.addParameter(paramName);
+        boolean needsComma = false;
+        boolean isVarargs = false;
+        boolean isIdentifier = false;
+        
+        while(PARAM_OPS.contains(type)) {
+            if ( type.equals(IDENTIFIER)) {
+                String paramName = next.getText();
+                parameters.addParameter(paramName);
 
-				next = parser.nextToken();
-				type = next.getType();
+                next = parser.nextToken();
+                type = next.getType();
 
-				needsComma = true;
-				isIdentifier = true;
-			}
-			else if( type.equals(VAR_ARGS)) {
-				if(!isIdentifier) {
-					parser.throwParseError(next, LeolaErrorCode.INVALID_VAR_ARGS_START);	
-				}
-				if(parameters.isVarargs()) {
+                needsComma = true;
+                isIdentifier = true;
+            }
+            else if( type.equals(VAR_ARGS)) {
+                if(!isIdentifier) {
+                    parser.throwParseError(next, LeolaErrorCode.INVALID_VAR_ARGS_START);    
+                }
+                if(parameters.isVarargs()) {
                     parser.throwParseError(next, LeolaErrorCode.INVALID_MULTI_VAR_ARGS);
                 }
-				
-				next = parser.nextToken();
-				type = next.getType();
-				
+                
+                next = parser.nextToken();
+                type = next.getType();
+                
 
-				parameters.setVarargs(true);
-				
-				isIdentifier = false;
-				needsComma = false;
-				isVarargs = true;
-			}
-			else if ( type.equals(COMMA)) {
-				next = parser.nextToken();
-				type = next.getType();
+                parameters.setVarargs(true);
+                
+                isIdentifier = false;
+                needsComma = false;
+                isVarargs = true;
+            }
+            else if ( type.equals(COMMA)) {
+                next = parser.nextToken();
+                type = next.getType();
 
-				needsComma = false;
-				isIdentifier = false;
-			}
-			
-			
+                needsComma = false;
+                isIdentifier = false;
+            }
+            
+            
 
-			Token currentToken = parser.currentToken();
-			if ( currentToken.getType().equals(RIGHT_PAREN)) {
-				needsComma = false;
-			}
-			else if(isVarargs) {
-				parser.throwParseError(next, LeolaErrorCode.INVALID_VAR_ARGS);
-			}
+            Token currentToken = parser.currentToken();
+            if ( currentToken.getType().equals(RIGHT_PAREN)) {
+                needsComma = false;
+            }
+            else if(isVarargs) {
+                parser.throwParseError(next, LeolaErrorCode.INVALID_VAR_ARGS);
+            }
 
-			if ( ! PARAM_OPS.contains(type) && needsComma ) {
-				parser.throwParseError(next, LeolaErrorCode.MISSING_COMMA);
-			}
-		}
+            if ( ! PARAM_OPS.contains(type) && needsComma ) {
+                parser.throwParseError(next, LeolaErrorCode.MISSING_COMMA);
+            }
+        }
 
-		if ( !type.equals(RIGHT_PAREN)) {
-			parser.throwParseError(next, LeolaErrorCode.MISSING_RIGHT_PAREN);
-		}
+        if ( !type.equals(RIGHT_PAREN)) {
+            parser.throwParseError(next, LeolaErrorCode.MISSING_RIGHT_PAREN);
+        }
 
-		next = parser.nextToken(); // eat the )
+        next = parser.nextToken(); // eat the )
 
 
-		return parameters;
-	}
+        return parameters;
+    }
 
-	/**
-	 * Parses the class name, generally this is used when a set of class names are expected.
-	 *
-	 * @param parser
+    /**
+     * Parses the class name, generally this is used when a set of class names are expected.
+     *
+     * @param parser
      * @param token the current token.
      * @param endTokenTypes 
      * @return the class name
      * @throws Exception
-	 */
-	public static String parseClassName(LeolaParser parser, Token token, LeolaTokenType ... endTokenTypes) throws Exception {
-		EnumSet<LeolaTokenType> quitSet = EnumSet.copyOf(Arrays.asList(endTokenTypes));
+     */
+    public static String parseClassName(LeolaParser parser, Token token, LeolaTokenType ... endTokenTypes) throws Exception {
+        EnumSet<LeolaTokenType> quitSet = EnumSet.copyOf(Arrays.asList(endTokenTypes));
 
 
-		String className = "";
+        String className = "";
 
-		LeolaTokenType type = token.getType();
-		while(! quitSet.contains(type) ) {
-			if ( type.equals(IDENTIFIER) ) {
-				className += token.getText();
-			}
-			else if ( type.equals(DOT)) {
-				className += ".";
-			}
-			else if ( type.equals(COLON)) {
-				className += ":";
-			}
-			else {
-				parser.throwParseError(token, LeolaErrorCode.UNEXPECTED_TOKEN);
-			}
+        LeolaTokenType type = token.getType();
+        while(! quitSet.contains(type) ) {
+            if ( type.equals(IDENTIFIER) ) {
+                className += token.getText();
+            }
+            else if ( type.equals(DOT)) {
+                className += ".";
+            }
+            else if ( type.equals(COLON)) {
+                className += ":";
+            }
+            else {
+                parser.throwParseError(token, LeolaErrorCode.UNEXPECTED_TOKEN);
+            }
 
-			token = parser.nextToken();
-			type = token.getType();
-		}
+            token = parser.nextToken();
+            type = token.getType();
+        }
 
-		return className;
-	}
+        return className;
+    }
 
-	/**
-	 * Parses a single class name
-	 *  
-	 * @param parser
-	 * @param token
-	 * @return the class name
-	 * @throws Exception
-	 */
+    /**
+     * Parses a single class name
+     *  
+     * @param parser
+     * @param token
+     * @return the class name
+     * @throws Exception
+     */
     public static String parseClassName(LeolaParser parser, Token token) throws Exception {
         EnumSet<LeolaTokenType> continueSet = EnumSet.copyOf(Arrays.asList(IDENTIFIER, DOT, COLON));
 
@@ -396,7 +396,7 @@ public class ParserUtils {
 
         return className;
     }
-	
-	
+    
+    
 }
 

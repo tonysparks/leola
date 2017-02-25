@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -33,27 +33,27 @@ public class MapDeclExprParser extends ExprParser {
         COMMA_SET.add(COMMA);
         COMMA_SET.add(LeolaTokenType.RIGHT_BRACE);
     };
-	
-	/**
-	 * @param parser
-	 */
-	public MapDeclExprParser(LeolaParser parser) {
-		super(parser);
-	}
+    
+    /**
+     * @param parser
+     */
+    public MapDeclExprParser(LeolaParser parser) {
+        super(parser);
+    }
 
-	/* (non-Javadoc)
-	 * @see leola.frontend.parsers.ExprParser#parse(leola.frontend.Token)
-	 */
-	@Override
-	public ASTNode parse(Token token) throws Exception {	
-	    Token startingToken = token;
-	    List<Pair<Expr, Expr>> elements = ParserUtils.parseMapParameters(this, token, COMMA_SET
-													, LeolaTokenType.RIGHT_BRACE);
-		
-		MapDeclExpr expr = new MapDeclExpr(elements);
-		setLineNumber(expr, startingToken);
-		
-		return expr;
-	}
+    /* (non-Javadoc)
+     * @see leola.frontend.parsers.ExprParser#parse(leola.frontend.Token)
+     */
+    @Override
+    public ASTNode parse(Token token) throws Exception {    
+        Token startingToken = token;
+        List<Pair<Expr, Expr>> elements = ParserUtils.parseMapParameters(this, token, COMMA_SET
+                                                    , LeolaTokenType.RIGHT_BRACE);
+        
+        MapDeclExpr expr = new MapDeclExpr(elements);
+        setLineNumber(expr, startingToken);
+        
+        return expr;
+    }
 }
 

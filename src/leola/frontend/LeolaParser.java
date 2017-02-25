@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend;
 
@@ -20,29 +20,29 @@ import leola.frontend.tokens.LeolaTokenType;
  */
 public class LeolaParser extends Parser {
 
-	/**
-	 * @param scanner
-	 */
-	public LeolaParser(Scanner scanner					 
-					 , ExceptionHandler exceptionHandler) {
-		super(scanner, exceptionHandler);
-	}
-	
-	/**
-	 * Copy constructor
-	 * @param parser
-	 */
-	public LeolaParser(LeolaParser parser) {
-		this(parser.getScanner(), parser.getExceptionHandler());
-	}
+    /**
+     * @param scanner
+     */
+    public LeolaParser(Scanner scanner                     
+                     , ExceptionHandler exceptionHandler) {
+        super(scanner, exceptionHandler);
+    }
+    
+    /**
+     * Copy constructor
+     * @param parser
+     */
+    public LeolaParser(LeolaParser parser) {
+        this(parser.getScanner(), parser.getExceptionHandler());
+    }
 
-	/* (non-Javadoc)
-	 * @see leola.frontend.Parser#getErrorCount()
-	 */
-	@Override
-	public int getErrorCount() {
-		return getExceptionHandler().getErrorCount();
-	}
+    /* (non-Javadoc)
+     * @see leola.frontend.Parser#getErrorCount()
+     */
+    @Override
+    public int getErrorCount() {
+        return getExceptionHandler().getErrorCount();
+    }
 
     /**
      * Set the current line number as a statement node attribute.
@@ -51,16 +51,16 @@ public class LeolaParser extends Parser {
      */
     protected void setLineNumber(ASTNode node, Token token) {
         if (node != null) {
-        	node.setSourceLine(token.getText());
+            node.setSourceLine(token.getText());
             node.setLineNumber(token.getLineNumber());
         }
     }
-	
-	/* (non-Javadoc)
-	 * @see leola.frontend.Parser#parse()
-	 */
-	@Override
-	public ASTNode parse() throws Exception {
+    
+    /* (non-Javadoc)
+     * @see leola.frontend.Parser#parse()
+     */
+    @Override
+    public ASTNode parse() throws Exception {
         ASTNode program = null;
         try {
             Token token = nextToken();
@@ -75,8 +75,8 @@ public class LeolaParser extends Parser {
         }
         
         return program;
-	}
-	
+    }
+    
     
     /**
      * Issues a parsing exception.

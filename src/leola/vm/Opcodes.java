@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.vm;
 
@@ -147,27 +147,27 @@ public class Opcodes {
     public static final int SET_ARG2(int instr, int arg2) {
         return (instr & NOT_ARG2_MASK) | (( arg2 << ARG2_POS) & ARG2_MASK);
     }
-	
-		
-	/**
-	 * String to integer opcode
-	 * @param opcode
-	 * @return the opcode represented by the string, or -1 if not found.
-	 */
-	public static final int str2op(String opcode) {
-		Integer op = opcodes.get(opcode.toUpperCase());
-		return (op != null) ? op : -1;
-	}
-	
-	/**
-	 * Converts the byte opcode to a readable string
-	 * 
-	 * @param opcode
-	 * @return a string
-	 */
-	public static final String op2str(int opcode) {
-		String op = "";
-		switch(opcode) {
+    
+        
+    /**
+     * String to integer opcode
+     * @param opcode
+     * @return the opcode represented by the string, or -1 if not found.
+     */
+    public static final int str2op(String opcode) {
+        Integer op = opcodes.get(opcode.toUpperCase());
+        return (op != null) ? op : -1;
+    }
+    
+    /**
+     * Converts the byte opcode to a readable string
+     * 
+     * @param opcode
+     * @return a string
+     */
+    public static final String op2str(int opcode) {
+        String op = "";
+        switch(opcode) {
             /* stack operators */            
             case POP:   {
                 op = "POP";                 
@@ -196,22 +196,22 @@ public class Opcodes {
             case SWAPN: {
                 op = "SWAPN";
                 break;
-            }		
-		
-		
-			/* Store operations */
-			case LOAD_CONST: {
-				op = "LOAD_CONST";
-				break;
-			}
-			case LOAD_LOCAL: {
-				op = "LOAD_LOCAL";
-				break;
-			}
-			case LOAD_OUTER: {
-				op = "LOAD_OUTER";				
-				break;
-			}
+            }        
+        
+        
+            /* Store operations */
+            case LOAD_CONST: {
+                op = "LOAD_CONST";
+                break;
+            }
+            case LOAD_LOCAL: {
+                op = "LOAD_LOCAL";
+                break;
+            }
+            case LOAD_OUTER: {
+                op = "LOAD_OUTER";                
+                break;
+            }
             case LOAD_NULL: {
                 op = "LOAD_NULL";
                 break;
@@ -243,24 +243,24 @@ public class Opcodes {
                 break;
             } 
             
-			case xLOAD_OUTER: {
-				op = "xLOAD_OUTER";
-				break;
-			}
-			case xLOAD_LOCAL: {
-				op = "xLOAD_LOCAL";
-				break;
-			}			
-			
-			case JMP:	{
-				op = "JMP";				
-				break;
-			}
+            case xLOAD_OUTER: {
+                op = "xLOAD_OUTER";
+                break;
+            }
+            case xLOAD_LOCAL: {
+                op = "xLOAD_LOCAL";
+                break;
+            }            
+            
+            case JMP:    {
+                op = "JMP";                
+                break;
+            }
             case IFEQ:    {                   
                 op = "IFEQ";
                 break;
-            }			
-	        
+            }            
+            
             case IS_A: {
                 op = "IS_A";
                 break;
@@ -288,7 +288,7 @@ public class Opcodes {
             case GEN_DEF: {
                 op = "GEN_DEF";
                 break;
-            }	
+            }    
             case CLASS_DEF: {
                 op = "CLASS_DEF";
                 break;
@@ -307,25 +307,25 @@ public class Opcodes {
                 break;
             }            
             
-            case INVOKE:	{		
-				op = "INVOKE";
-				break;
-			}
-			case TAIL_CALL: {
-				op = "TAIL_CALL";
-				break;
-			}
-		
-			/* object access */
-			case GET: {
-				op = "GET";
-				break;
-			}
-			case SET: {
-				op = "SET";
-				break;
-			}
-			case GETK: {
+            case INVOKE:    {        
+                op = "INVOKE";
+                break;
+            }
+            case TAIL_CALL: {
+                op = "TAIL_CALL";
+                break;
+            }
+        
+            /* object access */
+            case GET: {
+                op = "GET";
+                break;
+            }
+            case SET: {
+                op = "SET";
+                break;
+            }
+            case GETK: {
                 op = "GETK";
                 break;
             }
@@ -333,20 +333,20 @@ public class Opcodes {
                 op = "SETK";
                 break;
             }
-			
-			case GET_GLOBAL: {
-				op = "GET_GLOBAL";
-				break;
-			}
-			case SET_GLOBAL: {
-				op = "SET_GLOBAL";
-				break;
-			}
-			case GET_NAMESPACE: {
-				op = "GET_NAMESPACE";
-				break;
-			}
-			            
+            
+            case GET_GLOBAL: {
+                op = "GET_GLOBAL";
+                break;
+            }
+            case SET_GLOBAL: {
+                op = "SET_GLOBAL";
+                break;
+            }
+            case GET_NAMESPACE: {
+                op = "GET_NAMESPACE";
+                break;
+            }
+                        
             case INIT_CATCH_BLOCK: {
                 op = "INIT_BLOCK";
                 break;
@@ -362,105 +362,105 @@ public class Opcodes {
             case THROW: {
                 op = "THROW";
                 break;
-            }			
-			
-			
-			/* arithmetic operators */
-			case ADD:	{
-				op = "ADD";
-				break;
-			}
-			case SUB:	{
-				op = "SUB";
-				break;
-			}
-			case MUL:	{
-				op = "MUL";
-				break;
-			}
-			case DIV:	{
-				op = "DIV";
-				break;
-			}
-			case MOD:	{
-				op = "MOD";
-				break;
-			}
-			case NEG: {
-				op = "NEG";
-				break;
-			}
-			
-			case BSL:	{
-				op = "BSL";
-				break;
-			}
-			case BSR:	{
-				op = "BSR";
-				break;
-			}
-			case BNOT:	{
-				op = "BNOT";
-				break;
-			}
-			case XOR:	{
-				op = "XOR";
-				break;
-			}
-			case LOR:	{
-				op = "LOR";
-				break;
-			}
-			case LAND:	{
-				op = "LAND";
-				break;
-			}
-			
-			case OR:	{
-				op = "OR";
-				break;
-			}
-			case AND:	{
-				op = "AND";
-				break;
-			}
-			case NOT:	{
-				op = "NOT";
-				break;
-			}
-			case REQ:	{
-				op = "REQ";
-				break;
-			}
-			case RNEQ:    {
+            }            
+            
+            
+            /* arithmetic operators */
+            case ADD:    {
+                op = "ADD";
+                break;
+            }
+            case SUB:    {
+                op = "SUB";
+                break;
+            }
+            case MUL:    {
+                op = "MUL";
+                break;
+            }
+            case DIV:    {
+                op = "DIV";
+                break;
+            }
+            case MOD:    {
+                op = "MOD";
+                break;
+            }
+            case NEG: {
+                op = "NEG";
+                break;
+            }
+            
+            case BSL:    {
+                op = "BSL";
+                break;
+            }
+            case BSR:    {
+                op = "BSR";
+                break;
+            }
+            case BNOT:    {
+                op = "BNOT";
+                break;
+            }
+            case XOR:    {
+                op = "XOR";
+                break;
+            }
+            case LOR:    {
+                op = "LOR";
+                break;
+            }
+            case LAND:    {
+                op = "LAND";
+                break;
+            }
+            
+            case OR:    {
+                op = "OR";
+                break;
+            }
+            case AND:    {
+                op = "AND";
+                break;
+            }
+            case NOT:    {
+                op = "NOT";
+                break;
+            }
+            case REQ:    {
+                op = "REQ";
+                break;
+            }
+            case RNEQ:    {
                 op = "RNEQ";
                 break;
             }
-			case EQ:	{
-				op = "EQ";
-				break;
-			}
-			case NEQ:	{
-				op = "NEQ";
-				break;
-			}
-			case GT:	{
-				op = "GT";
-				break;
-			}
-			case GTE:	{
-				op = "GTE";
-				break;
-			}
-			case LT:	{
-				op = "LT";
-				break;
-			}
-			case LTE:	{
-				op = "LTE";
-				break;
-			}
-			case IDX:    {
+            case EQ:    {
+                op = "EQ";
+                break;
+            }
+            case NEQ:    {
+                op = "NEQ";
+                break;
+            }
+            case GT:    {
+                op = "GT";
+                break;
+            }
+            case GTE:    {
+                op = "GTE";
+                break;
+            }
+            case LT:    {
+                op = "LT";
+                break;
+            }
+            case LTE:    {
+                op = "LTE";
+                break;
+            }
+            case IDX:    {
                 op = "IDX";
                 break;
             }
@@ -468,134 +468,134 @@ public class Opcodes {
                 op = "SIDX";
                 break;
             }            
-			case LINE: {
-				op = "LINE";
-				break;
-			}   		
-			default: {
-				throw new LeolaRuntimeException("Unknown Opcode: " + opcode);
-			}
-		}
-	
-		return op;
-	}
-	
-	/**
-	 * The opcode is in the range of 0-255 
-	 */
-	public static final int
-	
-		/* stack operators */			
-		POP = 1,                      /*      */
-		DUP = 2,		              /*      */
-		OPPOP = 3,                    /*      */		
-		ROTL = 4,                     /* ARGx */
-		ROTR = 5,                     /* ARGx */
-		SWAP = 6,                     /*      */
-		SWAPN = 7,                    /* ARGx */
-		
-		/* loading of values */
-		LOAD_CONST = 8,               /* ARGx */
-		LOAD_LOCAL = 9,               /* ARGx */
-		LOAD_OUTER = 10,              /* ARGx */
-		
-		LOAD_NULL = 11,               /*      */
-		LOAD_TRUE = 12,               /*      */
-		LOAD_FALSE = 13,	          /*      */
-		
-		/* named parameters */
-		LOAD_NAME = 14,               /* ARGx */
-		PARAM_END = 15,               /*      */
-						
-		/* storage of values */
-		STORE_LOCAL = 16,             /* ARGx */
-		STORE_OUTER = 17,		      /* ARGx */
-		
-		/* pseudo bytecodes */
-		xLOAD_OUTER = 18,             /* ARGx */
-		xLOAD_LOCAL = 19,		      /* ARGx */
-				
-		/* jump instructions */
-		JMP = 20,		              /* ARGsx */
-		IFEQ = 21,                    /* ARGsx */
-		
-		IS_A = 22,                    /*      */
-		
-		/* value creation */
-		NEW_ARRAY = 23,               /* ARGx */
-		NEW_MAP = 24,                 /* ARGx */
-		NEW_OBJ = 25,                 /* ARGx */		
-		
-		/* type declarations */
-		FUNC_DEF = 26,                /* ARGx */
-		GEN_DEF = 27,                 /* ARGx */
-		CLASS_DEF = 28,               /* ARGx */
-		NAMESPACE_DEF = 29,           /* ARGx */
-				
-		/* statement branching */
-		YIELD = 30,                   /*      */
-		RET = 31,                     /*      */
-				
-		/* method invocation */
-		INVOKE = 32,		          /* ARG1, ARG2 */  		
-		TAIL_CALL = 33,		          /* ARG1, ARG2 */
-		
-		/* member access */
-		GET = 34,                     /*      */
-		SET = 35,                     /*      */
-		GETK = 79,                    /* ARGx */
-		SETK = 80,                    /* ARGx */
-		
-		GET_GLOBAL = 36,              /* ARGx */
-		SET_GLOBAL = 37,              /* ARGx */
-		
-		GET_NAMESPACE = 38,           /* ARGx */
-		
+            case LINE: {
+                op = "LINE";
+                break;
+            }           
+            default: {
+                throw new LeolaRuntimeException("Unknown Opcode: " + opcode);
+            }
+        }
+    
+        return op;
+    }
+    
+    /**
+     * The opcode is in the range of 0-255 
+     */
+    public static final int
+    
+        /* stack operators */            
+        POP = 1,                      /*      */
+        DUP = 2,                      /*      */
+        OPPOP = 3,                    /*      */        
+        ROTL = 4,                     /* ARGx */
+        ROTR = 5,                     /* ARGx */
+        SWAP = 6,                     /*      */
+        SWAPN = 7,                    /* ARGx */
+        
+        /* loading of values */
+        LOAD_CONST = 8,               /* ARGx */
+        LOAD_LOCAL = 9,               /* ARGx */
+        LOAD_OUTER = 10,              /* ARGx */
+        
+        LOAD_NULL = 11,               /*      */
+        LOAD_TRUE = 12,               /*      */
+        LOAD_FALSE = 13,              /*      */
+        
+        /* named parameters */
+        LOAD_NAME = 14,               /* ARGx */
+        PARAM_END = 15,               /*      */
+                        
+        /* storage of values */
+        STORE_LOCAL = 16,             /* ARGx */
+        STORE_OUTER = 17,              /* ARGx */
+        
+        /* pseudo bytecodes */
+        xLOAD_OUTER = 18,             /* ARGx */
+        xLOAD_LOCAL = 19,              /* ARGx */
+                
+        /* jump instructions */
+        JMP = 20,                      /* ARGsx */
+        IFEQ = 21,                    /* ARGsx */
+        
+        IS_A = 22,                    /*      */
+        
+        /* value creation */
+        NEW_ARRAY = 23,               /* ARGx */
+        NEW_MAP = 24,                 /* ARGx */
+        NEW_OBJ = 25,                 /* ARGx */        
+        
+        /* type declarations */
+        FUNC_DEF = 26,                /* ARGx */
+        GEN_DEF = 27,                 /* ARGx */
+        CLASS_DEF = 28,               /* ARGx */
+        NAMESPACE_DEF = 29,           /* ARGx */
+                
+        /* statement branching */
+        YIELD = 30,                   /*      */
+        RET = 31,                     /*      */
+                
+        /* method invocation */
+        INVOKE = 32,                  /* ARG1, ARG2 */          
+        TAIL_CALL = 33,                  /* ARG1, ARG2 */
+        
+        /* member access */
+        GET = 34,                     /*      */
+        SET = 35,                     /*      */
+        GETK = 79,                    /* ARGx */
+        SETK = 80,                    /* ARGx */
+        
+        GET_GLOBAL = 36,              /* ARGx */
+        SET_GLOBAL = 37,              /* ARGx */
+        
+        GET_NAMESPACE = 38,           /* ARGx */
+        
         /* Exception handling */        
         INIT_CATCH_BLOCK = 39,        /* ARGsx*/    
         INIT_FINALLY_BLOCK = 40,      /* ARGsx*/
         END_BLOCK = 41,               /* ARG1 (0=pop index;1=clear error;2=exit if error)*/
-		THROW = 42,                   /*      */
-						
-		/* arithmetic operators */
-		ADD = 43,                     /*      */
-		SUB = 44,                     /*      */
-		MUL = 45,                     /*      */
-		DIV = 46,                     /*      */
-		MOD = 47,                     /*      */
-		NEG = 48,                     /*      */
-	
-		BSL = 49,                     /*      */
-		BSR = 50,                     /*      */
-		BNOT = 51,                    /*      */
-		XOR = 52,                     /*      */
-		LOR = 53,                     /*      */
-		LAND = 54,                    /*      */
-		
-		OR = 55,                      /*      */
-		AND = 56,                     /*      */
-		NOT = 57,                     /*      */
-		
-		REQ = 58,                     /*      */
-		RNEQ = 59,                    /*      */
-		EQ = 60,                      /*      */
-		NEQ = 61,                     /*      */
-		GT = 62,                      /*      */
-		GTE = 63,                     /*      */
-		LT = 64,                      /*      */
-		LTE = 65,                     /*      */
-				
-		IDX = 66,                     /*      */
-		SIDX = 67,                    /*      */
-				
-		
-		/* debug */
-		LINE = 68                     /* ARGx */
-		;
-	
-	
-	private static final Map<String, Integer> opcodes = new HashMap<String, Integer>();
-	static {	    
+        THROW = 42,                   /*      */
+                        
+        /* arithmetic operators */
+        ADD = 43,                     /*      */
+        SUB = 44,                     /*      */
+        MUL = 45,                     /*      */
+        DIV = 46,                     /*      */
+        MOD = 47,                     /*      */
+        NEG = 48,                     /*      */
+    
+        BSL = 49,                     /*      */
+        BSR = 50,                     /*      */
+        BNOT = 51,                    /*      */
+        XOR = 52,                     /*      */
+        LOR = 53,                     /*      */
+        LAND = 54,                    /*      */
+        
+        OR = 55,                      /*      */
+        AND = 56,                     /*      */
+        NOT = 57,                     /*      */
+        
+        REQ = 58,                     /*      */
+        RNEQ = 59,                    /*      */
+        EQ = 60,                      /*      */
+        NEQ = 61,                     /*      */
+        GT = 62,                      /*      */
+        GTE = 63,                     /*      */
+        LT = 64,                      /*      */
+        LTE = 65,                     /*      */
+                
+        IDX = 66,                     /*      */
+        SIDX = 67,                    /*      */
+                
+        
+        /* debug */
+        LINE = 68                     /* ARGx */
+        ;
+    
+    
+    private static final Map<String, Integer> opcodes = new HashMap<String, Integer>();
+    static {        
 
         /* stack operators */
         opcodes.put("POP", POP);        
@@ -605,7 +605,7 @@ public class Opcodes {
         opcodes.put("ROTR", ROTR);
         opcodes.put("SWAP", SWAP);
         opcodes.put("SWAPN", SWAPN);
-	            
+                
         opcodes.put("LOAD_CONST", LOAD_CONST);
         opcodes.put("LOAD_LOCAL", LOAD_LOCAL);
         opcodes.put("LOAD_OUTER", LOAD_OUTER);        
@@ -618,32 +618,32 @@ public class Opcodes {
         
         opcodes.put("STORE_LOCAL", STORE_LOCAL);
         opcodes.put("STORE_OUTER", STORE_OUTER);
-        				
-		opcodes.put("xLOAD_OUTER", xLOAD_OUTER);
-		opcodes.put("xLOAD_LOCAL", xLOAD_LOCAL);		
+                        
+        opcodes.put("xLOAD_OUTER", xLOAD_OUTER);
+        opcodes.put("xLOAD_LOCAL", xLOAD_LOCAL);        
 
-		opcodes.put("JMP", JMP);
-		opcodes.put("IFEQ", IFEQ);
-		
-		opcodes.put("IS_A", IS_A);
-		
-		opcodes.put("NEW_ARRAY", NEW_ARRAY);
-		opcodes.put("NEW_MAP", NEW_MAP);
-		opcodes.put("NEW_OBJ", NEW_OBJ);
-		
-		opcodes.put("FUNC_DEF", FUNC_DEF);
-		opcodes.put("GEN_DEF", GEN_DEF);
-		opcodes.put("CLASS_DEF", CLASS_DEF);
-		opcodes.put("NAMESPACE_DEF", NAMESPACE_DEF);
-		
+        opcodes.put("JMP", JMP);
+        opcodes.put("IFEQ", IFEQ);
+        
+        opcodes.put("IS_A", IS_A);
+        
+        opcodes.put("NEW_ARRAY", NEW_ARRAY);
+        opcodes.put("NEW_MAP", NEW_MAP);
+        opcodes.put("NEW_OBJ", NEW_OBJ);
+        
+        opcodes.put("FUNC_DEF", FUNC_DEF);
+        opcodes.put("GEN_DEF", GEN_DEF);
+        opcodes.put("CLASS_DEF", CLASS_DEF);
+        opcodes.put("NAMESPACE_DEF", NAMESPACE_DEF);
+        
         opcodes.put("YIELD", YIELD);
         opcodes.put("RET", RET);
         
-        		
-		opcodes.put("INVOKE", INVOKE);
-		opcodes.put("TAIL_CALL", TAIL_CALL);		
-		
-		
+                
+        opcodes.put("INVOKE", INVOKE);
+        opcodes.put("TAIL_CALL", TAIL_CALL);        
+        
+        
         /* object access */
         opcodes.put("GET", GET);
         opcodes.put("SET", SET);
@@ -652,48 +652,48 @@ public class Opcodes {
         opcodes.put("GET_GLOBAL", GET_GLOBAL);
         opcodes.put("SET_GLOBAL", SET_GLOBAL);
         opcodes.put("GET_NAMESPACE", GET_NAMESPACE);        
-		
-		
+        
+        
         /* exception handling */        
         opcodes.put("INIT_CATCH_BLOCK", INIT_CATCH_BLOCK);
         opcodes.put("INIT_FINALLY_BLOCK", INIT_FINALLY_BLOCK);  
-        opcodes.put("END_BLOCK", END_BLOCK);		
-		opcodes.put("THROW", THROW);
+        opcodes.put("END_BLOCK", END_BLOCK);        
+        opcodes.put("THROW", THROW);
 
 
-		/* arithmetic operators */
-		opcodes.put("ADD", ADD);
-		opcodes.put("SUB", SUB);
-		opcodes.put("MUL", MUL);
-		opcodes.put("DIV", DIV);
-		opcodes.put("MOD", MOD);
-		opcodes.put("NEG", NEG);
-		
-		opcodes.put("BSL", BSL);
-		opcodes.put("BSR", BSR);
-		opcodes.put("BNOT", BNOT);
-		opcodes.put("XOR", XOR);
-		opcodes.put("LOR", LOR);
-		opcodes.put("LAND", LAND);
-		
-		opcodes.put("OR", OR);
-		opcodes.put("AND", AND);
-		opcodes.put("NOT", NOT);
-		
-		opcodes.put("REQ", REQ);
-		opcodes.put("RNEQ", RNEQ);
-		opcodes.put("EQ", EQ);
-		opcodes.put("NEQ", NEQ);
-		opcodes.put("GT", GT);
-		opcodes.put("GTE", GTE);
-		opcodes.put("LT", LT);
-		opcodes.put("LTE", LTE);
-		
-		opcodes.put("IDX", IDX);
-		opcodes.put("SIDX", SIDX);		
-		
-		opcodes.put("LINE", LINE);	
-	}
+        /* arithmetic operators */
+        opcodes.put("ADD", ADD);
+        opcodes.put("SUB", SUB);
+        opcodes.put("MUL", MUL);
+        opcodes.put("DIV", DIV);
+        opcodes.put("MOD", MOD);
+        opcodes.put("NEG", NEG);
+        
+        opcodes.put("BSL", BSL);
+        opcodes.put("BSR", BSR);
+        opcodes.put("BNOT", BNOT);
+        opcodes.put("XOR", XOR);
+        opcodes.put("LOR", LOR);
+        opcodes.put("LAND", LAND);
+        
+        opcodes.put("OR", OR);
+        opcodes.put("AND", AND);
+        opcodes.put("NOT", NOT);
+        
+        opcodes.put("REQ", REQ);
+        opcodes.put("RNEQ", RNEQ);
+        opcodes.put("EQ", EQ);
+        opcodes.put("NEQ", NEQ);
+        opcodes.put("GT", GT);
+        opcodes.put("GTE", GTE);
+        opcodes.put("LT", LT);
+        opcodes.put("LTE", LTE);
+        
+        opcodes.put("IDX", IDX);
+        opcodes.put("SIDX", SIDX);        
+        
+        opcodes.put("LINE", LINE);    
+    }
 
 }
 

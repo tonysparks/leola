@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -20,12 +20,12 @@ import leola.frontend.tokens.LeolaTokenType;
  */
 public class ChainedBinaryAssignmentExprParser extends ExprParser {
 
-	/**
-	 * @param parser
-	 */
-	public ChainedBinaryAssignmentExprParser(LeolaParser parser) {
-		super(parser);
-	}
+    /**
+     * @param parser
+     */
+    public ChainedBinaryAssignmentExprParser(LeolaParser parser) {
+        super(parser);
+    }
 
     /**
      * Parse an assignment statement.
@@ -38,21 +38,21 @@ public class ChainedBinaryAssignmentExprParser extends ExprParser {
     {
         Token startingToken = token;
         
-    	// the left hand side (array or map) expr
-    	Expr lhsExpr = null;
+        // the left hand side (array or map) expr
+        Expr lhsExpr = null;
 
-    	BinaryOp binaryOp = null;
+        BinaryOp binaryOp = null;
 
         token = currentToken();
         if (LeolaTokenType.BINARY_ASSIGNMENT.containsValue(token.getType()) ) {
-        	LeolaTokenType type = token.getType();
-        	binaryOp = type.toBinaryOp();
+            LeolaTokenType type = token.getType();
+            binaryOp = type.toBinaryOp();
 
             token = nextToken();
         }
         else if ( token.getType() == LeolaTokenType.LEFT_BRACKET) {
-        	lhsExpr = parseExpr(token);
-        	token = currentToken();
+            lhsExpr = parseExpr(token);
+            token = currentToken();
         }
         else {
             throwParseError(token, LeolaErrorCode.MISSING_EQUALS);

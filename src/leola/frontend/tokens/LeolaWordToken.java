@@ -16,46 +16,46 @@ import leola.frontend.Source;
  */
 public class LeolaWordToken extends LeolaToken {
 
-	/**
-	 * Determines if the supplied character is valid inside the identifier
-	 * @param c
-	 * @return true if valid identifier character
-	 */
-	public static final boolean isValidIdentifierCharacter(char c) {
-		boolean isValid = Character.isLetterOrDigit(c);
-		if ( !isValid ) {
-			switch(c) {
-			case '$':
-			case '@':
-			case '_':
-				isValid = true;
-				break;
-			}
-		}
+    /**
+     * Determines if the supplied character is valid inside the identifier
+     * @param c
+     * @return true if valid identifier character
+     */
+    public static final boolean isValidIdentifierCharacter(char c) {
+        boolean isValid = Character.isLetterOrDigit(c);
+        if ( !isValid ) {
+            switch(c) {
+            case '$':
+            case '@':
+            case '_':
+                isValid = true;
+                break;
+            }
+        }
 
-		return isValid;
-	}
+        return isValid;
+    }
 
-	/**
-	 * Determines if the supplied character is a valid start character for an identifier
-	 *
-	 * @param c
-	 * @return true if valid
-	 */
-	public static final boolean isValidStartIdentifierCharacter(char c) {
-		boolean isValid = Character.isLetter(c);
-		if ( !isValid ) {
-			switch(c) {
-			case '$':
-			//case '@':
-			case '_':
-				isValid = true;
-				break;
-			}
-		}
+    /**
+     * Determines if the supplied character is a valid start character for an identifier
+     *
+     * @param c
+     * @return true if valid
+     */
+    public static final boolean isValidStartIdentifierCharacter(char c) {
+        boolean isValid = Character.isLetter(c);
+        if ( !isValid ) {
+            switch(c) {
+            case '$':
+            //case '@':
+            case '_':
+                isValid = true;
+                break;
+            }
+        }
 
-		return isValid;
-	}
+        return isValid;
+    }
 
     /**
      * @param source the source from where to fetch the token's characters.
@@ -71,7 +71,7 @@ public class LeolaWordToken extends LeolaToken {
      * @throws Exception if an error occurred.
      */
     @Override
-	protected void extract()
+    protected void extract()
         throws IOException {
         StringBuilder textBuffer = new StringBuilder();
         char currentChar = currentChar();

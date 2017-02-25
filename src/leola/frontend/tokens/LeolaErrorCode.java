@@ -77,7 +77,7 @@ public enum LeolaErrorCode {
      * @return the message.
      */
     @Override
-	public String toString() {
+    public String toString() {
         return message;
     }
 }

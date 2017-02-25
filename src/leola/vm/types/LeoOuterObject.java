@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.vm.types;
 
@@ -15,38 +15,38 @@ import leola.vm.compiler.Outer;
  */
 public abstract class LeoOuterObject extends LeoObject {
 
-	/**
-	 * Dummy var
-	 */
-	public static final Outer[] NOOUTERS = {};
-	
-	/**
-	 * Any closure values
-	 */
-	protected Outer[] outers;
-	
-	/**
-	 * @param type
-	 */
-	public LeoOuterObject(LeoType type, int numberOfOuters) {
-		super(type);	
-		
-		this.outers = numberOfOuters>0 ? new Outer[numberOfOuters] : NOOUTERS;
-	}
+    /**
+     * Dummy var
+     */
+    public static final Outer[] NOOUTERS = {};
+    
+    /**
+     * Any closure values
+     */
+    protected Outer[] outers;
+    
+    /**
+     * @param type
+     */
+    public LeoOuterObject(LeoType type, int numberOfOuters) {
+        super(type);    
+        
+        this.outers = numberOfOuters>0 ? new Outer[numberOfOuters] : NOOUTERS;
+    }
 
-	/**
-	 * @return true
-	 */
-	public boolean isOuter() {
-		return true;
-	}
-	
-	/**
-	 * @return the outers
-	 */
-	public Outer[] getOuters() {
-		return outers;
-	}
-	
+    /**
+     * @return true
+     */
+    public boolean isOuter() {
+        return true;
+    }
+    
+    /**
+     * @return the outers
+     */
+    public Outer[] getOuters() {
+        return outers;
+    }
+    
 }
 

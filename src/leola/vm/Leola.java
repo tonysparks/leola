@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.vm;
 
@@ -71,67 +71,67 @@ import leola.vm.util.ResourceLoader;
  */
 public class Leola {
 
-	/**
-	 * Usage
-	 */
-	private static final String USAGE =
-		"<USAGE> leola " + Args.getOptions() + " <file> [script args] \n" +
-		Args.getOptionsWithDescription();
+    /**
+     * Usage
+     */
+    private static final String USAGE =
+        "<USAGE> leola " + Args.getOptions() + " <file> [script args] \n" +
+        Args.getOptionsWithDescription();
 
-	private static final String LEOLA_COMPILED_EXT = "leolac";
-	private static final String LEOLA_EXT = "leola";
+    private static final String LEOLA_COMPILED_EXT = "leolac";
+    private static final String LEOLA_EXT = "leola";
 
-	public static final String GLOBAL_SCOPE_NAME = "$G";
+    public static final String GLOBAL_SCOPE_NAME = "$G";
 
-	/**
-	 * Converts the supplied Java Object into a {@link LeoObject} equivalent
-	 * 
-	 * @param javaObject
-	 * @return the {@link LeoObject} equivalent of the supplied Java Object
-	 */
-	public static LeoObject toLeoObject(Object javaObject) {
-		return LeoObject.valueOf(javaObject);
-	}
-	
-	/**
-	 * Runs the {@link Leola} runtime as a stand alone application
-	 *
-	 * @param args
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
+    /**
+     * Converts the supplied Java Object into a {@link LeoObject} equivalent
+     * 
+     * @param javaObject
+     * @return the {@link LeoObject} equivalent of the supplied Java Object
+     */
+    public static LeoObject toLeoObject(Object javaObject) {
+        return LeoObject.valueOf(javaObject);
+    }
+    
+    /**
+     * Runs the {@link Leola} runtime as a stand alone application
+     *
+     * @param args
+     * @throws Exception
+     */
+    public static void main(String[] args) throws Exception {
 
-		if ( args.length == 0 ) {
-			System.out.println(USAGE);
-		}
-		else {
+        if ( args.length == 0 ) {
+            System.out.println(USAGE);
+        }
+        else {
 
-			Args pargs = Args.parse(args);
-			try {
-    			if ( pargs.executeStatement()) {
-    				executeStatement(pargs);
-    			}
-    			else {
-    				executeScript(pargs);
-    			}
-			}
-			catch(ParseException e) {
-			    // the exception handlers will display this
-			}			
-			catch(LeolaRuntimeException e) {
-			    System.err.println(e.getLeoError());    
-			}			
-		}
+            Args pargs = Args.parse(args);
+            try {
+                if ( pargs.executeStatement()) {
+                    executeStatement(pargs);
+                }
+                else {
+                    executeScript(pargs);
+                }
+            }
+            catch(ParseException e) {
+                // the exception handlers will display this
+            }            
+            catch(LeolaRuntimeException e) {
+                System.err.println(e.getLeoError());    
+            }            
+        }
 
-	}
+    }
 
-	/**
-	 * Executes statement the command line statement
-	 * 
-	 * @param pargs
-	 * @throws Exception
-	 */
-	private static void executeStatement(Args pargs) throws Exception {
+    /**
+     * Executes statement the command line statement
+     * 
+     * @param pargs
+     * @throws Exception
+     */
+    private static void executeStatement(Args pargs) throws Exception {
         Leola runtime = new Leola(pargs);
         Bytecode code = runtime.compile(new BufferedReader(
                                                 new StringReader(pargs.getStatement())));
@@ -148,16 +148,16 @@ public class Leola {
             System.out.println(result);
         }
 
-	}
-	
-	/**
-	 * Execute or compile the supplied script
-	 * 
-	 * @param pargs
-	 * @throws Exception
-	 */
-	private static void executeScript(Args pargs) throws Exception {
-	    File scriptFile = new File(pargs.getFileName());
+    }
+    
+    /**
+     * Execute or compile the supplied script
+     * 
+     * @param pargs
+     * @throws Exception
+     */
+    private static void executeScript(Args pargs) throws Exception {
+        File scriptFile = new File(pargs.getFileName());
         pargs.getIncludeDirectories()
              .add(new File(scriptFile.getParent()));
 
@@ -183,126 +183,126 @@ public class Leola {
                 System.err.println(result);
             }
         }
-	}
-	
-	/**
-	 * A means for retrieving a VM instance
-	 * 
-	 * @author Tony
-	 *
-	 */
-	private static interface VMReference {
-		public VM get();
-	}
-	
-	/**
-	 * Varargs
-	 */
-	private Args args;
+    }
+    
+    /**
+     * A means for retrieving a VM instance
+     * 
+     * @author Tony
+     *
+     */
+    private static interface VMReference {
+        public VM get();
+    }
+    
+    /**
+     * Varargs
+     */
+    private Args args;
 
-	/**
-	 * Include directories
-	 */
-	private List<File> includeDirectories;
+    /**
+     * Include directories
+     */
+    private List<File> includeDirectories;
 
-	/**
-	 * Event Dispatcher
-	 */
-	private EventDispatcher eventDispatcher;
+    /**
+     * Event Dispatcher
+     */
+    private EventDispatcher eventDispatcher;
 
-	/**
-	 * Resource loader
-	 */
-	private ResourceLoader resourceLoader;
+    /**
+     * Resource loader
+     */
+    private ResourceLoader resourceLoader;
 
-	/**
-	 * Global namespace
-	 */
-	private LeoNamespace global;
+    /**
+     * Global namespace
+     */
+    private LeoNamespace global;
 
-	/**
-	 * Debug listener
-	 */
-	private DebugListener debugListener;
+    /**
+     * Debug listener
+     */
+    private DebugListener debugListener;
 
 
-	/**
-	 * Local thread variable for the VM
-	 */	
-	private VMReference vm;	
+    /**
+     * Local thread variable for the VM
+     */    
+    private VMReference vm;    
 
-	/**
-	 * The exception handler
-	 */
-	private ExceptionHandler exceptionHandler;
-	
-	/**
-	 * @throws Exception
-	 */
-	public Leola() throws LeolaRuntimeException {
-		this(new Args());
-	}
+    /**
+     * The exception handler
+     */
+    private ExceptionHandler exceptionHandler;
+    
+    /**
+     * @throws Exception
+     */
+    public Leola() throws LeolaRuntimeException {
+        this(new Args());
+    }
 
-	/**
-	 * @param args
-	 * @throws LeolaRuntimeException
-	 */
-	public Leola(Args args) throws LeolaRuntimeException {
-		this.args = args;
-		this.eventDispatcher = new EventDispatcher();
-		this.exceptionHandler = new DefaultExceptionHandler();
+    /**
+     * @param args
+     * @throws LeolaRuntimeException
+     */
+    public Leola(Args args) throws LeolaRuntimeException {
+        this.args = args;
+        this.eventDispatcher = new EventDispatcher();
+        this.exceptionHandler = new DefaultExceptionHandler();
 
-		ParserMessageListener parserListener = new ParserMessageListener();
-		this.eventDispatcher.addEventListener(SyntaxErrorEvent.class, parserListener);
-		
-		setIncludePath(args.getIncludeDirectories());
-		this.resourceLoader = new ResourceLoader(this);
-		
-		if(args.allowThreadLocal()) {
-			this.vm = new VMReference() {				
-				private ThreadLocal<VM> vm = new ThreadLocal<VM>() {		
-					@Override
-					protected VM initialValue() {
-						return new VM(Leola.this);
-					}
-				};
-				
-				@Override
-				public VM get() {				
-					return vm.get();
-				}
-			};
-			
-			this.vm.get();
-		}
-		else {
-			this.vm = new VMReference() {
-				private VM vm = new VM(Leola.this);
-				
-				@Override
-				public VM get() {				
-					return this.vm;
-				}
-			};
-		}		
-		
-		Scope globalScope = new Scope(null);
+        ParserMessageListener parserListener = new ParserMessageListener();
+        this.eventDispatcher.addEventListener(SyntaxErrorEvent.class, parserListener);
+        
+        setIncludePath(args.getIncludeDirectories());
+        this.resourceLoader = new ResourceLoader(this);
+        
+        if(args.allowThreadLocal()) {
+            this.vm = new VMReference() {                
+                private ThreadLocal<VM> vm = new ThreadLocal<VM>() {        
+                    @Override
+                    protected VM initialValue() {
+                        return new VM(Leola.this);
+                    }
+                };
+                
+                @Override
+                public VM get() {                
+                    return vm.get();
+                }
+            };
+            
+            this.vm.get();
+        }
+        else {
+            this.vm = new VMReference() {
+                private VM vm = new VM(Leola.this);
+                
+                @Override
+                public VM get() {                
+                    return this.vm;
+                }
+            };
+        }        
+        
+        Scope globalScope = new Scope(null);
         this.global = new LeoNamespace(globalScope, LeoString.valueOf(GLOBAL_SCOPE_NAME));
         reset();
-	}
-	
-	
-	/**
-	 * <b>Use with extreme caution!</b>
-	 * 
-	 * <p>
-	 * This will clear out all allocated objects, effectively resetting the {@link Leola} to its initial state.
-	 */
-	public void reset() {
-	    this.resourceLoader.clearCache();
-	    this.global.getScope().clear();
-	    this.global.getNamespaceDefinitions().storeNamespace(this.global);
-	    
+    }
+    
+    
+    /**
+     * <b>Use with extreme caution!</b>
+     * 
+     * <p>
+     * This will clear out all allocated objects, effectively resetting the {@link Leola} to its initial state.
+     */
+    public void reset() {
+        this.resourceLoader.clearCache();
+        this.global.getScope().clear();
+        this.global.getNamespaceDefinitions().storeNamespace(this.global);
+        
         put("$args", args.getScriptArgs());
         put("this", this.global);
 
@@ -330,134 +330,134 @@ public class Leola {
         finally {
             args.setSandboxed(isSandboxed);
         }
-	}
-	
-	/**
-	 * In Sandboxed mode, all 
-	 * access to Java classes are disabled and importing {@link LeolaLibrary}s
-	 * is also disabled.
-	 * @return true if in Sandboxed mode, false otherwise
-	 */
-	public boolean isSandboxed() {
-		return args.isSandboxed();
-	}
-	
-	/**
-	 * @return the varargs
-	 */
-	public Args getArgs() {
-		return args;
-	}
+    }
+    
+    /**
+     * In Sandboxed mode, all 
+     * access to Java classes are disabled and importing {@link LeolaLibrary}s
+     * is also disabled.
+     * @return true if in Sandboxed mode, false otherwise
+     */
+    public boolean isSandboxed() {
+        return args.isSandboxed();
+    }
+    
+    /**
+     * @return the varargs
+     */
+    public Args getArgs() {
+        return args;
+    }
 
-	/**
-	 * @return the resourceLoader
-	 */
-	public ResourceLoader getResourceLoader() {
-		return resourceLoader;
-	}
+    /**
+     * @return the resourceLoader
+     */
+    public ResourceLoader getResourceLoader() {
+        return resourceLoader;
+    }
 
-	/**
-	 * @return the includeDirectories
-	 */
-	public List<File> getIncludePath() {
-		return includeDirectories;
-	}
+    /**
+     * @return the includeDirectories
+     */
+    public List<File> getIncludePath() {
+        return includeDirectories;
+    }
 
-	/**
-	 * Sets the path
-	 *
-	 * @param includeDirectories
-	 */
-	public void setIncludePath(List<File> includeDirectories) {
-		this.includeDirectories = includeDirectories;
-	}
-	
-	/**
-	 * Adds a path to the paths to check for when include/require look
-	 * ups.
-	 * 
-	 * @param includeDirectory
-	 */
-	public void addIncludePath(File includeDirectory) {
-	    if(this.includeDirectories==null) {
-	        this.includeDirectories = new ArrayList<File>();
-	    }
-	    this.includeDirectories.add(includeDirectory);
-	}
+    /**
+     * Sets the path
+     *
+     * @param includeDirectories
+     */
+    public void setIncludePath(List<File> includeDirectories) {
+        this.includeDirectories = includeDirectories;
+    }
+    
+    /**
+     * Adds a path to the paths to check for when include/require look
+     * ups.
+     * 
+     * @param includeDirectory
+     */
+    public void addIncludePath(File includeDirectory) {
+        if(this.includeDirectories==null) {
+            this.includeDirectories = new ArrayList<File>();
+        }
+        this.includeDirectories.add(includeDirectory);
+    }
 
-	/**
-	 * Sets the include path
-	 * @param paths
-	 */
-	public void setIncludePath(String paths) {
-		this.includeDirectories.clear();
+    /**
+     * Sets the include path
+     * @param paths
+     */
+    public void setIncludePath(String paths) {
+        this.includeDirectories.clear();
 
-		String[] apaths = paths.split(";");
-		for(String path : apaths) {
-			this.includeDirectories.add(new File(path));
-		}
-	}
+        String[] apaths = paths.split(";");
+        for(String path : apaths) {
+            this.includeDirectories.add(new File(path));
+        }
+    }
 
-	/**
-	 * @param debugListener the debugListener to set
-	 */
-	public void setDebugListener(DebugListener debugListener) {
-		this.debugListener = debugListener;
-	}
+    /**
+     * @param debugListener the debugListener to set
+     */
+    public void setDebugListener(DebugListener debugListener) {
+        this.debugListener = debugListener;
+    }
 
-	/**
-	 * @return the debugListener
-	 */
-	public DebugListener getDebugListener() {
-		return debugListener;
-	}
+    /**
+     * @return the debugListener
+     */
+    public DebugListener getDebugListener() {
+        return debugListener;
+    }
 
-	/**
-	 * Sets the {@link ExceptionHandler}.
-	 * @param handler
-	 */
-	public void setExceptionHandler(ExceptionHandler handler) {
-	    this.exceptionHandler = handler;
-	}
-	
-	/**
-	 * @return the {@link ExceptionHandler}
-	 */
-	public ExceptionHandler getExceptionHandler() {
-	    return this.exceptionHandler;
-	}
-	
-	/**
+    /**
+     * Sets the {@link ExceptionHandler}.
+     * @param handler
+     */
+    public void setExceptionHandler(ExceptionHandler handler) {
+        this.exceptionHandler = handler;
+    }
+    
+    /**
+     * @return the {@link ExceptionHandler}
+     */
+    public ExceptionHandler getExceptionHandler() {
+        return this.exceptionHandler;
+    }
+    
+    /**
      * @return the eventDispatcher
      */
     public EventDispatcher getEventDispatcher() {
         return eventDispatcher;
     }
-	
-	/**
-	 * @return the current working directory
-	 */
-	public File getWorkingDirectory() {
-		return new File(System.getProperty("user.dir"));
-	}
-	
-	/**
-	 * If this {@link Leola} instance was started from the command-line or was supplied
-	 * a script via the {@link Args#getFileName()}, this will return said script as a {@link File}.
-	 * 
-	 * @return the execution script that was used for this {@link Leola} instance.  This may return
-	 * null, if no script was used.
-	 */
-	public File getExecutionScript() {
-	    String executionScript = this.args.getFileName();
-	    if(executionScript!=null) {
-	        return new File(executionScript);
-	    }
-	    
-	    return null;
-	}
-	
-	/**
+    
+    /**
+     * @return the current working directory
+     */
+    public File getWorkingDirectory() {
+        return new File(System.getProperty("user.dir"));
+    }
+    
+    /**
+     * If this {@link Leola} instance was started from the command-line or was supplied
+     * a script via the {@link Args#getFileName()}, this will return said script as a {@link File}.
+     * 
+     * @return the execution script that was used for this {@link Leola} instance.  This may return
+     * null, if no script was used.
+     */
+    public File getExecutionScript() {
+        String executionScript = this.args.getFileName();
+        if(executionScript!=null) {
+            return new File(executionScript);
+        }
+        
+        return null;
+    }
+    
+    /**
      * Determines if the supplied {@link File} has the Leola script
      * file extension.
      * 
@@ -515,34 +515,34 @@ public class Leola {
 
 
 
-	/**
-	 * Loads the objects methods into the global {@link Scope}
-	 * @param jObject
-	 */
-	public void loadNatives(Object jObject) {
-		loadNatives(this.global.getScope(), jObject);
-	}
+    /**
+     * Loads the objects methods into the global {@link Scope}
+     * @param jObject
+     */
+    public void loadNatives(Object jObject) {
+        loadNatives(this.global.getScope(), jObject);
+    }
 
-	/**
-	 * Loads the objects methods into the supplied {@link LeoScopedObject}
-	 * 
-	 * @param scope
-	 * @param jObject
-	 */
-	public void loadNatives(LeoScopedObject scope, Object jObject) {
-		scope.getScope().loadNatives(jObject);
-	}
+    /**
+     * Loads the objects methods into the supplied {@link LeoScopedObject}
+     * 
+     * @param scope
+     * @param jObject
+     */
+    public void loadNatives(LeoScopedObject scope, Object jObject) {
+        scope.getScope().loadNatives(jObject);
+    }
 
-	/**
-	 * Loads the objects methods into the supplied {@link Scope}
-	 * @param scope
-	 * @param jObject
-	 */
-	public void loadNatives(Scope scope, Object jObject) {
-		scope.loadNatives(jObject);
-	}
+    /**
+     * Loads the objects methods into the supplied {@link Scope}
+     * @param scope
+     * @param jObject
+     */
+    public void loadNatives(Scope scope, Object jObject) {
+        scope.loadNatives(jObject);
+    }
 
-	/**
+    /**
      * Loads the static methods of the native class into the global {@link Scope}
      * @param aClass
      */
@@ -560,170 +560,170 @@ public class Leola {
         loadStatics(scope.getScope(), aClass);
     }
     
-	/**
-	 * Loads the static methods of the native class into the supplied {@link Scope}
-	 *
-	 * @param scope
-	 * @param aClass
-	 */
-	public void loadStatics(Scope scope, Class<?> aClass) {
-		scope.loadStatics(aClass);	
-	}
+    /**
+     * Loads the static methods of the native class into the supplied {@link Scope}
+     *
+     * @param scope
+     * @param aClass
+     */
+    public void loadStatics(Scope scope, Class<?> aClass) {
+        scope.loadStatics(aClass);    
+    }
 
 
-	
-	/**
-	 * Loads a {@link LeolaLibrary} into the global {@link Scope}
-	 *
-	 * @param lib
-	 * @throws LeolaRuntimeException
-	 */
-	public void loadLibrary(LeolaLibrary lib) throws LeolaRuntimeException {
-		checkIfSandboxed(lib.getClass());
-		
-		lib.init(this, this.global);
-	}
+    
+    /**
+     * Loads a {@link LeolaLibrary} into the global {@link Scope}
+     *
+     * @param lib
+     * @throws LeolaRuntimeException
+     */
+    public void loadLibrary(LeolaLibrary lib) throws LeolaRuntimeException {
+        checkIfSandboxed(lib.getClass());
+        
+        lib.init(this, this.global);
+    }
 
-	/**
-	 * Loads a {@link LeolaLibrary} into the supplied namespace
-	 * 
-	 * @param lib
-	 * @param namespace
-	 * @throws LeolaRuntimeException
-	 */
-	public void loadLibrary(LeolaLibrary lib, String namespace) throws LeolaRuntimeException {
-		checkIfSandboxed(lib.getClass());
-		
-		LeoNamespace ns = getOrCreateNamespace(namespace);
-		lib.init(this, ns);
-	}
+    /**
+     * Loads a {@link LeolaLibrary} into the supplied namespace
+     * 
+     * @param lib
+     * @param namespace
+     * @throws LeolaRuntimeException
+     */
+    public void loadLibrary(LeolaLibrary lib, String namespace) throws LeolaRuntimeException {
+        checkIfSandboxed(lib.getClass());
+        
+        LeoNamespace ns = getOrCreateNamespace(namespace);
+        lib.init(this, ns);
+    }
 
-	/**
-	 * Loads a {@link LeolaLibrary}.
-	 *
-	 * @param lib
-	 * @throws LeolaRuntimeException
-	 */
-	public void loadLibrary(LeolaLibrary lib, LeoNamespace namespace) throws LeolaRuntimeException {
-		checkIfSandboxed(lib.getClass());
-		
-		lib.init(this, namespace);
-	}
+    /**
+     * Loads a {@link LeolaLibrary}.
+     *
+     * @param lib
+     * @throws LeolaRuntimeException
+     */
+    public void loadLibrary(LeolaLibrary lib, LeoNamespace namespace) throws LeolaRuntimeException {
+        checkIfSandboxed(lib.getClass());
+        
+        lib.init(this, namespace);
+    }
 
-	/**
-	 * Places the natives into the supplied namespace
-	 *
-	 * @param lib
-	 * @param namespace
-	 * @throws LeolaRuntimeException
-	 */
-	public LeoNamespace putIntoNamespace(Object lib, String namespace) throws LeolaRuntimeException {
-		Scope nsScope = null;
+    /**
+     * Places the natives into the supplied namespace
+     *
+     * @param lib
+     * @param namespace
+     * @throws LeolaRuntimeException
+     */
+    public LeoNamespace putIntoNamespace(Object lib, String namespace) throws LeolaRuntimeException {
+        Scope nsScope = null;
 
-		LeoNamespace ns = getNamespace(namespace);
-		if(ns != null) {
-			nsScope = ns.getScope();
-		}
-		else {
-			nsScope = new Scope(this.global.getScope());
-			ns = new LeoNamespace(nsScope, LeoString.valueOf(namespace));
-			this.global.getNamespaceDefinitions().storeNamespace(ns);
-		}
+        LeoNamespace ns = getNamespace(namespace);
+        if(ns != null) {
+            nsScope = ns.getScope();
+        }
+        else {
+            nsScope = new Scope(this.global.getScope());
+            ns = new LeoNamespace(nsScope, LeoString.valueOf(namespace));
+            this.global.getNamespaceDefinitions().storeNamespace(ns);
+        }
 
-		loadNatives(nsScope, lib);
+        loadNatives(nsScope, lib);
 
-		return ns;
-	}
+        return ns;
+    }
 
-	/**
-	 * Places the natives into the supplied namespace
-	 *
-	 * @param lib
-	 * @param namespace
-	 * @throws LeolaRuntimeException
-	 */
-	public LeoNamespace putIntoNamespace(Object lib, LeoNamespace namespace) throws LeolaRuntimeException {
-		Scope nsScope = namespace.getScope();
-		loadNatives(nsScope, lib);
-		return namespace;
-	}
+    /**
+     * Places the natives into the supplied namespace
+     *
+     * @param lib
+     * @param namespace
+     * @throws LeolaRuntimeException
+     */
+    public LeoNamespace putIntoNamespace(Object lib, LeoNamespace namespace) throws LeolaRuntimeException {
+        Scope nsScope = namespace.getScope();
+        loadNatives(nsScope, lib);
+        return namespace;
+    }
 
-	/**
-	 * Loads a {@link LeolaLibrary}.
-	 *
-	 * @param libClass
-	 * @throws LeolaRuntimeException
-	 */
-	public void loadLibrary(Class<?> libClass, LeoNamespace namespace) throws LeolaRuntimeException {
-		checkIfSandboxed(libClass);
+    /**
+     * Loads a {@link LeolaLibrary}.
+     *
+     * @param libClass
+     * @throws LeolaRuntimeException
+     */
+    public void loadLibrary(Class<?> libClass, LeoNamespace namespace) throws LeolaRuntimeException {
+        checkIfSandboxed(libClass);
 
-		try {
+        try {
             LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
             loadLibrary(lib, namespace);
         }
         catch (InstantiationException | IllegalAccessException e) {
             throw new LeolaRuntimeException(e);
         }
-		
-	}
+        
+    }
 
-	/**
-	 * Loads a {@link LeolaLibrary}.
-	 *
-	 * @param libClass
-	 * @throws LeolaRuntimeException
-	 */
-	public void loadLibrary(Class<?> libClass, String namespace) throws LeolaRuntimeException {
-		checkIfSandboxed(libClass);
-    	try {	
-    		LeoNamespace ns = getOrCreateNamespace(namespace);
-    		LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
-    		loadLibrary(lib, ns);
+    /**
+     * Loads a {@link LeolaLibrary}.
+     *
+     * @param libClass
+     * @throws LeolaRuntimeException
+     */
+    public void loadLibrary(Class<?> libClass, String namespace) throws LeolaRuntimeException {
+        checkIfSandboxed(libClass);
+        try {    
+            LeoNamespace ns = getOrCreateNamespace(namespace);
+            LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
+            loadLibrary(lib, ns);
         }
         catch (InstantiationException | IllegalAccessException e) {
             throw new LeolaRuntimeException(e);
         }
-	}
+    }
 
-	/**
-	 * Loads a {@link LeolaLibrary}.
-	 *
-	 * @param libClass
-	 * @throws LeolaRuntimeException
-	 */
-	public void loadLibrary(Class<?> libClass) throws LeolaRuntimeException {
-		checkIfSandboxed(libClass);
-    	try {	
-    		LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
-    		loadLibrary(lib);
+    /**
+     * Loads a {@link LeolaLibrary}.
+     *
+     * @param libClass
+     * @throws LeolaRuntimeException
+     */
+    public void loadLibrary(Class<?> libClass) throws LeolaRuntimeException {
+        checkIfSandboxed(libClass);
+        try {    
+            LeolaLibrary lib = (LeolaLibrary)libClass.newInstance();
+            loadLibrary(lib);
         }
         catch (InstantiationException | IllegalAccessException e) {
             throw new LeolaRuntimeException(e);
         }
-	}
+    }
 
-	/**
-	 * Places the object in the global {@link Scope}.
-	 *
-	 * @param reference
-	 * @param value
-	 */
-	public void put(String reference, Object value) {
-		put(this.global.getScope(), reference, value);
-	}
+    /**
+     * Places the object in the global {@link Scope}.
+     *
+     * @param reference
+     * @param value
+     */
+    public void put(String reference, Object value) {
+        put(this.global.getScope(), reference, value);
+    }
 
-	/**
-	 * Places the object into a specific {@link Scope}
-	 *
-	 * @param scope
-	 * @param reference
-	 * @param value
-	 */
-	public void put(Scope scope, String reference, Object value) {
-		scope.storeObject(reference, LeoObject.valueOf(value));
-	}
+    /**
+     * Places the object into a specific {@link Scope}
+     *
+     * @param scope
+     * @param reference
+     * @param value
+     */
+    public void put(Scope scope, String reference, Object value) {
+        scope.storeObject(reference, LeoObject.valueOf(value));
+    }
 
-	/**
+    /**
      * Places the object into a specific {@link LeoScopedObject}
      *
      * @param scope
@@ -746,18 +746,18 @@ public class Leola {
         return this.vm.get();
     }
     
-	/**
-	 * Gets a {@link LeoObject} by reference from the global {@link Scope}.
-	 *
-	 * @param reference
-	 * @return the {@link LeoObject}, or null if not found.
-	 */
-	public LeoObject get(String reference) {
-		return get( this.global.getScope(), reference);
-	}
+    /**
+     * Gets a {@link LeoObject} by reference from the global {@link Scope}.
+     *
+     * @param reference
+     * @return the {@link LeoObject}, or null if not found.
+     */
+    public LeoObject get(String reference) {
+        return get( this.global.getScope(), reference);
+    }
 
-	
-	/**
+    
+    /**
      * Gets a {@link LeoObject} by reference from a specific {@link Scope}.
      * 
      * @param scope
@@ -779,210 +779,210 @@ public class Leola {
         return get(scope.getScope(), reference);
     }
     
-	/**
-	 * Retrieves the namespace or creates it if it isn't found
-	 * 
-	 * @param namespace
-	 * @return the {@link LeoNamespace}
-	 */
-	public LeoNamespace getOrCreateNamespace(String namespace) {
-		LeoNamespace ns = namespace != null ? this.getNamespace(namespace) : this.global;
-		if(ns == null) {
-			ns = new LeoNamespace(new Scope(this.global.getScope()), LeoString.valueOf(namespace));
-			this.global.getScope().getNamespaceDefinitions().storeNamespace(ns);
-		}
-		return ns;
-	}
+    /**
+     * Retrieves the namespace or creates it if it isn't found
+     * 
+     * @param namespace
+     * @return the {@link LeoNamespace}
+     */
+    public LeoNamespace getOrCreateNamespace(String namespace) {
+        LeoNamespace ns = namespace != null ? this.getNamespace(namespace) : this.global;
+        if(ns == null) {
+            ns = new LeoNamespace(new Scope(this.global.getScope()), LeoString.valueOf(namespace));
+            this.global.getScope().getNamespaceDefinitions().storeNamespace(ns);
+        }
+        return ns;
+    }
 
-	/**
-	 * Attempts to lookup a {@link LeoNamespace}.
-	 * @param namespace
-	 * @return the {@link LeoNamespace} object, or null if not found
-	 */
-	public LeoNamespace getNamespace(String namespace) {
-		return this.global.getScope().lookupNamespace(LeoString.valueOf(namespace));
-	}
+    /**
+     * Attempts to lookup a {@link LeoNamespace}.
+     * @param namespace
+     * @return the {@link LeoNamespace} object, or null if not found
+     */
+    public LeoNamespace getNamespace(String namespace) {
+        return this.global.getScope().lookupNamespace(LeoString.valueOf(namespace));
+    }
 
-	/**
-	 * @return the global namespace
-	 */
-	public LeoNamespace getGlobalNamespace() {
-		return this.global;
-	}
-
-
-	
-	/**
-	 * Executes the supplied {@link Bytecode}
-	 * @param callee
-	 * @param code
-	 * @param args
-	 * @return an object of the resulting execution (always returns an object)
-	 * @throws LeolaRuntimeException
-	 */
-	public LeoObject execute(LeoObject callee, Bytecode code, LeoObject[] args) throws LeolaRuntimeException {
-		return this.vm.get().execute(callee,callee, code,args).throwIfError();
-	}
-
-	/**
-	 * Executes the supplied {@link Bytecode}
-	 * @param callee
-	 * @param code
-	 * @return an object of the resulting execution (always returns an object)
-	 * @throws LeolaRuntimeException
-	 */
-	public LeoObject execute(LeoObject callee, Bytecode code) throws LeolaRuntimeException {
-		return this.vm.get().execute(callee,callee, code).throwIfError();
-	}
-
-	/**
-	 * Executes the supplied {@link Bytecode}
-	 * @param code
-	 * @param args
-	 * @return an object of the resulting execution (always returns an object)
-	 * @throws LeolaRuntimeException
-	 */
-	public LeoObject execute(Bytecode code, LeoObject[] args) throws LeolaRuntimeException {
-		return this.vm.get().execute(this.global,this.global, code,args).throwIfError();
-	}
-
-	/**
-	 * Executes the supplied {@link Bytecode}
-	 * @param code
-	 * @return an object of the resulting execution (always returns an object)
-	 * @throws LeolaRuntimeException
-	 */
-	public LeoObject execute(Bytecode code) throws LeolaRuntimeException {
-		return this.vm.get().execute(this.global, this.global, code).throwIfError();
-	}
+    /**
+     * @return the global namespace
+     */
+    public LeoNamespace getGlobalNamespace() {
+        return this.global;
+    }
 
 
-	
+    
+    /**
+     * Executes the supplied {@link Bytecode}
+     * @param callee
+     * @param code
+     * @param args
+     * @return an object of the resulting execution (always returns an object)
+     * @throws LeolaRuntimeException
+     */
+    public LeoObject execute(LeoObject callee, Bytecode code, LeoObject[] args) throws LeolaRuntimeException {
+        return this.vm.get().execute(callee,callee, code,args).throwIfError();
+    }
 
-	/**
-	 * Evaluates the inlined source code.
-	 * <pre>
-	 * 	leola.eval("val x = 10; println(x);");
-	 * </pre>
-	 *
-	 * @param inlineSource
-	 * @return
-	 * @throws Exception
-	 */
-	public LeoObject eval(String inlineSource) throws Exception {
-		return eval(new BufferedReader(new StringReader(inlineSource)));
-	}
+    /**
+     * Executes the supplied {@link Bytecode}
+     * @param callee
+     * @param code
+     * @return an object of the resulting execution (always returns an object)
+     * @throws LeolaRuntimeException
+     */
+    public LeoObject execute(LeoObject callee, Bytecode code) throws LeolaRuntimeException {
+        return this.vm.get().execute(callee,callee, code).throwIfError();
+    }
 
-	public LeoObject eval(InputStream iStream) throws Exception {
-		return eval(new BufferedReader(new InputStreamReader(iStream)) );
-	}
+    /**
+     * Executes the supplied {@link Bytecode}
+     * @param code
+     * @param args
+     * @return an object of the resulting execution (always returns an object)
+     * @throws LeolaRuntimeException
+     */
+    public LeoObject execute(Bytecode code, LeoObject[] args) throws LeolaRuntimeException {
+        return this.vm.get().execute(this.global,this.global, code,args).throwIfError();
+    }
 
-	/**
-	 * Checks the file extension, if it ends in "leolac" it will treat it as a
-	 * compiled script and attempt to evaluate the bytecode.
-	 *
-	 * @param file
-	 * @return the resulting {@link LeoObject}
-	 * @throws Exception
-	 */
-	public LeoObject eval(File file) throws Exception {
-		return eval(file, Leola.GLOBAL_SCOPE_NAME);
-	}
+    /**
+     * Executes the supplied {@link Bytecode}
+     * @param code
+     * @return an object of the resulting execution (always returns an object)
+     * @throws LeolaRuntimeException
+     */
+    public LeoObject execute(Bytecode code) throws LeolaRuntimeException {
+        return this.vm.get().execute(this.global, this.global, code).throwIfError();
+    }
 
 
-	/**
-	 * Checks the file extension, if it ends in "leolac" it will treat it as a
-	 * compiled script and attempt to evaluate the bytecode.
-	 *
-	 * @param file
-	 * @param namespace -- if the namespace isn't found, a new one is created
-	 * @return the resulting {@link LeoObject}
-	 * @throws Exception
-	 */
-	public LeoObject eval(File file, String namespace) throws Exception {
-		LeoNamespace ns = getOrCreateNamespace(namespace);
+    
 
-		LeoObject result = LeoNull.LEONULL;
-		boolean isCompiled = hasLeolaCompiledExtension(file);
-		if(isCompiled) {
-			try(BufferedInputStream iStream = new BufferedInputStream(new FileInputStream(file))) {
-				DataInput in = new DataInputStream(iStream);
-	
-	
-				Bytecode bytecode = Bytecode.read(ns, in);
-				bytecode.setSourceFile(file);
-	
-				result = execute(ns, bytecode);
-			}
-		}
-		else {
-			try(Reader reader = new BufferedReader(new FileReader(file))) {
-				Bytecode bytecode = compile(reader, this.exceptionHandler);
-				bytecode.setSourceFile(file);
-	
-				result = execute(ns, bytecode);
-			}
-		}
+    /**
+     * Evaluates the inlined source code.
+     * <pre>
+     *     leola.eval("val x = 10; println(x);");
+     * </pre>
+     *
+     * @param inlineSource
+     * @return
+     * @throws Exception
+     */
+    public LeoObject eval(String inlineSource) throws Exception {
+        return eval(new BufferedReader(new StringReader(inlineSource)));
+    }
 
-		return result;
-	}
+    public LeoObject eval(InputStream iStream) throws Exception {
+        return eval(new BufferedReader(new InputStreamReader(iStream)) );
+    }
 
-	public LeoObject eval(Reader reader) throws Exception {
-		return eval(reader, this.global);
-	}
+    /**
+     * Checks the file extension, if it ends in "leolac" it will treat it as a
+     * compiled script and attempt to evaluate the bytecode.
+     *
+     * @param file
+     * @return the resulting {@link LeoObject}
+     * @throws Exception
+     */
+    public LeoObject eval(File file) throws Exception {
+        return eval(file, Leola.GLOBAL_SCOPE_NAME);
+    }
 
-	public LeoObject eval(Reader reader, LeoNamespace namespace) throws Exception {
-		Bytecode bytecode = compile(reader, this.exceptionHandler);
-		LeoObject result = execute(namespace, bytecode);
-		return result;
-	}
 
-	/**
-	 * Reads the {@link Bytecode} from the {@link File}
-	 * 
-	 * @param scriptFile
-	 * @return the {@link Bytecode}
-	 * @throws Exception
-	 */
-	public Bytecode read(File scriptFile) throws Exception {
-		try(InputStream iStream = new BufferedInputStream(new FileInputStream(scriptFile))) {
-		    Bytecode code = read(iStream);
-		    if(code != null) {
-		        code.setSourceFile(scriptFile);
-		    }
-		    return code;
-		}
-	}
-	
-	
-	/**
-	 * Reads the {@link Bytecode} from the {@link InputStream}
-	 * 
-	 * @param iStream
-	 * @return the {@link Bytecode}
-	 * @throws Exception
-	 */
-	public Bytecode read(InputStream iStream) throws Exception {
-	    try {
+    /**
+     * Checks the file extension, if it ends in "leolac" it will treat it as a
+     * compiled script and attempt to evaluate the bytecode.
+     *
+     * @param file
+     * @param namespace -- if the namespace isn't found, a new one is created
+     * @return the resulting {@link LeoObject}
+     * @throws Exception
+     */
+    public LeoObject eval(File file, String namespace) throws Exception {
+        LeoNamespace ns = getOrCreateNamespace(namespace);
+
+        LeoObject result = LeoNull.LEONULL;
+        boolean isCompiled = hasLeolaCompiledExtension(file);
+        if(isCompiled) {
+            try(BufferedInputStream iStream = new BufferedInputStream(new FileInputStream(file))) {
+                DataInput in = new DataInputStream(iStream);
+    
+    
+                Bytecode bytecode = Bytecode.read(ns, in);
+                bytecode.setSourceFile(file);
+    
+                result = execute(ns, bytecode);
+            }
+        }
+        else {
+            try(Reader reader = new BufferedReader(new FileReader(file))) {
+                Bytecode bytecode = compile(reader, this.exceptionHandler);
+                bytecode.setSourceFile(file);
+    
+                result = execute(ns, bytecode);
+            }
+        }
+
+        return result;
+    }
+
+    public LeoObject eval(Reader reader) throws Exception {
+        return eval(reader, this.global);
+    }
+
+    public LeoObject eval(Reader reader, LeoNamespace namespace) throws Exception {
+        Bytecode bytecode = compile(reader, this.exceptionHandler);
+        LeoObject result = execute(namespace, bytecode);
+        return result;
+    }
+
+    /**
+     * Reads the {@link Bytecode} from the {@link File}
+     * 
+     * @param scriptFile
+     * @return the {@link Bytecode}
+     * @throws Exception
+     */
+    public Bytecode read(File scriptFile) throws Exception {
+        try(InputStream iStream = new BufferedInputStream(new FileInputStream(scriptFile))) {
+            Bytecode code = read(iStream);
+            if(code != null) {
+                code.setSourceFile(scriptFile);
+            }
+            return code;
+        }
+    }
+    
+    
+    /**
+     * Reads the {@link Bytecode} from the {@link InputStream}
+     * 
+     * @param iStream
+     * @return the {@link Bytecode}
+     * @throws Exception
+     */
+    public Bytecode read(InputStream iStream) throws Exception {
+        try {
             DataInput in = new DataInputStream(iStream);            
             Bytecode code = Bytecode.read(getGlobalNamespace(), in);            
             return code;
-	    }
-	    finally {
-	        if(iStream != null) {
-	            iStream.close();
-	        }
-	    }
-	}
+        }
+        finally {
+            if(iStream != null) {
+                iStream.close();
+            }
+        }
+    }
 
-	/**
-	 * Writes out the {@link Bytecode} to the {@link File}
-	 * 
-	 * @param scriptFile
-	 * @param bytecode
-	 * @throws Exception
-	 */
-	public void write(File scriptFile, Bytecode bytecode) throws IOException {
+    /**
+     * Writes out the {@link Bytecode} to the {@link File}
+     * 
+     * @param scriptFile
+     * @param bytecode
+     * @throws Exception
+     */
+    public void write(File scriptFile, Bytecode bytecode) throws IOException {
         FileOutputStream fStream = null;
         try {
             fStream = new FileOutputStream(scriptFile);
@@ -998,16 +998,16 @@ public class Leola {
                 fStream.close();
             }
         }
-	}
-	
-	/**
-	 * Writes the {@link Bytecode} out to the {@link OutputStream}
-	 * 
-	 * @param oStream
-	 * @param bytecode
-	 * @throws IOException
-	 */
-	public void write(OutputStream oStream, Bytecode bytecode) throws IOException {
+    }
+    
+    /**
+     * Writes the {@link Bytecode} out to the {@link OutputStream}
+     * 
+     * @param oStream
+     * @param bytecode
+     * @throws IOException
+     */
+    public void write(OutputStream oStream, Bytecode bytecode) throws IOException {
 
         try {
             DataOutput output = new DataOutputStream(oStream);
@@ -1019,81 +1019,81 @@ public class Leola {
                 oStream.close();
             }
         }
-	    
-	}
-	
-	/**
-	 * Compiles the supplied script file
-	 * 
-	 * @param scriptFile
-	 * @return the {@link Bytecode}
-	 * @throws Exception
-	 */
-	public Bytecode compile(File scriptFile) throws Exception {
-	    Bytecode code = compile(new BufferedReader(new FileReader(scriptFile)));
+        
+    }
+    
+    /**
+     * Compiles the supplied script file
+     * 
+     * @param scriptFile
+     * @return the {@link Bytecode}
+     * @throws Exception
+     */
+    public Bytecode compile(File scriptFile) throws Exception {
+        Bytecode code = compile(new BufferedReader(new FileReader(scriptFile)));
         code.setSourceFile(scriptFile);
         return code;
-	}
-	
-	/**
-	 * Compiles the file.
-	 *
-	 * @param reader
-	 * @return
-	 * @throws Exception
-	 */
-	public Bytecode compile(Reader reader) throws Exception {
-		return compile(reader, this.exceptionHandler);
-	}
+    }
+    
+    /**
+     * Compiles the file.
+     *
+     * @param reader
+     * @return
+     * @throws Exception
+     */
+    public Bytecode compile(Reader reader) throws Exception {
+        return compile(reader, this.exceptionHandler);
+    }
 
-	/**
-	 * Compiles the file.
-	 *
-	 * @param reader
-	 * @return
-	 * @throws Exception
-	 */
-	public Bytecode compile(Reader reader, ExceptionHandler exceptionHandler) throws Exception {
-		ASTNode program = generateAST(reader, exceptionHandler);
-		//program.visit(new DeadcodeOptimizerVisitor());
-		
-		BytecodeGeneratorVisitor gen = new BytecodeGeneratorVisitor(this, new EmitterScopes());
-		program.visit(gen);
-		BytecodeEmitter asm = gen.getAsm();
-		Bytecode bytecode = asm.compile();
+    /**
+     * Compiles the file.
+     *
+     * @param reader
+     * @return
+     * @throws Exception
+     */
+    public Bytecode compile(Reader reader, ExceptionHandler exceptionHandler) throws Exception {
+        ASTNode program = generateAST(reader, exceptionHandler);
+        //program.visit(new DeadcodeOptimizerVisitor());
+        
+        BytecodeGeneratorVisitor gen = new BytecodeGeneratorVisitor(this, new EmitterScopes());
+        program.visit(gen);
+        BytecodeEmitter asm = gen.getAsm();
+        Bytecode bytecode = asm.compile();
 
-		return bytecode;
-	}
+        return bytecode;
+    }
 
-	/**
-	 * Evaluates the file.
-	 *
-	 * @param file
-	 * @throws Exception
-	 */
-	public ASTNode generateAST(File file) throws Exception {
-		return generateAST(new BufferedReader(new FileReader(file)), this.exceptionHandler);
-	}
+    /**
+     * Evaluates the file.
+     *
+     * @param file
+     * @throws Exception
+     */
+    public ASTNode generateAST(File file) throws Exception {
+        return generateAST(new BufferedReader(new FileReader(file)), this.exceptionHandler);
+    }
 
-	/**
-	 * Reads in the inline source.
-	 *
-	 * @param inlineSource
-	 * @throws Exception
-	 */
-	public ASTNode generateAST(String inlineSource) throws Exception {
-		return generateAST(new BufferedReader(new StringReader(inlineSource)), this.exceptionHandler);
-	}
+    /**
+     * Reads in the inline source.
+     *
+     * @param inlineSource
+     * @throws Exception
+     */
+    public ASTNode generateAST(String inlineSource) throws Exception {
+        return generateAST(new BufferedReader(new StringReader(inlineSource)), this.exceptionHandler);
+    }
 
-	/**
-	 * Evaluate the stream.
-	 *
-	 * @param iStream
-	 * @throws Exception
-	 */
-	public ASTNode generateAST(InputStream iStream) throws Exception {
-		return generateAST(new BufferedReader(new InputStreamReader(iStream)), this.exceptionHandler );
-	}
+    /**
+     * Evaluate the stream.
+     *
+     * @param iStream
+     * @throws Exception
+     */
+    public ASTNode generateAST(InputStream iStream) throws Exception {
+        return generateAST(new BufferedReader(new InputStreamReader(iStream)), this.exceptionHandler );
+    }
 
 
     /**
@@ -1110,12 +1110,12 @@ public class Leola {
         Parser parser = new LeolaParser(scanner, exceptionHandler);
 
         ASTNode program = null;
-    	try {
-    		program = parser.parse();
-    	}
-    	finally {
-    		source.close();
-    	}
+        try {
+            program = parser.parse();
+        }
+        finally {
+            source.close();
+        }
 
         return program;
     }
@@ -1124,9 +1124,9 @@ public class Leola {
      * Listener for parser messages.
      */
     private class ParserMessageListener implements SyntaxErrorListener {
-    	
+        
         @Override
-    	public void onEvent(SyntaxErrorEvent event) {
+        public void onEvent(SyntaxErrorEvent event) {
             int lineNumber = event.getLineNumber();
             int position = event.getPosition();
             String tokenText = event.getTokenText();
@@ -1154,7 +1154,7 @@ public class Leola {
             }
 
             System.err.println(flagBuffer.toString());
-    	}
+        }
     }
 
     /**
@@ -1175,7 +1175,7 @@ public class Leola {
         public void errorToken(Token token, Parser parser, LeolaErrorCode errorCode) {
             errorCount++;
             
-        	eventDispatcher.sendNow(new SyntaxErrorEvent(this, parser.getSource(), token, errorCode.toString()));
+            eventDispatcher.sendNow(new SyntaxErrorEvent(this, parser.getSource(), token, errorCode.toString()));
             throw new ParseException(errorCode,
                 token.getText() + " errored because of : " + errorCode + " at line: " + token.getLineNumber() + " at " + token.getPosition());
         }

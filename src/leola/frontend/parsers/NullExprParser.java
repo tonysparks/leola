@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -16,23 +16,23 @@ import leola.frontend.Token;
  */
 public class NullExprParser extends ExprParser {
 
-	/**
-	 * @param parser
-	 */
-	public NullExprParser(LeolaParser parser) {
-		super(parser);
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.frontend.parsers.ExprParser#parse(leola.frontend.Token)
-	 */
-	@Override
-	public ASTNode parse(Token token) throws Exception {
-		nextToken(); // eat the NULL
-		NullExpr expr = new NullExpr();
-		setLineNumber(expr, token);
-		return expr;
-	}
+    /**
+     * @param parser
+     */
+    public NullExprParser(LeolaParser parser) {
+        super(parser);
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.frontend.parsers.ExprParser#parse(leola.frontend.Token)
+     */
+    @Override
+    public ASTNode parse(Token token) throws Exception {
+        nextToken(); // eat the NULL
+        NullExpr expr = new NullExpr();
+        setLineNumber(expr, token);
+        return expr;
+    }
 
 }
 

@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.vm.lib;
 
@@ -16,13 +16,13 @@ import leola.vm.types.LeoNamespace;
  */
 public interface LeolaLibrary {
 
-	/**
-	 * Initializes the library.
-	 * 
-	 * @param leola
-	 * @throws LeolaRuntimeException
-	 */
-	@LeolaIgnore
-	public void init(Leola leola, LeoNamespace namespace) throws LeolaRuntimeException;
+    /**
+     * Initializes the library.
+     * 
+     * @param leola
+     * @throws LeolaRuntimeException
+     */
+    @LeolaIgnore
+    public void init(Leola leola, LeoNamespace namespace) throws LeolaRuntimeException;
 }
 

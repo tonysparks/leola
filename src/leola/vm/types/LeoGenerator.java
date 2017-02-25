@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.vm.types;
 
@@ -38,39 +38,39 @@ import leola.vm.compiler.Bytecode;
  *
  */
 public class LeoGenerator extends LeoFunction {
-	
-	/**
-	 * The locals that need to be saved with this
-	 * generator
-	 */
-	private LeoObject[] locals;
-	
-	/**
-	 * @param type
-	 * @param numberOfArgs
-	 * @param body
-	 */
-	public LeoGenerator(Leola runtime, LeoObject env, Bytecode bytecode) {
-		super(runtime, LeoType.GENERATOR, env, bytecode);				
-		this.locals = new LeoObject[bytecode.numLocals];
-	}
-		
-	/**
-	 * @return the locals
-	 */
-	public LeoObject[] getLocals() {
-		return locals;
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#isGenerator()
-	 */
-	@Override
-	public boolean isGenerator() {
-		return true;
-	}		
-	
-	/**
+    
+    /**
+     * The locals that need to be saved with this
+     * generator
+     */
+    private LeoObject[] locals;
+    
+    /**
+     * @param type
+     * @param numberOfArgs
+     * @param body
+     */
+    public LeoGenerator(Leola runtime, LeoObject env, Bytecode bytecode) {
+        super(runtime, LeoType.GENERATOR, env, bytecode);                
+        this.locals = new LeoObject[bytecode.numLocals];
+    }
+        
+    /**
+     * @return the locals
+     */
+    public LeoObject[] getLocals() {
+        return locals;
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#isGenerator()
+     */
+    @Override
+    public boolean isGenerator() {
+        return true;
+    }        
+    
+    /**
      * Returns a sequence consisting of those items from the generator for which function(item) is true
      * 
      * <pre>
@@ -97,8 +97,8 @@ public class LeoGenerator extends LeoFunction {
      * @param function
      * @return the resulting {@link LeoArray}
      */
-	public LeoArray filter(LeoObject function) {
-	    LeoArray result = new LeoArray();
+    public LeoArray filter(LeoObject function) {
+        LeoArray result = new LeoArray();
         while(true) {
             LeoObject generatorResult = xcall();
             if(generatorResult == LeoNull.LEONULL) {
@@ -111,9 +111,9 @@ public class LeoGenerator extends LeoFunction {
         }
         
         return result;
-	}
-	
-	/**
+    }
+    
+    /**
      * Iterates through the array, invoking the supplied 
      * function object for each element
      * 
@@ -141,8 +141,8 @@ public class LeoGenerator extends LeoFunction {
      * @param function
      * @return the {@link LeoObject} returned from the supplied function if returned <code>true</code>
      */
-	public LeoObject foreach(LeoObject function) {
-	    while(true) {
+    public LeoObject foreach(LeoObject function) {
+        while(true) {
             LeoObject generatorResult = xcall();
             if(generatorResult == LeoNull.LEONULL) {
                 break;
@@ -153,15 +153,15 @@ public class LeoGenerator extends LeoFunction {
                 return result;
             }
         }
-	    
-	    return LeoObject.NULL;
-	}
-	
-	
-	/**
-	 * Applies a function to each generator iteration.
-	 * 
-	 * <pre>
+        
+        return LeoObject.NULL;
+    }
+    
+    
+    /**
+     * Applies a function to each generator iteration.
+     * 
+     * <pre>
      *   var count = def(to) {
      *      return gen() {
      *          var i = 0
@@ -180,13 +180,13 @@ public class LeoGenerator extends LeoFunction {
      *   // 12
      *   // 13
      *   // 14
-	 * </pre>
-	 * 
-	 * @param function
-	 * @return a {@link LeoArray} of results
-	 */
-	public LeoArray map(LeoObject function) {
-	    LeoArray result = new LeoArray();
+     * </pre>
+     * 
+     * @param function
+     * @return a {@link LeoArray} of results
+     */
+    public LeoArray map(LeoObject function) {
+        LeoArray result = new LeoArray();
         while(true) {
             LeoObject generatorResult = xcall();
             if(generatorResult == LeoNull.LEONULL) {
@@ -196,9 +196,9 @@ public class LeoGenerator extends LeoFunction {
             result.add(function.xcall(generatorResult));                   
         }
         return result;
-	}
-	
-	/**
+    }
+    
+    /**
      * Reduces all of the elements in this generator into one value.
      * 
      * <pre>
@@ -234,7 +234,7 @@ public class LeoGenerator extends LeoFunction {
         
         return result;
     }
-	
+    
     /* (non-Javadoc)
      * @see leola.vm.types.LeoFunction#clone()
      */
@@ -249,28 +249,28 @@ public class LeoGenerator extends LeoFunction {
         return clone;
     }
     
-	@Override
-	public void write(DataOutput out) throws IOException {
-	}
-	
-	/**
-	 * Reads from the {@link DataInput} stream, constructing a {@link LeoObject}
-	 * 
-	 * @param in
-	 * @return the {@link LeoObject}
-	 * @throws IOException
-	 */
-	public static LeoGenerator read(Leola runtime, LeoObject env, DataInput in) throws IOException {
-		Bytecode bytecode = Bytecode.read(env, in);
-		int nouters = in.readInt();
-		
-		LeoObject[] outers = new LeoObject[nouters];
-		for(int i =0; i < nouters; i++) {
-			outers[i] = LeoObject.read(env, in);
-		}
-		
-		LeoGenerator function = new LeoGenerator(runtime, env, bytecode);	
-		return function;
-	}
+    @Override
+    public void write(DataOutput out) throws IOException {
+    }
+    
+    /**
+     * Reads from the {@link DataInput} stream, constructing a {@link LeoObject}
+     * 
+     * @param in
+     * @return the {@link LeoObject}
+     * @throws IOException
+     */
+    public static LeoGenerator read(Leola runtime, LeoObject env, DataInput in) throws IOException {
+        Bytecode bytecode = Bytecode.read(env, in);
+        int nouters = in.readInt();
+        
+        LeoObject[] outers = new LeoObject[nouters];
+        for(int i =0; i < nouters; i++) {
+            outers[i] = LeoObject.read(env, in);
+        }
+        
+        LeoGenerator function = new LeoGenerator(runtime, env, bytecode);    
+        return function;
+    }
 }
 

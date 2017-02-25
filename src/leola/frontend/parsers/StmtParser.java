@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -55,14 +55,14 @@ public class StmtParser extends LeolaParser {
     protected static final EnumSet<LeolaTokenType> STMT_FOLLOW_SET =
         EnumSet.of(SEMICOLON, RIGHT_BRACE, ELSE, DOT);
 
-	/**
-	 * @param parser
-	 */
-	public StmtParser(LeolaParser parser) {
-		super(parser);
-	}
-	
-	/**
+    /**
+     * @param parser
+     */
+    public StmtParser(LeolaParser parser) {
+        super(parser);
+    }
+    
+    /**
      * Parse a statement.
      * To be overridden by the specialized statement parser subclasses.
      * @param token the initial token.
@@ -86,77 +86,77 @@ public class StmtParser extends LeolaParser {
 
         LeolaTokenType type = token.getType();
         switch (type) {
-        	case LEFT_BRACE: {
-        		CompoundStmtParser parser = new CompoundStmtParser(this);
-        		statementNode = parser.parse(token);
-        		break;
-        	}
-        	case VAR: {
-        		VarDeclStmtParser parser = new VarDeclStmtParser(this);
-        		statementNode = parser.parse(token);
+            case LEFT_BRACE: {
+                CompoundStmtParser parser = new CompoundStmtParser(this);
+                statementNode = parser.parse(token);
+                break;
+            }
+            case VAR: {
+                VarDeclStmtParser parser = new VarDeclStmtParser(this);
+                statementNode = parser.parse(token);
 
-        		eatOptionalStmtEnd(currentToken());
-        		break;
-        	}
-        	case IF: {
-        		IfStmtParser parser = new IfStmtParser(this);
-        		statementNode = parser.parse(token);
-        		break;
-        	}        	
-        	case WHILE: {
-        		WhileStmtParser parser = new WhileStmtParser(this);
-        		statementNode = parser.parse(token);
-        		break;
-        	}
-        	case RETURN: {
-        		ReturnStmtParser parser = new ReturnStmtParser(this);
-        		statementNode = parser.parse(token);
+                eatOptionalStmtEnd(currentToken());
+                break;
+            }
+            case IF: {
+                IfStmtParser parser = new IfStmtParser(this);
+                statementNode = parser.parse(token);
+                break;
+            }            
+            case WHILE: {
+                WhileStmtParser parser = new WhileStmtParser(this);
+                statementNode = parser.parse(token);
+                break;
+            }
+            case RETURN: {
+                ReturnStmtParser parser = new ReturnStmtParser(this);
+                statementNode = parser.parse(token);
 
-        		eatOptionalStmtEnd(currentToken());
-        		break;
-        	}
-        	case YIELD: {
-        		YieldStmtParser parser = new YieldStmtParser(this);
-        		statementNode = parser.parse(token);
-        		
-        		eatOptionalStmtEnd(currentToken());
-        		break;
-        	}
-        	case BREAK: {
-        		statementNode = new BreakStmt();
-        		eatOptionalStmtEnd(nextToken());
-        		break;
-        	}
-        	case CONTINUE: {
-        		statementNode = new ContinueStmt();
-        		eatOptionalStmtEnd(nextToken());
-        		break;
-        	}
-        	case CLASS: {
-        		ClassDefStmtParser parser = new ClassDefStmtParser(this);
-        		statementNode = parser.parse(token);
-        		break;
-        	}
-        	case NAMESPACE: {
-        		NamespaceStmtParser parser = new NamespaceStmtParser(this);
-        		statementNode = parser.parse(token);
-        		break;
-        	}
-        	case SWITCH: {
-        		SwitchStmtParser parser = new SwitchStmtParser(this);
-        		statementNode = parser.parse(token);
-        		break;
-        	}
-        	case THROW: {
-        		ThrowStmtParser parser = new ThrowStmtParser(this);
-        		statementNode = parser.parse(token);
-        		break;
-        	}
-        	case TRY: {
-        		TryStmtParser parser = new TryStmtParser(this);
-        		statementNode = parser.parse(token);
-        		break;
-        	}
+                eatOptionalStmtEnd(currentToken());
+                break;
+            }
+            case YIELD: {
+                YieldStmtParser parser = new YieldStmtParser(this);
+                statementNode = parser.parse(token);
+                
+                eatOptionalStmtEnd(currentToken());
+                break;
+            }
+            case BREAK: {
+                statementNode = new BreakStmt();
+                eatOptionalStmtEnd(nextToken());
+                break;
+            }
+            case CONTINUE: {
+                statementNode = new ContinueStmt();
+                eatOptionalStmtEnd(nextToken());
+                break;
+            }
+            case CLASS: {
+                ClassDefStmtParser parser = new ClassDefStmtParser(this);
+                statementNode = parser.parse(token);
+                break;
+            }
+            case NAMESPACE: {
+                NamespaceStmtParser parser = new NamespaceStmtParser(this);
+                statementNode = parser.parse(token);
+                break;
+            }
+            case SWITCH: {
+                SwitchStmtParser parser = new SwitchStmtParser(this);
+                statementNode = parser.parse(token);
+                break;
+            }
+            case THROW: {
+                ThrowStmtParser parser = new ThrowStmtParser(this);
+                statementNode = parser.parse(token);
+                break;
+            }
+            case TRY: {
+                TryStmtParser parser = new TryStmtParser(this);
+                statementNode = parser.parse(token);
+                break;
+            }
             default: {
                 ExprParser parser = new ExprParser(this);
                 statementNode = parser.parse(token);
@@ -179,14 +179,14 @@ public class StmtParser extends LeolaParser {
      * @throws Exception
      */
     protected Token eatOptionalStmtEnd(Token token) throws Exception {
-    	Token nextToken = token;
+        Token nextToken = token;
 
-    	LeolaTokenType type = token.getType();
-    	if ( type.equals(LeolaTokenType.SEMICOLON) ) {
-    		nextToken = nextToken();
-    	}
+        LeolaTokenType type = token.getType();
+        if ( type.equals(LeolaTokenType.SEMICOLON) ) {
+            nextToken = nextToken();
+        }
 
-    	return nextToken;
+        return nextToken;
     }
 
     /**
@@ -202,7 +202,7 @@ public class StmtParser extends LeolaParser {
                              LeolaErrorCode errorCode)
         throws Exception
     {
-    	Token token = tok;
+        Token token = tok;
 
         // Synchronization set for the terminator.
         EnumSet<LeolaTokenType> terminatorSet = STMT_START_SET.clone();

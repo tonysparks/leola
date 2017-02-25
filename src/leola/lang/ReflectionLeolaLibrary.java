@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.lang;
 
@@ -39,304 +39,304 @@ import leola.vm.util.ClassUtil;
  */
 public class ReflectionLeolaLibrary implements LeolaLibrary {
 
-	/**
-	 * The runtime
-	 */
-	private Leola runtime;
-		
-	/* (non-Javadoc)
-	 * @see leola.frontend.LeolaLibrary#init(leola.frontend.Leola)
-	 */
-	@LeolaIgnore
-	public void init(Leola runtime, LeoNamespace namespace) throws LeolaRuntimeException {
-		this.runtime = runtime;	
-		this.runtime.putIntoNamespace(this, namespace);
-	}
-	
-	/**
-	 * @param obj
-	 * @return the type of {@link LeoObject} this is
-	 */
-	public String type(LeoObject obj) {
-	    if(obj==null) {
-	        return LeoObject.NULL.getType().name();
-	    }
-		return obj.getType().name();
-	}
-	
-	/**
-	 * Converts the supplied object to a {@link LeoNativeClass}
-	 * @param obj
-	 * @return the {@link LeoNativeClass} representation
-	 */
-	public LeoNativeClass asNativeClass(Object obj) {
-	    return new LeoNativeClass(obj);
-	}
-	
-	/**
-	 * Reflectively create a new instance of a class.
-	 * 
-	 * @param classname
-	 * @param params
-	 * @return Null if not found, the instance if instantiated
-	 */
-	@LeolaMethodVarargs
-	public LeoObject newInstance(LeoObject classname, LeoObject ... params) {
-		LeoObject result = LeoNull.LEONULL;
-		ClassDefinitions defs = this.runtime.getGlobalNamespace().getScope().lookupClassDefinitions(classname);
-		if( defs != null) {
-			result = defs.newInstance(this.runtime, classname, params);
-		}
-		
-		return result;
-	}
+    /**
+     * The runtime
+     */
+    private Leola runtime;
+        
+    /* (non-Javadoc)
+     * @see leola.frontend.LeolaLibrary#init(leola.frontend.Leola)
+     */
+    @LeolaIgnore
+    public void init(Leola runtime, LeoNamespace namespace) throws LeolaRuntimeException {
+        this.runtime = runtime;    
+        this.runtime.putIntoNamespace(this, namespace);
+    }
+    
+    /**
+     * @param obj
+     * @return the type of {@link LeoObject} this is
+     */
+    public String type(LeoObject obj) {
+        if(obj==null) {
+            return LeoObject.NULL.getType().name();
+        }
+        return obj.getType().name();
+    }
+    
+    /**
+     * Converts the supplied object to a {@link LeoNativeClass}
+     * @param obj
+     * @return the {@link LeoNativeClass} representation
+     */
+    public LeoNativeClass asNativeClass(Object obj) {
+        return new LeoNativeClass(obj);
+    }
+    
+    /**
+     * Reflectively create a new instance of a class.
+     * 
+     * @param classname
+     * @param params
+     * @return Null if not found, the instance if instantiated
+     */
+    @LeolaMethodVarargs
+    public LeoObject newInstance(LeoObject classname, LeoObject ... params) {
+        LeoObject result = LeoNull.LEONULL;
+        ClassDefinitions defs = this.runtime.getGlobalNamespace().getScope().lookupClassDefinitions(classname);
+        if( defs != null) {
+            result = defs.newInstance(this.runtime, classname, params);
+        }
+        
+        return result;
+    }
 
-	/**
-	 * Retrieves all of the names of the supplied objects attributes.
-	 * 
-	 * @param obj 
-	 * @return the list of names of attributes
-	 * @throws Exception
-	 */
-	public LeoArray instrospectNames(Object obj) throws Exception {
-		Class<?> aClass = obj.getClass();//obj.getValue().getClass();		
-		LeoArray result = new LeoArray();
-		
-		List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);		
-		for(Method m : methods) {			
-			result.add(LeoString.valueOf(m.getName()));
-		}
-		
-		List<Field> fields = ClassUtil.getAllDeclaredFields(aClass);
-		for(Field m : fields) {
-			result.add(LeoString.valueOf(m.getName()));
-		}
-		
-		
-		return result;
-	}
-	
-	/**
-	 * Introspects the supplied object.
-	 * 
-	 * @param obj the object to inspect
-	 * @return the list of attributes the object contains
-	 * @throws Exception
-	 */
-	public LeoArray instrospect(Object obj) throws Exception {
-		Class<?> aClass = obj.getClass();//obj.getValue().getClass();
-		Object jObj = obj;
-		LeoArray result = new LeoArray();
-		
-		List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);		
-		for(Method m : methods) {
-			m.setAccessible(true);
-			
-			boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
-			if(isStatic) {
-				result.add(new LeoNativeFunction(m, null));
-			}
-			else {
-				result.add(new LeoNativeFunction(m, jObj));
-			}
-		}
-		
-		List<Field> fields = ClassUtil.getAllDeclaredFields(aClass);
-		for(Field m : fields) {
-			m.setAccessible(true);
-			result.add(new LeoNativeClass(m.get(jObj)));
-		}
-		
-		
-		return result;
-	}
-	
-	/**
-	 * Retrieves the all static methods of the supplied class
-	 * 
-	 * @param className
-	 * @return a {@link LeoArray} or {@link LeoNativeFunction}'s that match the supplied methodName
-	 * @throws Exception
-	 */
-	public LeoArray getStaticMethods(String className) throws Exception {
-		Class<?> aClass = Class.forName(className);
-		List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);
-		LeoArray result = new LeoArray(methods.size());
-		for(Method m : methods) {
-			boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
-			if(isStatic) {
-				result.add(new LeoNativeFunction(m, null));
-			}
-		}
-		return result;
-	}
-	
-	/**
-	 * Retrieves the all instance methods of the supplied class
-	 * 
-	 * @param instance
-	 * @return a {@link LeoArray} or {@link LeoNativeFunction}'s that match the supplied methodName
-	 * @throws Exception
-	 */
-	public LeoArray getStaticMethods(Object instance) throws Exception {
-		Class<?> aClass = instance.getClass();
-		List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);
-		LeoArray result = new LeoArray(methods.size());
-		for(Method m : methods) {
-			boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
-			if(!isStatic) {
-				result.add(new LeoNativeFunction(m, instance));
-			}
-		}
-		return result;
-	}
-	
-	/**
-	 * Retrieves the static methods of the supplied class
-	 * 
-	 * @param className
-	 * @param methodName
-	 * @return a {@link LeoArray} or {@link LeoNativeFunction}'s that match the supplied methodName
-	 * @throws Exception
-	 */
-	public LeoArray getStaticMethodsByName(String className, String methodName) throws Exception {
-		Class<?> aClass = Class.forName(className);
-		List<Method> methods = ClassUtil.getMethodsByName(aClass, methodName);
-		LeoArray result = new LeoArray(methods.size());
-		for(Method m : methods) {
-			boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
-			if(isStatic) {
-				result.add(new LeoNativeFunction(m, null));
-			}
-		}
-		return result;
-	}
-	
-	/**
-	 * Retrieves the instance methods of the supplied object
-	 * 
-	 * @param instance
-	 * @param methodName
-	 * @return a {@link LeoArray} or {@link LeoNativeFunction}'s that match the supplied methodName
-	 * @throws Exception
-	 */
-	public LeoArray getInstanceMethodsByName(Object instance, String methodName) throws Exception {		
-		List<Method> methods = ClassUtil.getMethodsByName(instance.getClass(), methodName);
-		LeoArray result = new LeoArray(methods.size());				
-		for(Method m : methods) {
-			boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
-			if(!isStatic) {
-				result.add(new LeoNativeFunction(m, instance));
-			}
-		}
-		return result;
-	}
-	
-	/**
-	 * Implements a Java Interface
-	 * 
-	 * @param interfaceName
-	 * @param leoMethods
-	 * @return the wrapped interface
-	 * @throws Exception
-	 */
-	@LeolaMethod(alias="implements")
-	public LeoObject _implements(final String interfaceName, final LeoObject leoMethods) throws Exception {
-		Class<?> jClass = Class.forName(interfaceName);
-		Object obj = Proxy.newProxyInstance(ReflectionLeolaLibrary.class.getClassLoader(), new Class[] {jClass}, new InvocationHandler() {
-			
-			@Override
-			public Object invoke(Object proxy, Method method, Object[] args)
-					throws Throwable {
-				
-				LeoObject[] largs = ArrayUtil.EMPTY_LEOOBJECTS;
-				if(args!=null && args.length > 0) {
-					largs = new LeoObject[args.length];
-					for(int i = 0; i < args.length; i++) {
-						largs[i] = LeoObject.valueOf(args[i]);
-					}
-				}
-				
-				String methodName = method.getName();
-				
-				LeoObject leoMethod = leoMethods;
-				try {
-					leoMethod = leoMethods.getObject(LeoString.valueOf(methodName));
-				}
-				catch(Exception e) {}
-				
-				if(leoMethod == LeoNull.LEONULL) {
-					if(methodName.equals("toString")) {
-						return "Proxy for: " + interfaceName;
-					}
-					if(methodName.equals("equals")) {
-						return proxy.equals(args[0]);
-					}
-					if(methodName.equals("hashCode")) {
-						return proxy.hashCode();
-					}
-				}
-				
-				LeoObject res = leoMethod.xcall(largs);
-				return LeoObject.toJavaObject(method.getReturnType(), res);
-			}
-		});
-		
-		LeoNativeClass aClass = new LeoNativeClass(obj);
-		/*
-		List<Method> methods = ClassUtil.getAllDeclaredMethods(jClass);
-		for(Method m : methods) {
-			boolean isPublic= (m.getModifiers() & Modifier.PUBLIC) != 0;
-			if(isPublic) {
-				aClass.setMember(LeoString.valueOf(m.getName()), new LeoNativeFunction(m, obj));
-			}
-		}*/
-		
-		return aClass;
-	}
-	
-	
-	/**
-	 * Clones the object
-	 * @param obj
-	 * @return the cloned object
-	 */
-	public final LeoObject clone(LeoObject obj) {
-		if(obj==null) {
-			return LeoNull.LEONULL;
-		}
-		
-		return obj.clone();
-	}
+    /**
+     * Retrieves all of the names of the supplied objects attributes.
+     * 
+     * @param obj 
+     * @return the list of names of attributes
+     * @throws Exception
+     */
+    public LeoArray instrospectNames(Object obj) throws Exception {
+        Class<?> aClass = obj.getClass();//obj.getValue().getClass();        
+        LeoArray result = new LeoArray();
+        
+        List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);        
+        for(Method m : methods) {            
+            result.add(LeoString.valueOf(m.getName()));
+        }
+        
+        List<Field> fields = ClassUtil.getAllDeclaredFields(aClass);
+        for(Field m : fields) {
+            result.add(LeoString.valueOf(m.getName()));
+        }
+        
+        
+        return result;
+    }
+    
+    /**
+     * Introspects the supplied object.
+     * 
+     * @param obj the object to inspect
+     * @return the list of attributes the object contains
+     * @throws Exception
+     */
+    public LeoArray instrospect(Object obj) throws Exception {
+        Class<?> aClass = obj.getClass();//obj.getValue().getClass();
+        Object jObj = obj;
+        LeoArray result = new LeoArray();
+        
+        List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);        
+        for(Method m : methods) {
+            m.setAccessible(true);
+            
+            boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
+            if(isStatic) {
+                result.add(new LeoNativeFunction(m, null));
+            }
+            else {
+                result.add(new LeoNativeFunction(m, jObj));
+            }
+        }
+        
+        List<Field> fields = ClassUtil.getAllDeclaredFields(aClass);
+        for(Field m : fields) {
+            m.setAccessible(true);
+            result.add(new LeoNativeClass(m.get(jObj)));
+        }
+        
+        
+        return result;
+    }
+    
+    /**
+     * Retrieves the all static methods of the supplied class
+     * 
+     * @param className
+     * @return a {@link LeoArray} or {@link LeoNativeFunction}'s that match the supplied methodName
+     * @throws Exception
+     */
+    public LeoArray getStaticMethods(String className) throws Exception {
+        Class<?> aClass = Class.forName(className);
+        List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);
+        LeoArray result = new LeoArray(methods.size());
+        for(Method m : methods) {
+            boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
+            if(isStatic) {
+                result.add(new LeoNativeFunction(m, null));
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Retrieves the all instance methods of the supplied class
+     * 
+     * @param instance
+     * @return a {@link LeoArray} or {@link LeoNativeFunction}'s that match the supplied methodName
+     * @throws Exception
+     */
+    public LeoArray getStaticMethods(Object instance) throws Exception {
+        Class<?> aClass = instance.getClass();
+        List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);
+        LeoArray result = new LeoArray(methods.size());
+        for(Method m : methods) {
+            boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
+            if(!isStatic) {
+                result.add(new LeoNativeFunction(m, instance));
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Retrieves the static methods of the supplied class
+     * 
+     * @param className
+     * @param methodName
+     * @return a {@link LeoArray} or {@link LeoNativeFunction}'s that match the supplied methodName
+     * @throws Exception
+     */
+    public LeoArray getStaticMethodsByName(String className, String methodName) throws Exception {
+        Class<?> aClass = Class.forName(className);
+        List<Method> methods = ClassUtil.getMethodsByName(aClass, methodName);
+        LeoArray result = new LeoArray(methods.size());
+        for(Method m : methods) {
+            boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
+            if(isStatic) {
+                result.add(new LeoNativeFunction(m, null));
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Retrieves the instance methods of the supplied object
+     * 
+     * @param instance
+     * @param methodName
+     * @return a {@link LeoArray} or {@link LeoNativeFunction}'s that match the supplied methodName
+     * @throws Exception
+     */
+    public LeoArray getInstanceMethodsByName(Object instance, String methodName) throws Exception {        
+        List<Method> methods = ClassUtil.getMethodsByName(instance.getClass(), methodName);
+        LeoArray result = new LeoArray(methods.size());                
+        for(Method m : methods) {
+            boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
+            if(!isStatic) {
+                result.add(new LeoNativeFunction(m, instance));
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Implements a Java Interface
+     * 
+     * @param interfaceName
+     * @param leoMethods
+     * @return the wrapped interface
+     * @throws Exception
+     */
+    @LeolaMethod(alias="implements")
+    public LeoObject _implements(final String interfaceName, final LeoObject leoMethods) throws Exception {
+        Class<?> jClass = Class.forName(interfaceName);
+        Object obj = Proxy.newProxyInstance(ReflectionLeolaLibrary.class.getClassLoader(), new Class[] {jClass}, new InvocationHandler() {
+            
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args)
+                    throws Throwable {
+                
+                LeoObject[] largs = ArrayUtil.EMPTY_LEOOBJECTS;
+                if(args!=null && args.length > 0) {
+                    largs = new LeoObject[args.length];
+                    for(int i = 0; i < args.length; i++) {
+                        largs[i] = LeoObject.valueOf(args[i]);
+                    }
+                }
+                
+                String methodName = method.getName();
+                
+                LeoObject leoMethod = leoMethods;
+                try {
+                    leoMethod = leoMethods.getObject(LeoString.valueOf(methodName));
+                }
+                catch(Exception e) {}
+                
+                if(leoMethod == LeoNull.LEONULL) {
+                    if(methodName.equals("toString")) {
+                        return "Proxy for: " + interfaceName;
+                    }
+                    if(methodName.equals("equals")) {
+                        return proxy.equals(args[0]);
+                    }
+                    if(methodName.equals("hashCode")) {
+                        return proxy.hashCode();
+                    }
+                }
+                
+                LeoObject res = leoMethod.xcall(largs);
+                return LeoObject.toJavaObject(method.getReturnType(), res);
+            }
+        });
+        
+        LeoNativeClass aClass = new LeoNativeClass(obj);
+        /*
+        List<Method> methods = ClassUtil.getAllDeclaredMethods(jClass);
+        for(Method m : methods) {
+            boolean isPublic= (m.getModifiers() & Modifier.PUBLIC) != 0;
+            if(isPublic) {
+                aClass.setMember(LeoString.valueOf(m.getName()), new LeoNativeFunction(m, obj));
+            }
+        }*/
+        
+        return aClass;
+    }
+    
+    
+    /**
+     * Clones the object
+     * @param obj
+     * @return the cloned object
+     */
+    public final LeoObject clone(LeoObject obj) {
+        if(obj==null) {
+            return LeoNull.LEONULL;
+        }
+        
+        return obj.clone();
+    }
 
-	/**
-	 * Calls the function and applies the array as function arguments to this function.
-	 * 
-	 * @param func
-	 * @param params
-	 * @return the result from executing the function
-	 */
-	@LeolaMethodVarargs
-	public final LeoObject call(LeoObject func, LeoObject ... params) {
-		LeoObject result = func.call(params);		
-		return result;
-	}	
-	
-	/**
-	 * Retrieves the {@link Metaclass} information from the supplied {@link LeoClass}
-	 * 
-	 * @param aClass
-	 * @return the {@link Metaclass}
-	 */
-	public Metaclass getMetaclass(LeoObject aClass) {
-	    if(aClass==null) return null;
-	    
-	    if(aClass.isClass()) {
-	        LeoClass leoClass = aClass.as();
-	        return new Metaclass(leoClass);
-	    }
-	    
-	    throw new LeolaRuntimeException(aClass + " is not of LeoClass type.");
-	}
+    /**
+     * Calls the function and applies the array as function arguments to this function.
+     * 
+     * @param func
+     * @param params
+     * @return the result from executing the function
+     */
+    @LeolaMethodVarargs
+    public final LeoObject call(LeoObject func, LeoObject ... params) {
+        LeoObject result = func.call(params);        
+        return result;
+    }    
+    
+    /**
+     * Retrieves the {@link Metaclass} information from the supplied {@link LeoClass}
+     * 
+     * @param aClass
+     * @return the {@link Metaclass}
+     */
+    public Metaclass getMetaclass(LeoObject aClass) {
+        if(aClass==null) return null;
+        
+        if(aClass.isClass()) {
+            LeoClass leoClass = aClass.as();
+            return new Metaclass(leoClass);
+        }
+        
+        throw new LeolaRuntimeException(aClass + " is not of LeoClass type.");
+    }
 }
 

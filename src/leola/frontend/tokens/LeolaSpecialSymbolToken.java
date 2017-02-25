@@ -30,7 +30,7 @@ public class LeolaSpecialSymbolToken extends LeolaToken {
      * @throws Exception if an error occurred.
      */
     @Override
-	protected void extract()
+    protected void extract()
         throws IOException {
         char currentChar = currentChar();
 
@@ -51,81 +51,81 @@ public class LeolaSpecialSymbolToken extends LeolaToken {
 
             // . or ..
             case '.': {
-            	currentChar = nextChar();
-            	 if (currentChar == '.') {
+                currentChar = nextChar();
+                 if (currentChar == '.') {
                      text += currentChar;
                      currentChar = nextChar();  // consume '.'
                      
                      if(currentChar == '.') {
-                     	text += currentChar;
-                     	nextChar();
+                         text += currentChar;
+                         nextChar();
                      }
                      else {
-                    	 type = ERROR;
+                         type = ERROR;
                          value = INVALID_CHARACTER;
                      }
                  }
-            	 break;
+                 break;
             }
             
             // + or +=
             case '+' : {
-            	currentChar = nextChar();
+                currentChar = nextChar();
 
-            	if (currentChar == '=') {
+                if (currentChar == '=') {
                     text += currentChar;
                     nextChar();  // consume '='
                 }
 
-            	break;
+                break;
             }
 
             // * or *=
             case '*' : {
-            	currentChar = nextChar();
+                currentChar = nextChar();
 
-            	if (currentChar == '=') {
+                if (currentChar == '=') {
                     text += currentChar;
                     nextChar();  // consume '='
                 }
 
-            	break;
+                break;
             }
 
             // / or /=
             case '/' : {
-            	currentChar = nextChar();
+                currentChar = nextChar();
 
-            	if (currentChar == '=') {
+                if (currentChar == '=') {
                     text += currentChar;
                     nextChar();  // consume '='
                 }
 
-            	break;
+                break;
             }
 
             // % or %=
             case '%' : {
-            	currentChar = nextChar();
+                currentChar = nextChar();
 
-            	if (currentChar == '=') {
+                if (currentChar == '=') {
                     text += currentChar;
                     nextChar();  // consume '='
                 }
 
-            	break;
+                break;
             }
 
             // ^ or ^=
             case '^' : {
-            	currentChar = nextChar();
+                currentChar = nextChar();
 
-            	if (currentChar == '=') {
+                if (currentChar == '=') {
                     text += currentChar;
                     nextChar();  // consume '='
                 }
 
-            	break;
+                break;
             }
 
             // = or ==
@@ -137,8 +137,8 @@ public class LeolaSpecialSymbolToken extends LeolaToken {
                     currentChar = nextChar();  // consume '='
                     
                     if(currentChar == '=') {
-                    	text += currentChar;
-                    	nextChar();
+                        text += currentChar;
+                        nextChar();
                     }
                 }
 
@@ -159,8 +159,8 @@ public class LeolaSpecialSymbolToken extends LeolaToken {
 
                     char peekChar = currentChar();
                     if ( peekChar == '=' ) {
-                    	text += peekChar;
-                    	nextChar(); // consume '='
+                        text += peekChar;
+                        nextChar(); // consume '='
                     }
                 }
 
@@ -181,8 +181,8 @@ public class LeolaSpecialSymbolToken extends LeolaToken {
 
                     char peekChar = currentChar();
                     if ( peekChar == '=' ) {
-                    	text += peekChar;
-                    	nextChar(); // consume '='
+                        text += peekChar;
+                        nextChar(); // consume '='
                     }
                 }
 

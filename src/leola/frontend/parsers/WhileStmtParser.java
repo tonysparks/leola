@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -18,12 +18,12 @@ import leola.frontend.Token;
  */
 public class WhileStmtParser extends ExprParser {
 
-	/**
-	 * @param parser
-	 */
-	public WhileStmtParser(LeolaParser parser) {
-		super(parser);
-	}
+    /**
+     * @param parser
+     */
+    public WhileStmtParser(LeolaParser parser) {
+        super(parser);
+    }
 
     /**
      * Parse a WHILE statement.
@@ -32,7 +32,7 @@ public class WhileStmtParser extends ExprParser {
      * @throws Exception if an error occurred.
      */
     @Override
-	public ASTNode parse(Token token)
+    public ASTNode parse(Token token)
         throws Exception
     {
         Token startingToken = token;

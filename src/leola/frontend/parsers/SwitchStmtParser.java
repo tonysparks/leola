@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -41,43 +41,43 @@ import leola.vm.util.Pair;
  */
 public class SwitchStmtParser extends ExprParser {
 
-	/*
-	 * TODO - Merge code from CASE statement parser
-	 */
+    /*
+     * TODO - Merge code from CASE statement parser
+     */
 
-	// Synchronization set for THEN.
+    // Synchronization set for THEN.
     private static final EnumSet<LeolaTokenType> SWITCH_SET =
         EnumSet.of(LEFT_BRACE, WHEN);
 
-	/**
-	 * @param parser
-	 */
-	public SwitchStmtParser(LeolaParser parser) {
-		super(parser);
-	}
+    /**
+     * @param parser
+     */
+    public SwitchStmtParser(LeolaParser parser) {
+        super(parser);
+    }
 
-	/* (non-Javadoc)
-	 * @see leola.frontend.parsers.StmtParser#parse(leola.frontend.Token)
-	 */
-	@Override
-	public ASTNode parse(Token token) throws Exception {
-	    Token startingToken = token;
-		token = nextToken();  // consume the SWITCH
+    /* (non-Javadoc)
+     * @see leola.frontend.parsers.StmtParser#parse(leola.frontend.Token)
+     */
+    @Override
+    public ASTNode parse(Token token) throws Exception {
+        Token startingToken = token;
+        token = nextToken();  // consume the SWITCH
 
-		Expr conditionNode = null;
-		Stmt elseStmt = null;
-		List<Pair<Expr, Stmt>> whenStmts = new ArrayList<Pair<Expr,Stmt>>();
+        Expr conditionNode = null;
+        Stmt elseStmt = null;
+        List<Pair<Expr, Stmt>> whenStmts = new ArrayList<Pair<Expr,Stmt>>();
 
-		// if { or WHEN, put in a TRUE
-		LeolaTokenType type = token.getType();
-		if ( SWITCH_SET.contains(type) ) {
-			conditionNode = new BooleanExpr(true);
-		}
-		else {
-	        // Parse the expression.
-	        // The CASE node adopts the expression subtree as its first child.
-	        conditionNode = parseExpr(token);
-		}
+        // if { or WHEN, put in a TRUE
+        LeolaTokenType type = token.getType();
+        if ( SWITCH_SET.contains(type) ) {
+            conditionNode = new BooleanExpr(true);
+        }
+        else {
+            // Parse the expression.
+            // The CASE node adopts the expression subtree as its first child.
+            conditionNode = parseExpr(token);
+        }
 
         boolean hasOpeningBrace = false;
 
@@ -142,20 +142,20 @@ public class SwitchStmtParser extends ExprParser {
         setLineNumber(switchStmt, startingToken);
 
         return switchStmt;
-	}
+    }
 
-	private Pair<Expr, Stmt> parseWhen(Token token) throws Exception {
-	    Pair<Expr, Stmt> whenExprPair = new Pair<Expr, Stmt>();
+    private Pair<Expr, Stmt> parseWhen(Token token) throws Exception {
+        Pair<Expr, Stmt> whenExprPair = new Pair<Expr, Stmt>();
 
-	    Expr whenExpr = parseExpr(token);
-	    whenExprPair.setFirst(whenExpr);
+        Expr whenExpr = parseExpr(token);
+        whenExprPair.setFirst(whenExpr);
 
-	    token = expectTokenNext(currentToken(), LeolaTokenType.ARROW, LeolaErrorCode.MISSING_ARROW);
-	    
-	    Stmt valueStmt = parseStmt(token);
-	    whenExprPair.setSecond(valueStmt);
+        token = expectTokenNext(currentToken(), LeolaTokenType.ARROW, LeolaErrorCode.MISSING_ARROW);
+        
+        Stmt valueStmt = parseStmt(token);
+        whenExprPair.setSecond(valueStmt);
 
-	    return whenExprPair;
-	}
+        return whenExprPair;
+    }
 }
 

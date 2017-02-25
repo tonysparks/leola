@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -19,24 +19,24 @@ import leola.frontend.tokens.LeolaTokenType;
  */
 public class IfStmtParser extends ExprParser {
 
-	/**
-	 * @param parser
-	 */
-	public IfStmtParser(LeolaParser parser) {
-		super(parser);
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.frontend.parsers.StmtParser#parse(leola.frontend.Token)
-	 */
-	@Override
-	public ASTNode parse(Token token) throws Exception {
-	    Token startingToken = token;
-		token = nextToken();  // consume the IF
-		
-		IfStmt ifStmt = null;
-		
-		// the expression if EXPR
+    /**
+     * @param parser
+     */
+    public IfStmtParser(LeolaParser parser) {
+        super(parser);
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.frontend.parsers.StmtParser#parse(leola.frontend.Token)
+     */
+    @Override
+    public ASTNode parse(Token token) throws Exception {
+        Token startingToken = token;
+        token = nextToken();  // consume the IF
+        
+        IfStmt ifStmt = null;
+        
+        // the expression if EXPR
         Expr exprNode = parseExpr(token);
         
         token = currentToken();
@@ -55,12 +55,12 @@ public class IfStmtParser extends ExprParser {
             ifStmt = new IfStmt(exprNode, thenStmt, elseStmt);
         }
         else {
-        	ifStmt = new IfStmt(exprNode, thenStmt);
+            ifStmt = new IfStmt(exprNode, thenStmt);
         }
 
         setLineNumber(ifStmt, startingToken);
         return ifStmt;
-	}
+    }
 
 }
 

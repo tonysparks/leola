@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.ast;
 
@@ -15,86 +15,86 @@ import leola.frontend.EvalException;
  */
 public class BinaryExpr extends Expr {
 
-	/**
-	 * Binary operator
-	 *
-	 * @author Tony
-	 *
-	 */
-	public enum BinaryOp {
-		  ADD
-		, SUB
-		, MUL
-		, DIV
-		, MOD
+    /**
+     * Binary operator
+     *
+     * @author Tony
+     *
+     */
+    public enum BinaryOp {
+          ADD
+        , SUB
+        , MUL
+        , DIV
+        , MOD
 
-		, BIT_SHIFT_LEFT
-		, BIT_SHIFT_RIGHT
+        , BIT_SHIFT_LEFT
+        , BIT_SHIFT_RIGHT
 
-		, OR
-		, AND
-		, EQ
-		, REQ
-		, RNEQ
-		, LT
-		, LTE
-		, GT
-		, GTE
-		, NEQ
+        , OR
+        , AND
+        , EQ
+        , REQ
+        , RNEQ
+        , LT
+        , LTE
+        , GT
+        , GTE
+        , NEQ
 
-		, BIT_AND
-		, BIT_OR
-		, BIT_XOR
-		, BIT_NOT
+        , BIT_AND
+        , BIT_OR
+        , BIT_XOR
+        , BIT_NOT
 
-	}
+    }
 
-	/**
-	 * Expressions
-	 */
-	private Expr left, right;
+    /**
+     * Expressions
+     */
+    private Expr left, right;
 
-	private BinaryOp op;
+    private BinaryOp op;
 
-	/**
-	 * @param left
-	 * @param right
-	 */
-	public BinaryExpr(Expr left, Expr right, BinaryOp op) {
-		this.left = becomeParentOf(left);
-		this.right = becomeParentOf(right);
-		this.op =op;
-	}
+    /**
+     * @param left
+     * @param right
+     */
+    public BinaryExpr(Expr left, Expr right, BinaryOp op) {
+        this.left = becomeParentOf(left);
+        this.right = becomeParentOf(right);
+        this.op =op;
+    }
 
 
-	/**
-	 * @return the left
-	 */
-	public Expr getLeft() {
-		return left;
-	}
+    /**
+     * @return the left
+     */
+    public Expr getLeft() {
+        return left;
+    }
 
-	/**
-	 * @return the right
-	 */
-	public Expr getRight() {
-		return right;
-	}
+    /**
+     * @return the right
+     */
+    public Expr getRight() {
+        return right;
+    }
 
-	/**
-	 * @return the op
-	 */
-	public BinaryOp getOp() {
-		return op;
-	}
+    /**
+     * @return the op
+     */
+    public BinaryOp getOp() {
+        return op;
+    }
 
-	/* (non-Javadoc)
-	 * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-	 */
-	@Override
-	public void visit(ASTNodeVisitor v) throws EvalException {
-		v.visit(this);
-	}
+    /* (non-Javadoc)
+     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
+     */
+    @Override
+    public void visit(ASTNodeVisitor v) throws EvalException {
+        v.visit(this);
+    }
 
 }
 

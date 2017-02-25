@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -16,31 +16,31 @@ import leola.frontend.Token;
  *
  */
 public class GenDefExprParser extends ExprParser {
-	
-	/**
-	 * @param parser
-	 */
-	public GenDefExprParser(LeolaParser parser) {
-		super(parser);
-	}
+    
+    /**
+     * @param parser
+     */
+    public GenDefExprParser(LeolaParser parser) {
+        super(parser);
+    }
 
-	/* (non-Javadoc)
-	 * @see leola.frontend.parsers.ExprParser#parse(leola.frontend.Token)
-	 */
-	@Override
-	public ASTNode parse(Token token) throws Exception {
-	    Token startingToken = token;
-		Token next = this.nextToken(); // eat the GEN token					
-		
-		/* parse the parameter listings */		
-		ParameterList parameters = ParserUtils.parseParameterListings(this, next);
-		
-		/* now parse the body */
-		Stmt body = parseStmt(currentToken());
-		
-		GenDefExpr defExpr = new GenDefExpr(body, parameters);
-		setLineNumber(defExpr, startingToken);
-		return defExpr;		
-	}
+    /* (non-Javadoc)
+     * @see leola.frontend.parsers.ExprParser#parse(leola.frontend.Token)
+     */
+    @Override
+    public ASTNode parse(Token token) throws Exception {
+        Token startingToken = token;
+        Token next = this.nextToken(); // eat the GEN token                    
+        
+        /* parse the parameter listings */        
+        ParameterList parameters = ParserUtils.parseParameterListings(this, next);
+        
+        /* now parse the body */
+        Stmt body = parseStmt(currentToken());
+        
+        GenDefExpr defExpr = new GenDefExpr(body, parameters);
+        setLineNumber(defExpr, startingToken);
+        return defExpr;        
+    }
 }
 

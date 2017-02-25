@@ -75,84 +75,84 @@ public enum LeolaTokenType implements TokenType
      * @return the {@link BinaryOp} representation
      */
     public BinaryOp toBinaryOp() {
-    	BinaryOp result = null;
-    	switch(this) {
-    	case BITWISE_AND:
-    	case BAND_EQ:
-    		result = BinaryOp.BIT_AND;
-    		break;
-    	case BITWISE_OR:
-    	case BOR_EQ:
-    		result = BinaryOp.BIT_OR;
-    		break;
-    	case BITWISE_XOR:
-    	case BXOR_EQ:
-    		result = BinaryOp.BIT_XOR;
-    		break;
-    	case LOGICAL_AND:
-    		result = BinaryOp.AND;
-    		break;
-    	case LOGICAL_OR:
-    		result = BinaryOp.OR;
-    		break;
-    	case MINUS:
-    	case MINUS_EQ:
-    		result = BinaryOp.SUB;
-    		break;
-    	case PLUS:
-    	case PLUS_EQ:
-    		result = BinaryOp.ADD;
-    		break;
-    	case STAR:
-    	case STAR_EQ:
-    		result = BinaryOp.MUL;
-    		break;
-    	case SLASH:
-    	case SLASH_EQ:
-    		result = BinaryOp.DIV;
-    		break;
-    	case MOD:
-    	case MOD_EQ:
-    		result = BinaryOp.MOD;
-    		break;
-    	case REF_EQUALS: {
-    		result = BinaryOp.REQ;
-    		break;
-    	}
-    	case REF_NOT_EQUALS: {
+        BinaryOp result = null;
+        switch(this) {
+        case BITWISE_AND:
+        case BAND_EQ:
+            result = BinaryOp.BIT_AND;
+            break;
+        case BITWISE_OR:
+        case BOR_EQ:
+            result = BinaryOp.BIT_OR;
+            break;
+        case BITWISE_XOR:
+        case BXOR_EQ:
+            result = BinaryOp.BIT_XOR;
+            break;
+        case LOGICAL_AND:
+            result = BinaryOp.AND;
+            break;
+        case LOGICAL_OR:
+            result = BinaryOp.OR;
+            break;
+        case MINUS:
+        case MINUS_EQ:
+            result = BinaryOp.SUB;
+            break;
+        case PLUS:
+        case PLUS_EQ:
+            result = BinaryOp.ADD;
+            break;
+        case STAR:
+        case STAR_EQ:
+            result = BinaryOp.MUL;
+            break;
+        case SLASH:
+        case SLASH_EQ:
+            result = BinaryOp.DIV;
+            break;
+        case MOD:
+        case MOD_EQ:
+            result = BinaryOp.MOD;
+            break;
+        case REF_EQUALS: {
+            result = BinaryOp.REQ;
+            break;
+        }
+        case REF_NOT_EQUALS: {
             result = BinaryOp.RNEQ;
             break;
         }
-    	case D_EQUALS:
-    		result = BinaryOp.EQ;
-    		break;
-    	case GREATER_EQUALS:
-    		result = BinaryOp.GTE;
-    		break;
-    	case GREATER_THAN:
-    		result = BinaryOp.GT;
-    		break;
-    	case LESS_EQUALS:
-    		result = BinaryOp.LTE;
-    		break;
-    	case LESS_THAN:
-    		result = BinaryOp.LT;
-    		break;
-    	case NOT_EQUALS:
-    		result = BinaryOp.NEQ;
-    		break;
-    	case BIT_SHIFT_LEFT:
-    	case BSL_EQ:
-    		result = BinaryOp.BIT_SHIFT_LEFT;
-    		break;
-    	case BIT_SHIFT_RIGHT:
-    	case BSR_EQ:
-    		result = BinaryOp.BIT_SHIFT_RIGHT;
-    		break;
-    	default:
-    		throw new IllegalArgumentException(this + " is not a legal BinaryOp");
-    	}
-    	return result;
+        case D_EQUALS:
+            result = BinaryOp.EQ;
+            break;
+        case GREATER_EQUALS:
+            result = BinaryOp.GTE;
+            break;
+        case GREATER_THAN:
+            result = BinaryOp.GT;
+            break;
+        case LESS_EQUALS:
+            result = BinaryOp.LTE;
+            break;
+        case LESS_THAN:
+            result = BinaryOp.LT;
+            break;
+        case NOT_EQUALS:
+            result = BinaryOp.NEQ;
+            break;
+        case BIT_SHIFT_LEFT:
+        case BSL_EQ:
+            result = BinaryOp.BIT_SHIFT_LEFT;
+            break;
+        case BIT_SHIFT_RIGHT:
+        case BSR_EQ:
+            result = BinaryOp.BIT_SHIFT_RIGHT;
+            break;
+        default:
+            throw new IllegalArgumentException(this + " is not a legal BinaryOp");
+        }
+        return result;
     }
 
     /**
@@ -168,13 +168,13 @@ public enum LeolaTokenType implements TokenType
      * @throws Exception
      */
     public double getTextAsNumber() throws Exception {
-    	try {
-    		return Double.parseDouble(this.text);
-    	}
-    	catch(Exception e) {
-    		throw new ParseException
-    			(LeolaErrorCode.INVALID_NUMBER, "Unable to parse: " + this.text + " as a number.", e);
-    	}
+        try {
+            return Double.parseDouble(this.text);
+        }
+        catch(Exception e) {
+            throw new ParseException
+                (LeolaErrorCode.INVALID_NUMBER, "Unable to parse: " + this.text + " as a number.", e);
+        }
     }
 
     // Set of lower-cased Leola reserved word text strings.
@@ -201,7 +201,7 @@ public enum LeolaTokenType implements TokenType
      */
     public static Map<String, LeolaTokenType> BINARY_ASSIGNMENT = new HashMap<String, LeolaTokenType>();
     static {
-    	LeolaTokenType values[] = LeolaTokenType.values();
+        LeolaTokenType values[] = LeolaTokenType.values();
         for (int i = FIRST_BIN_ASSGN_INDEX; i <= LAST_BIN_ASSGN_INDEX; ++i) {
             BINARY_ASSIGNMENT.put(values[i].getText(), values[i]);
         }

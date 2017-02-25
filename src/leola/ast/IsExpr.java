@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.ast;
 
@@ -15,46 +15,46 @@ import leola.frontend.EvalException;
  */
 public class IsExpr extends OwnableExpr {
 
-	/**
-	 * Expression
-	 */
-	private Expr lhsExpr;
+    /**
+     * Expression
+     */
+    private Expr lhsExpr;
 
-	private String className;
+    private String className;
 
-	/**
-	 * @param owner
-	 * @param lhsExpr
-	 * @param className
-	 */
-	public IsExpr(String owner, Expr lhsExpr, String className) {
-		super(owner);
-		this.lhsExpr = becomeParentOf(lhsExpr);
-		this.className = className;
-	}
+    /**
+     * @param owner
+     * @param lhsExpr
+     * @param className
+     */
+    public IsExpr(String owner, Expr lhsExpr, String className) {
+        super(owner);
+        this.lhsExpr = becomeParentOf(lhsExpr);
+        this.className = className;
+    }
 
 
 
-	/* (non-Javadoc)
-	 * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-	 */
-	@Override
-	public void visit(ASTNodeVisitor v) throws EvalException {
-		v.visit(this);
-	}
+    /* (non-Javadoc)
+     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
+     */
+    @Override
+    public void visit(ASTNodeVisitor v) throws EvalException {
+        v.visit(this);
+    }
 
-	/**
-	 * @return the lhsExpr
-	 */
-	public Expr getLhsExpr() {
-		return lhsExpr;
-	}
+    /**
+     * @return the lhsExpr
+     */
+    public Expr getLhsExpr() {
+        return lhsExpr;
+    }
 
-	/**
-	 * @return the className
-	 */
-	public String getClassName() {
-		return className;
-	}
+    /**
+     * @return the className
+     */
+    public String getClassName() {
+        return className;
+    }
 }
 

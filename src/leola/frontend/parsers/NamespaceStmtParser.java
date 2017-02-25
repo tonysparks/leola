@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -19,27 +19,27 @@ import leola.frontend.tokens.LeolaTokenType;
  */
 public class NamespaceStmtParser extends StmtParser {
 
-	/**
-	 * @param parser
-	 */
-	public NamespaceStmtParser(LeolaParser parser) {
-		super(parser);
-	}
+    /**
+     * @param parser
+     */
+    public NamespaceStmtParser(LeolaParser parser) {
+        super(parser);
+    }
 
-	/* (non-Javadoc)
-	 * @see leola.frontend.parsers.StmtParser#parse(leola.frontend.Token)
-	 */
-	@Override
-	public ASTNode parse(Token token) throws Exception {
-	    Token startingToken = token;
-		token = nextToken();  // consume the NAMESPACE
+    /* (non-Javadoc)
+     * @see leola.frontend.parsers.StmtParser#parse(leola.frontend.Token)
+     */
+    @Override
+    public ASTNode parse(Token token) throws Exception {
+        Token startingToken = token;
+        token = nextToken();  // consume the NAMESPACE
 
-		expectToken(token, LeolaTokenType.IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
-		
-		// parse the namespace name
-		String namespaceName = token.getText();
+        expectToken(token, LeolaTokenType.IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
+        
+        // parse the namespace name
+        String namespaceName = token.getText();
 
-		token = nextToken();
+        token = nextToken();
 
         Stmt stmt = parseStmt(token);
 
@@ -48,7 +48,7 @@ public class NamespaceStmtParser extends StmtParser {
         NamespaceStmt namespaceStmt = new NamespaceStmt(stmt, namespaceName);
         setLineNumber(namespaceStmt, startingToken);
         return namespaceStmt;
-	}
+    }
 
 }
 

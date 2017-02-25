@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -22,12 +22,12 @@ import leola.frontend.Token;
  */
 public class NamedParameterExprParser extends StmtParser {
 
-	/**
-	 * @param parser
-	 */
-	public NamedParameterExprParser(LeolaParser parser) {
-		super(parser);
-	}
+    /**
+     * @param parser
+     */
+    public NamedParameterExprParser(LeolaParser parser) {
+        super(parser);
+    }
 
 
     /**
@@ -37,15 +37,15 @@ public class NamedParameterExprParser extends StmtParser {
      * @return the root node of the generated parse tree.
      * @throws Exception if an error occurred.
      */
-	@Override
+    @Override
     public ASTNode parse(Token token)
-        throws Exception {		
-		
-	    Token startingToken = token;
-	    String parameterName = token.getText();
-		
-	    Expr valueExpr = new ExprParser(this, true).parseExpr(nextToken());
-	    
+        throws Exception {        
+        
+        Token startingToken = token;
+        String parameterName = token.getText();
+        
+        Expr valueExpr = new ExprParser(this, true).parseExpr(nextToken());
+        
         NamedParameterExpr stmt = new NamedParameterExpr(parameterName, valueExpr);
         setLineNumber(stmt, startingToken);
         return stmt;

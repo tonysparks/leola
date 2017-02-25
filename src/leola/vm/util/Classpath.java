@@ -76,7 +76,7 @@ public class Classpath {
      * @throws IOException
      */
     @SuppressWarnings("deprecation")
-	public static void addFile(File f) throws IOException {
+    public static void addFile(File f) throws IOException {
         addURL(f.toURL());
     }
 
@@ -114,7 +114,7 @@ public class Classpath {
             catch (Throwable t) {
                 throw new IOException("Error, could not add " + u +" to system classloader - " + t.getLocalizedMessage());
             }
-        }    	
+        }        
     }
     
     /**

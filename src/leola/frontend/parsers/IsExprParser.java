@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -23,15 +23,15 @@ import leola.frontend.Token;
  */
 public class IsExprParser extends ExprParser {
 
-	private Expr lhsExpr;
+    private Expr lhsExpr;
 
-	/**
-	 * @param parser
-	 */
-	public IsExprParser(Expr lhsExpr, LeolaParser parser) {
-		super(parser);
-		this.lhsExpr = lhsExpr;
-	}
+    /**
+     * @param parser
+     */
+    public IsExprParser(Expr lhsExpr, LeolaParser parser) {
+        super(parser);
+        this.lhsExpr = lhsExpr;
+    }
 
 
     /**
@@ -40,35 +40,35 @@ public class IsExprParser extends ExprParser {
      * @return the root node of the generated parse tree.
      * @throws Exception if an error occurred.
      */
-	@Override
+    @Override
     public ASTNode parse(Token token)
         throws Exception
     {
-	    Token startingToken = token;
-		String varName = token.getText();
-		
-		/**
-		 * HACK -
-		 * 	If the LHS was NULL, the lhsExpr won't be NULL.
-		 */
-		if ( this.lhsExpr == null ) {
+        Token startingToken = token;
+        String varName = token.getText();
+        
+        /**
+         * HACK -
+         *     If the LHS was NULL, the lhsExpr won't be NULL.
+         */
+        if ( this.lhsExpr == null ) {
 
-	    	// the left hand side (array or map) expr
-	    	lhsExpr = parseExpr(token);
-	    	if ( lhsExpr instanceof AssignmentExpr ) {
-	    		((ArrayAccessSetExpr)lhsExpr).setVariableName(varName);
-	    	}
+            // the left hand side (array or map) expr
+            lhsExpr = parseExpr(token);
+            if ( lhsExpr instanceof AssignmentExpr ) {
+                ((ArrayAccessSetExpr)lhsExpr).setVariableName(varName);
+            }
 
-	    	token = currentToken();
-		}
-		else {
-			token = nextToken(); // eat the IS token
-		}
+            token = currentToken();
+        }
+        else {
+            token = nextToken(); // eat the IS token
+        }
 
-    	String className = ParserUtils.parseClassName(this, token);
+        String className = ParserUtils.parseClassName(this, token);
 
         // Create the IS node.
-    	IsExpr isExpr = new IsExpr(varName, lhsExpr, className);
+        IsExpr isExpr = new IsExpr(varName, lhsExpr, className);
         setLineNumber(isExpr, startingToken);
 
         return isExpr;

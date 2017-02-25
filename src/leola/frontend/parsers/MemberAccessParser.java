@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -17,34 +17,34 @@ import leola.frontend.Token;
  */
 public class MemberAccessParser extends ExprParser {
 
-	/**
-	 * @param parser
-	 */
-	public MemberAccessParser(LeolaParser parser) {
-		super(parser);
-	}
+    /**
+     * @param parser
+     */
+    public MemberAccessParser(LeolaParser parser) {
+        super(parser);
+    }
 
-	/* (non-Javadoc)
-	 * @see leola.frontend.parsers.ExprParser#parse(leola.frontend.Token)
-	 */
-	@Override
-	public ASTNode parse(Token token) throws Exception {
-	    Token startingToken = token;
-		String parentName = token.getText();
+    /* (non-Javadoc)
+     * @see leola.frontend.parsers.ExprParser#parse(leola.frontend.Token)
+     */
+    @Override
+    public ASTNode parse(Token token) throws Exception {
+        Token startingToken = token;
+        String parentName = token.getText();
 
-		token = nextToken(); // eat the DOT
-		
-		ASTNode node = parseIdentifier(token);
-		OwnableExpr expr = (OwnableExpr)node;				
-		MemberAccessExpr memExpr = new MemberAccessExpr(parentName, expr.getOwner(), expr);
-		memExpr.setParent(true);
-		
-		expr.setOwner(parentName);
-		expr.setParent(false);
-		
-		setLineNumber(memExpr, startingToken);
-		return memExpr;
-	}
+        token = nextToken(); // eat the DOT
+        
+        ASTNode node = parseIdentifier(token);
+        OwnableExpr expr = (OwnableExpr)node;                
+        MemberAccessExpr memExpr = new MemberAccessExpr(parentName, expr.getOwner(), expr);
+        memExpr.setParent(true);
+        
+        expr.setOwner(parentName);
+        expr.setParent(false);
+        
+        setLineNumber(memExpr, startingToken);
+        return memExpr;
+    }
 
 }
 

@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.ast;
 
@@ -15,22 +15,22 @@ import leola.frontend.EvalException;
  */
 public class NamespaceAccessExpr extends MemberAccessExpr {
 
-	/**
-	 * @param owner
-	 * @param identifer
-	 * @param access
-	 */
-	public NamespaceAccessExpr(String owner, String identifer, OwnableExpr access) {
-		super(owner, identifer, access);
-	}
+    /**
+     * @param owner
+     * @param identifer
+     * @param access
+     */
+    public NamespaceAccessExpr(String owner, String identifer, OwnableExpr access) {
+        super(owner, identifer, access);
+    }
 
 
-	/* (non-Javadoc)
-	 * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-	 */
-	@Override
-	public void visit(ASTNodeVisitor v) throws EvalException {
-		v.visit(this);
-	}
+    /* (non-Javadoc)
+     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
+     */
+    @Override
+    public void visit(ASTNodeVisitor v) throws EvalException {
+        v.visit(this);
+    }
 }
 

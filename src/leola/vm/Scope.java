@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.vm;
 
@@ -31,154 +31,154 @@ import leola.vm.util.ClassUtil;
  *
  */
 public class Scope {
-	
-	/**
-	 * The parent scope
-	 */
-	private Scope parent;
+    
+    /**
+     * The parent scope
+     */
+    private Scope parent;
 
-	
-	/**
-	 * Any class definitions in this 
-	 * scope
-	 */
-	private ClassDefinitions classDefinitions;
-	
-	/**
-	 * Any namespace definitions in this 
-	 * scope
-	 */
-	private NamespaceDefinitions namespaceDefinitions;
-	
-	
-	/**
-	 * The values stored in this scope
-	 */
-	private LeoMap values;
+    
+    /**
+     * Any class definitions in this 
+     * scope
+     */
+    private ClassDefinitions classDefinitions;
+    
+    /**
+     * Any namespace definitions in this 
+     * scope
+     */
+    private NamespaceDefinitions namespaceDefinitions;
+    
+    
+    /**
+     * The values stored in this scope
+     */
+    private LeoMap values;
 
-	/**
-	 * @param symbols
-	 * @param parent
-	 * @param scopeType
-	 */
-	public Scope(Scope parent) {
-		this.parent = parent;
-	}
+    /**
+     * @param symbols
+     * @param parent
+     * @param scopeType
+     */
+    public Scope(Scope parent) {
+        this.parent = parent;
+    }
 
-	
-	/**
-	 * This will clear out (i.e., remove) all data elements from this {@link Scope}.
-	 * 
-	 * <p>
-	 * This includes:
-	 * <ul>
-	 *     <li>The {@link ClassDefinitions}</li>
-	 *     <li>The {@link NamespaceDefinitions}</li>
-	 *     <li>Invokes {@link Scope#clear()} on the <code>parent</code> scope of this Scope</li>
-	 *     <li>Any bound variables within this Scope</li>
-	 * </ul>
-	 * As the name implies, this does remove all allocated objects which will become garbage and 
-	 * there before be collected by the JVM GC.  Use this method with caution.
-	 */
-	public void clear() {
-	    if(hasClassDefinitions()) {
-	        this.classDefinitions.clearDefinitions();	        
-	    }
-	    
-	    if(hasNamespaceDefinitions()) {
-	        this.namespaceDefinitions.clearDefinitions();
-	    }
-	    
-	    if(hasParent()) {
-	        this.parent.clear();
-	    }
-	    	    
-	    if(hasObjects()) {
-	        /* Create a new Set here so that we don't get caught in an infinite recursive loop if
-	         * the scopes are self referencing
-	         */
-	        Set<Map.Entry<LeoObject, LeoObject>> entrySet = new HashSet<Map.Entry<LeoObject,LeoObject>>(this.values.entrySet());
-	        this.values.clear();
-	        
-	        for(Map.Entry<LeoObject, LeoObject> entry : entrySet) {
-	            Scope keyScope = entry.getKey().getScope();
-	            if(keyScope != null) {
-	                keyScope.clear();
-	            }
-	            
-	            Scope valueScope = entry.getValue().getScope();
-	            if(valueScope != null) {
-	                valueScope.clear();
-	            }
-	        }
-	    }
-	}
-	
-	/**
-	 * @return true if this {@link Scope} has a parent {@link Scope} defined.
-	 */
-	public boolean hasParent() {
-	    return this.parent != null;
-	}
+    
+    /**
+     * This will clear out (i.e., remove) all data elements from this {@link Scope}.
+     * 
+     * <p>
+     * This includes:
+     * <ul>
+     *     <li>The {@link ClassDefinitions}</li>
+     *     <li>The {@link NamespaceDefinitions}</li>
+     *     <li>Invokes {@link Scope#clear()} on the <code>parent</code> scope of this Scope</li>
+     *     <li>Any bound variables within this Scope</li>
+     * </ul>
+     * As the name implies, this does remove all allocated objects which will become garbage and 
+     * there before be collected by the JVM GC.  Use this method with caution.
+     */
+    public void clear() {
+        if(hasClassDefinitions()) {
+            this.classDefinitions.clearDefinitions();            
+        }
+        
+        if(hasNamespaceDefinitions()) {
+            this.namespaceDefinitions.clearDefinitions();
+        }
+        
+        if(hasParent()) {
+            this.parent.clear();
+        }
+                
+        if(hasObjects()) {
+            /* Create a new Set here so that we don't get caught in an infinite recursive loop if
+             * the scopes are self referencing
+             */
+            Set<Map.Entry<LeoObject, LeoObject>> entrySet = new HashSet<Map.Entry<LeoObject,LeoObject>>(this.values.entrySet());
+            this.values.clear();
+            
+            for(Map.Entry<LeoObject, LeoObject> entry : entrySet) {
+                Scope keyScope = entry.getKey().getScope();
+                if(keyScope != null) {
+                    keyScope.clear();
+                }
+                
+                Scope valueScope = entry.getValue().getScope();
+                if(valueScope != null) {
+                    valueScope.clear();
+                }
+            }
+        }
+    }
+    
+    /**
+     * @return true if this {@link Scope} has a parent {@link Scope} defined.
+     */
+    public boolean hasParent() {
+        return this.parent != null;
+    }
 
-	/**
-	 * @return true if there are {@link ClassDefinition}s in this {@link Scope}
-	 */
-	public boolean hasClassDefinitions() {
-		return this.classDefinitions != null && this.classDefinitions.hasDefinitions();
-	}
+    /**
+     * @return true if there are {@link ClassDefinition}s in this {@link Scope}
+     */
+    public boolean hasClassDefinitions() {
+        return this.classDefinitions != null && this.classDefinitions.hasDefinitions();
+    }
 
-	/**
-	 * @return the classDefinitions
-	 */
-	public ClassDefinitions getClassDefinitions() {
-		if ( this.classDefinitions == null ) {
-			this.classDefinitions = new ClassDefinitions();
-		}
-		return classDefinitions;
-	}
+    /**
+     * @return the classDefinitions
+     */
+    public ClassDefinitions getClassDefinitions() {
+        if ( this.classDefinitions == null ) {
+            this.classDefinitions = new ClassDefinitions();
+        }
+        return classDefinitions;
+    }
 
-	/**
-	 * @return if this scope has {@link NamespaceDefinitions}
-	 */
-	public boolean hasNamespaceDefinitions() {
-		return this.namespaceDefinitions != null && this.namespaceDefinitions.hasDefinitions();
-	}
+    /**
+     * @return if this scope has {@link NamespaceDefinitions}
+     */
+    public boolean hasNamespaceDefinitions() {
+        return this.namespaceDefinitions != null && this.namespaceDefinitions.hasDefinitions();
+    }
 
-	/**
-	 * @return the namespaceDefinitions
-	 */
-	public NamespaceDefinitions getNamespaceDefinitions() {
-		if(this.namespaceDefinitions == null) {
-			this.namespaceDefinitions = new NamespaceDefinitions();
-		}
+    /**
+     * @return the namespaceDefinitions
+     */
+    public NamespaceDefinitions getNamespaceDefinitions() {
+        if(this.namespaceDefinitions == null) {
+            this.namespaceDefinitions = new NamespaceDefinitions();
+        }
 
-		return namespaceDefinitions;
-	}
+        return namespaceDefinitions;
+    }
 
 
-	/**
-	 * @return the underlying raw values of the {@link Scope}
-	 */
-	public LeoObject[] getScopedValues() {
-		return (this.values != null) ? this.values.vals().getRawArray() : ArrayUtil.EMPTY_LEOOBJECTS;
-	}
+    /**
+     * @return the underlying raw values of the {@link Scope}
+     */
+    public LeoObject[] getScopedValues() {
+        return (this.values != null) ? this.values.vals().getRawArray() : ArrayUtil.EMPTY_LEOOBJECTS;
+    }
 
-	/**
-	 * Recursively attempts to retrieve the value associated with the reference.  If it
-	 * isn't found in this scope, it will ask its parent scope.
-	 * 
-	 * @param reference
-	 * @return the value if found, otherwise null
-	 */
-	public LeoObject getObject(LeoObject reference) {
-		LeoObject value = (this.values != null) ? this.values.getWithJNull(reference) : null;
-		if ( value == null && parent != null) {
-			value = parent.getObject(reference);
-		}
+    /**
+     * Recursively attempts to retrieve the value associated with the reference.  If it
+     * isn't found in this scope, it will ask its parent scope.
+     * 
+     * @param reference
+     * @return the value if found, otherwise null
+     */
+    public LeoObject getObject(LeoObject reference) {
+        LeoObject value = (this.values != null) ? this.values.getWithJNull(reference) : null;
+        if ( value == null && parent != null) {
+            value = parent.getObject(reference);
+        }
 
-		return value;
-	}
+        return value;
+    }
 
     /**
      * Recursively attempts to retrieve the value associated with the reference.  If it
@@ -192,204 +192,204 @@ public class Scope {
         return getObject(LeoString.valueOf(reference));
     }
     
-	/**
-	 * Searches scopes and parent scopes up and until the global scope
-	 * 
-	 * @param reference
-	 * @return the value if found, otherwise null;
-	 */
-	public LeoObject getObjectNoGlobal(LeoObject reference) {
-		LeoObject value = (this.values != null) ? this.values.getWithJNull(reference) : null;
-		if ( value == null && parent != null && !parent.isGlobalScope()) {
-			value = parent.getObjectNoGlobal(reference);
-		}
-
-		return value;
-	}
-
-	/**
+    /**
      * Searches scopes and parent scopes up and until the global scope
      * 
      * @param reference
      * @return the value if found, otherwise null;
      */
-	public LeoObject getObjectNoGlobal(String reference) {
-	    return getObjectNoGlobal(LeoString.valueOf(reference));
-	}
-	
-	/**
-	 * Retrieves a {@link LeoNamespace} by its name
-	 * 
-	 * @param reference
-	 * @return the {@link LeoNamespace} if found, otherwise null
-	 */
-	public LeoNamespace getNamespace(LeoObject reference) {
-		LeoNamespace value = (hasNamespaceDefinitions()) ? this.namespaceDefinitions.getNamespace(reference) : null;
-		if(value == null && parent != null) {
-			value = parent.getNamespace(reference);
-		}
-		return value;
-	}
+    public LeoObject getObjectNoGlobal(LeoObject reference) {
+        LeoObject value = (this.values != null) ? this.values.getWithJNull(reference) : null;
+        if ( value == null && parent != null && !parent.isGlobalScope()) {
+            value = parent.getObjectNoGlobal(reference);
+        }
+
+        return value;
+    }
+
+    /**
+     * Searches scopes and parent scopes up and until the global scope
+     * 
+     * @param reference
+     * @return the value if found, otherwise null;
+     */
+    public LeoObject getObjectNoGlobal(String reference) {
+        return getObjectNoGlobal(LeoString.valueOf(reference));
+    }
+    
+    /**
+     * Retrieves a {@link LeoNamespace} by its name
+     * 
+     * @param reference
+     * @return the {@link LeoNamespace} if found, otherwise null
+     */
+    public LeoNamespace getNamespace(LeoObject reference) {
+        LeoNamespace value = (hasNamespaceDefinitions()) ? this.namespaceDefinitions.getNamespace(reference) : null;
+        if(value == null && parent != null) {
+            value = parent.getNamespace(reference);
+        }
+        return value;
+    }
 
 
 
-	/**
-	 * Stores an object in this scope and only this scope. This does
-	 * not traverse the parent scopes to see if a value is already
-	 * held.
-	 * 
-	 * @param reference
-	 * @param value
-	 * @return the previously held value, if any
-	 */
-	public LeoObject putObject(LeoObject reference, LeoObject value) {
-		if(this.values==null) {
-			this.values = new LeoMap();
-		}
+    /**
+     * Stores an object in this scope and only this scope. This does
+     * not traverse the parent scopes to see if a value is already
+     * held.
+     * 
+     * @param reference
+     * @param value
+     * @return the previously held value, if any
+     */
+    public LeoObject putObject(LeoObject reference, LeoObject value) {
+        if(this.values==null) {
+            this.values = new LeoMap();
+        }
 
-		return this.values.put(reference, value);		
-	}
-	
-	public LeoObject putObject(String reference, LeoObject value) {
-	    return putObject(LeoString.valueOf(reference), value);
-	}
-	
-	/**
-	 * Stores an object in this scope, it first checks to see if any parent
-	 * values contain the supplied reference, if it does it will override the existing
-	 * value.  This is to account for class data members.
-	 * 
-	 * @param reference
-	 * @param value
-	 * @return the previously held value, if any
-	 */
-	public LeoObject storeObject(LeoObject reference, LeoObject newValue) {
-		
-		Scope current = this;		
-		while (current != null) {
-			
-			// if the value is the the current scope, break out 
-			if (current.values != null && current.values.getWithJNull(reference) != null ) {
-				break;
-			}
-			
-			// else check the parent 
-			if(current.parent != null && !current.parent.isGlobalScope()) {
-				current = current.parent;
-			}
-			else {
-				current = this;
-				break;
-			}
-		}
-		
-		return current.putObject(reference, newValue);
-	}
+        return this.values.put(reference, value);        
+    }
+    
+    public LeoObject putObject(String reference, LeoObject value) {
+        return putObject(LeoString.valueOf(reference), value);
+    }
+    
+    /**
+     * Stores an object in this scope, it first checks to see if any parent
+     * values contain the supplied reference, if it does it will override the existing
+     * value.  This is to account for class data members.
+     * 
+     * @param reference
+     * @param value
+     * @return the previously held value, if any
+     */
+    public LeoObject storeObject(LeoObject reference, LeoObject newValue) {
+        
+        Scope current = this;        
+        while (current != null) {
+            
+            // if the value is the the current scope, break out 
+            if (current.values != null && current.values.getWithJNull(reference) != null ) {
+                break;
+            }
+            
+            // else check the parent 
+            if(current.parent != null && !current.parent.isGlobalScope()) {
+                current = current.parent;
+            }
+            else {
+                current = this;
+                break;
+            }
+        }
+        
+        return current.putObject(reference, newValue);
+    }
 
-	public LeoObject storeObject(String reference, LeoObject value) {
-		return storeObject(LeoString.valueOf(reference), value);
-	}
+    public LeoObject storeObject(String reference, LeoObject value) {
+        return storeObject(LeoString.valueOf(reference), value);
+    }
 
-	/**
-	 * Removes an object from this {@link Scope}
-	 *
-	 * @param reference
-	 * @return the {@link LeoObject} previously held by the reference (or null if no value was held
-	 * by this reference).
-	 */
-	public LeoObject removeObject(LeoObject reference) {
-		return (this.values!=null) ? this.values.remove(reference) : null;
-	}
-
-	
-	/**
+    /**
      * Removes an object from this {@link Scope}
      *
      * @param reference
      * @return the {@link LeoObject} previously held by the reference (or null if no value was held
      * by this reference).
      */
-	public LeoObject removeObject(String reference) {
-		return removeObject(LeoString.valueOf(reference));
-	}
+    public LeoObject removeObject(LeoObject reference) {
+        return (this.values!=null) ? this.values.remove(reference) : null;
+    }
 
-	/**
-	 * @return true if and only if there are stored objects in this {@link Scope}
-	 */
-	public boolean hasObjects() {
-	    return (this.values != null) && !this.values.isEmpty();
-	}
-	
-	/**
-	 * @return the number of {@link LeoObject}s in this {@link Scope}
-	 */
-	public int getNumberOfObjects() {
-		return (this.values != null) ? this.values.size() : 0;
-	}
+    
+    /**
+     * Removes an object from this {@link Scope}
+     *
+     * @param reference
+     * @return the {@link LeoObject} previously held by the reference (or null if no value was held
+     * by this reference).
+     */
+    public LeoObject removeObject(String reference) {
+        return removeObject(LeoString.valueOf(reference));
+    }
 
-	
-	/**
-	 * Retrieves the raw {@link LeoMap} that contains the reference and {@link LeoObject} associations
-	 * 
-	 * @return the {@link LeoMap} of the references and values
-	 */
-	public LeoMap getRawObjects() {
-		return this.values;
-	}
+    /**
+     * @return true if and only if there are stored objects in this {@link Scope}
+     */
+    public boolean hasObjects() {
+        return (this.values != null) && !this.values.isEmpty();
+    }
+    
+    /**
+     * @return the number of {@link LeoObject}s in this {@link Scope}
+     */
+    public int getNumberOfObjects() {
+        return (this.values != null) ? this.values.size() : 0;
+    }
 
-	/**
-	 * @return true if this scope is the global scope
-	 */
-	public boolean isGlobalScope() {
-	    return parent == null;
-	}
+    
+    /**
+     * Retrieves the raw {@link LeoMap} that contains the reference and {@link LeoObject} associations
+     * 
+     * @return the {@link LeoMap} of the references and values
+     */
+    public LeoMap getRawObjects() {
+        return this.values;
+    }
 
-	/**
-	 * @return the parent
-	 */
-	public Scope getParent() {
-		return parent;
-	}
+    /**
+     * @return true if this scope is the global scope
+     */
+    public boolean isGlobalScope() {
+        return parent == null;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#clone()
-	 */
-	public Scope clone() {
-		Scope clone = new Scope(this.parent);
-		clone.classDefinitions = this.classDefinitions;
-	    clone.namespaceDefinitions = this.namespaceDefinitions;
+    /**
+     * @return the parent
+     */
+    public Scope getParent() {
+        return parent;
+    }
 
-	    clone.values = (LeoMap)this.values.clone();
-		return clone;
-	}
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    public Scope clone() {
+        Scope clone = new Scope(this.parent);
+        clone.classDefinitions = this.classDefinitions;
+        clone.namespaceDefinitions = this.namespaceDefinitions;
 
-	/**
-	 * Loads the objects methods into the supplied {@link Scope}
-	 * 
-	 * @param jObject
-	 */
+        clone.values = (LeoMap)this.values.clone();
+        return clone;
+    }
+
+    /**
+     * Loads the objects methods into the supplied {@link Scope}
+     * 
+     * @param jObject
+     */
     public void loadNatives(Object jObject) {
         Class<?> aClass = jObject.getClass();
         loadClass(aClass, jObject, false);
     }
 
-	/**
-	 * Loads the static methods of the native class into the supplied {@link Scope}
-	 *
-	 * @param aClass
-	 */
-	public void loadStatics(Class<?> aClass) {
-		loadClass(aClass, null, true);
-	}
-	
-	/**
-	 * Loads the class methods into this {@link Scope}
-	 * 
-	 * @param aClass the class to look for methods
-	 * @param jObject the instance object (may be null)
-	 * @param onlyStatics if we should only be loading static
-	 */
+    /**
+     * Loads the static methods of the native class into the supplied {@link Scope}
+     *
+     * @param aClass
+     */
+    public void loadStatics(Class<?> aClass) {
+        loadClass(aClass, null, true);
+    }
+    
+    /**
+     * Loads the class methods into this {@link Scope}
+     * 
+     * @param aClass the class to look for methods
+     * @param jObject the instance object (may be null)
+     * @param onlyStatics if we should only be loading static
+     */
     private void loadClass(Class<?> aClass, Object jObject, boolean onlyStatics) {
         List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);
 
@@ -428,8 +428,8 @@ public class Scope {
             }
         }
     }
-	
-	/**
+    
+    /**
      * Looks up a namespace.
      *
      * @param name

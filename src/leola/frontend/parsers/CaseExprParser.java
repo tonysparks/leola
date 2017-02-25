@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -43,35 +43,35 @@ public class CaseExprParser extends ExprParser {
     private static final EnumSet<LeolaTokenType> CASE_SET =
         EnumSet.of(LEFT_BRACE, WHEN);
 
-	/**
-	 * @param parser
-	 */
-	public CaseExprParser(LeolaParser parser) {
-		super(parser);
-	}
+    /**
+     * @param parser
+     */
+    public CaseExprParser(LeolaParser parser) {
+        super(parser);
+    }
 
-	/* (non-Javadoc)
-	 * @see leola.frontend.parsers.StmtParser#parse(leola.frontend.Token)
-	 */
-	@Override
-	public ASTNode parse(Token token) throws Exception {
-	    Token startingToken = token;
-		token = nextToken();  // consume the CASE
+    /* (non-Javadoc)
+     * @see leola.frontend.parsers.StmtParser#parse(leola.frontend.Token)
+     */
+    @Override
+    public ASTNode parse(Token token) throws Exception {
+        Token startingToken = token;
+        token = nextToken();  // consume the CASE
 
-		Expr conditionNode = null;
-		Expr elseExpr = null;
-		List<Pair<Expr, Expr>> whenExprs = new ArrayList<Pair<Expr,Expr>>();
+        Expr conditionNode = null;
+        Expr elseExpr = null;
+        List<Pair<Expr, Expr>> whenExprs = new ArrayList<Pair<Expr,Expr>>();
 
-		// if { or WHEN, put in a TRUE
-		LeolaTokenType type = token.getType();
-		if ( CASE_SET.contains(type) ) {
-			conditionNode = new BooleanExpr(true);
-		}
-		else {
-	        // Parse the expression.
-	        // The CASE node adopts the expression subtree as its first child.
-	        conditionNode = parseExpr(token);
-		}
+        // if { or WHEN, put in a TRUE
+        LeolaTokenType type = token.getType();
+        if ( CASE_SET.contains(type) ) {
+            conditionNode = new BooleanExpr(true);
+        }
+        else {
+            // Parse the expression.
+            // The CASE node adopts the expression subtree as its first child.
+            conditionNode = parseExpr(token);
+        }
 
         boolean hasOpeningBrace = false;
 
@@ -136,20 +136,20 @@ public class CaseExprParser extends ExprParser {
         setLineNumber(caseExpr, startingToken);
 
         return caseExpr;
-	}
+    }
 
-	private Pair<Expr, Expr> parseWhen(Token token) throws Exception {
-	    Pair<Expr, Expr> whenExprPair = new Pair<Expr, Expr>();
+    private Pair<Expr, Expr> parseWhen(Token token) throws Exception {
+        Pair<Expr, Expr> whenExprPair = new Pair<Expr, Expr>();
 
-	    Expr whenExpr = parseExpr(token);
-	    whenExprPair.setFirst(whenExpr);
+        Expr whenExpr = parseExpr(token);
+        whenExprPair.setFirst(whenExpr);
 
-	    token = expectTokenNext(currentToken(), LeolaTokenType.ARROW, LeolaErrorCode.MISSING_ARROW);
-	    
-	    Expr valueExpr = parseExpr(token);
-	    whenExprPair.setSecond(valueExpr);
+        token = expectTokenNext(currentToken(), LeolaTokenType.ARROW, LeolaErrorCode.MISSING_ARROW);
+        
+        Expr valueExpr = parseExpr(token);
+        whenExprPair.setSecond(valueExpr);
 
-	    return whenExprPair;
-	}
+        return whenExprPair;
+    }
 }
 

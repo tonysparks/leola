@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.vm.types;
 
@@ -71,62 +71,62 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
     }
     
     
-	private LeoObject[] array;
-	private int size;
-	
-	/**
-	 */
-	public LeoArray() {
-		this(10);
-	}
+    private LeoObject[] array;
+    private int size;
+    
+    /**
+     */
+    public LeoArray() {
+        this(10);
+    }
 
-	/**
-	 * @param initialSize
-	 */
-	public LeoArray(int initialSize) {
-		super(LeoType.ARRAY);
+    /**
+     * @param initialSize
+     */
+    public LeoArray(int initialSize) {
+        super(LeoType.ARRAY);
 
-		this.size = 0;
-		this.array = new LeoObject[initialSize];	
-		clear();
-	}
-	
-	/**
-	 * @param array
-	 */
-	public LeoArray(List<LeoObject> array) {
-		super(LeoType.ARRAY);
+        this.size = 0;
+        this.array = new LeoObject[initialSize];    
+        clear();
+    }
+    
+    /**
+     * @param array
+     */
+    public LeoArray(List<LeoObject> array) {
+        super(LeoType.ARRAY);
 
-		this.size = array.size();
-		this.array = new LeoObject[this.size];
-		
-		for(int i = 0; i < this.size; i++) {
-			this.array[i] = array.get(i);
-		}
-	}
+        this.size = array.size();
+        this.array = new LeoObject[this.size];
+        
+        for(int i = 0; i < this.size; i++) {
+            this.array[i] = array.get(i);
+        }
+    }
 
-	/**
-	 * @param a
-	 */
-	public LeoArray(LeoObject[] a) {
-		this(a, a.length);
-	}
-	
-	/**
-	 * @param a
-	 * @param size
-	 */
-	public LeoArray(LeoObject[] a, int size) {
-		super(LeoType.ARRAY);
-		
-		this.array = a;
-		this.size = size;
-	}
+    /**
+     * @param a
+     */
+    public LeoArray(LeoObject[] a) {
+        this(a, a.length);
+    }
+    
+    /**
+     * @param a
+     * @param size
+     */
+    public LeoArray(LeoObject[] a, int size) {
+        super(LeoType.ARRAY);
+        
+        this.array = a;
+        this.size = size;
+    }
 
-	/**
-	 * Adds ability to reference the public API of this class
-	 */
-    private Map<LeoObject, LeoObject> arrayApi;	
+    /**
+     * Adds ability to reference the public API of this class
+     */
+    private Map<LeoObject, LeoObject> arrayApi;    
     private Map<LeoObject, LeoObject> getApiMappings() {
         if(this.arrayApi == null) {
             synchronized (this) {                
@@ -137,12 +137,12 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
         }
         return this.arrayApi;
     }
-	private LeoObject getNativeMethod(LeoObject key) {	    
-	    return getNativeMethod(this, getApiMappings(), key);
-	}
-	
-	
-	/**
+    private LeoObject getNativeMethod(LeoObject key) {        
+        return getNativeMethod(this, getApiMappings(), key);
+    }
+    
+    
+    /**
      * Iterates through the array invoking the call back filling the
      * array
      *
@@ -161,23 +161,23 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
         return this;
     }
 
-	
-	/**
-	 * Iterates through the array given the supplied bounds
-	 * 
-	 * <pre>
-	 *     [1,2,3,4].for(1,3,println)
-	 *     // prints 
-	 *     // 2
-	 *     // 3
-	 * </pre>
-	 * 
-	 * @param startIndex
-	 * @param endIndex
-	 * @param function
-	 */
-	@LeolaMethod(alias="for")
-	public void _for(int startIndex, int endIndex, LeoObject function) {	    
+    
+    /**
+     * Iterates through the array given the supplied bounds
+     * 
+     * <pre>
+     *     [1,2,3,4].for(1,3,println)
+     *     // prints 
+     *     // 2
+     *     // 3
+     * </pre>
+     * 
+     * @param startIndex
+     * @param endIndex
+     * @param function
+     */
+    @LeolaMethod(alias="for")
+    public void _for(int startIndex, int endIndex, LeoObject function) {        
         if ( startIndex < 0 || endIndex > size()) {
             throw new LeolaRuntimeException("Invalid array index: " + startIndex + " to " + endIndex + "[Size of array: " + size() + "]");
         }
@@ -188,23 +188,23 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
                 break;
             }
         }
-	}
-	
-	
-	/**
-	 * Sorts the Array, it sorts it in place (meaning this will <b>not</b> allocate
-	 * a new array, but rather sort this instance of the array).
-	 * 
-	 * <pre>
-	 *    println( [1,5,2,87,324,4,2].sort(def(a,b) return a-b) )
-	 *    // prints:
-	 *    // [1,2,2,4,5,87,324]
-	 * 
-	 * @param function
-	 * @return this array sorted
-	 */
-	public LeoArray sort(final LeoObject function) {
-	    if(function != null) {
+    }
+    
+    
+    /**
+     * Sorts the Array, it sorts it in place (meaning this will <b>not</b> allocate
+     * a new array, but rather sort this instance of the array).
+     * 
+     * <pre>
+     *    println( [1,5,2,87,324,4,2].sort(def(a,b) return a-b) )
+     *    // prints:
+     *    // [1,2,2,4,5,87,324]
+     * 
+     * @param function
+     * @return this array sorted
+     */
+    public LeoArray sort(final LeoObject function) {
+        if(function != null) {
             Arrays.sort(this.array, 0, this.size, new Comparator<LeoObject>() {                
                 @Override
                 public int compare(LeoObject o1, LeoObject o2) {
@@ -213,58 +213,58 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
                 }
             });
         }
-	    else {
-	        Arrays.sort(this.array, 0, this.size);
-	    }
-	    
-	    return this;
-	}
-	
-	/**
-	 * Iterates through the array, invoking the supplied 
-	 * function object for each element
-	 * 
-	 * <pre>
-	 *   [1,2,3].foreach(println)
-	 *   // prints:
-	 *   // 1
-	 *   // 2
-	 *   // 3
-	 * </pre>
-	 * 
-	 * @param function
-	 * @return the {@link LeoObject} returned from the supplied function if returned <code>true</code>
-	 */
-	public LeoObject foreach(LeoObject function) {
-	    if(function != null) {
-    	    for(int i = 0; i < this.size; i++) {
-    	        LeoObject obj = get(i);
-    	        LeoObject result = function.xcall(obj);
-    	        if(LeoObject.isTrue(result)) {
-    	            return result;
-    	        }
-    	    }
-	    }
-	    
-	    return LeoObject.NULL;
-	}
-	
-	/**
-	 * Filters the {@link LeoArray}
-	 * 
-	 * <pre>
-	 *     var evens = [1,2,3,4].filter(def(e) {
-	 *         return e % 2 == 0
-	 *     }) 
-	 *     println(evens) // prints, 2, 4
-	 * </pre>
-	 * 
-	 * @param function
-	 * @return a resulting {@link LeoArray}
-	 */
-	public LeoArray filter(LeoObject function) {
-	    if(function != null) {
-	        LeoArray array = new LeoArray();
+        else {
+            Arrays.sort(this.array, 0, this.size);
+        }
+        
+        return this;
+    }
+    
+    /**
+     * Iterates through the array, invoking the supplied 
+     * function object for each element
+     * 
+     * <pre>
+     *   [1,2,3].foreach(println)
+     *   // prints:
+     *   // 1
+     *   // 2
+     *   // 3
+     * </pre>
+     * 
+     * @param function
+     * @return the {@link LeoObject} returned from the supplied function if returned <code>true</code>
+     */
+    public LeoObject foreach(LeoObject function) {
+        if(function != null) {
+            for(int i = 0; i < this.size; i++) {
+                LeoObject obj = get(i);
+                LeoObject result = function.xcall(obj);
+                if(LeoObject.isTrue(result)) {
+                    return result;
+                }
+            }
+        }
+        
+        return LeoObject.NULL;
+    }
+    
+    /**
+     * Filters the {@link LeoArray}
+     * 
+     * <pre>
+     *     var evens = [1,2,3,4].filter(def(e) {
+     *         return e % 2 == 0
+     *     }) 
+     *     println(evens) // prints, 2, 4
+     * </pre>
+     * 
+     * @param function
+     * @return a resulting {@link LeoArray}
+     */
+    public LeoArray filter(LeoObject function) {
+        if(function != null) {
+            LeoArray array = new LeoArray();
             for(int i = 0; i < this.size; i++) {
                 LeoObject obj = get(i);
                 if( LeoObject.isTrue(function.xcall(obj)) ) {
@@ -273,22 +273,22 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
             }
             return array;
         }
-	    return this;
-	}
-	
-	
-	/**
-	 * Maps the supplied function to each element in the array.
-	 * 
-	 * <pre>
-	 *     var result = [1,2,3,4].map(def(e) return e*2)
-	 *     println(result) // 2, 4, 6, 8
-	 * </pre>
-	 * 
-	 * @param function
-	 * @return
-	 */
-	public LeoArray map(LeoObject function) {
+        return this;
+    }
+    
+    
+    /**
+     * Maps the supplied function to each element in the array.
+     * 
+     * <pre>
+     *     var result = [1,2,3,4].map(def(e) return e*2)
+     *     println(result) // 2, 4, 6, 8
+     * </pre>
+     * 
+     * @param function
+     * @return
+     */
+    public LeoArray map(LeoObject function) {
         if(function != null) {
             LeoArray array = new LeoArray(this.size);
             for(int i = 0; i < this.size; i++) {                
@@ -301,22 +301,22 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
         }
         return this;
     }
-	
-	
-	/**
-	 * Reduces all of the elements in this array into one value.
-	 * 
-	 * <pre>
-	 *     var sum = [1,2,3,4].reduce(def(p,n) return p+n)
-	 *     println(sum) // 10
-	 * </pre>
-	 * 
-	 * 
-	 * @param function
-	 * @return
-	 */
-	public LeoObject reduce(LeoObject function) {
-	    if(function != null && !isEmpty()) {
+    
+    
+    /**
+     * Reduces all of the elements in this array into one value.
+     * 
+     * <pre>
+     *     var sum = [1,2,3,4].reduce(def(p,n) return p+n)
+     *     println(sum) // 10
+     * </pre>
+     * 
+     * 
+     * @param function
+     * @return
+     */
+    public LeoObject reduce(LeoObject function) {
+        if(function != null && !isEmpty()) {
             
             LeoObject result = get(0);
             for(int i = 1; i < this.size; i++) {            
@@ -326,21 +326,21 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
             return result;
         }
         return LeoNull.LEONULL;
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.types.LeoObject#isArray()
-	 */
-	@Override
-	public boolean isArray() {
-		return true;
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.types.LeoObject#toString()
-	 */
-	@Override
-	public String toString() {
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.types.LeoObject#isArray()
+     */
+    @Override
+    public boolean isArray() {
+        return true;
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.types.LeoObject#toString()
+     */
+    @Override
+    public String toString() {
         if (this.array == null)
             return "[]";
         int iMax = this.size - 1;
@@ -365,552 +365,552 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
             }
             
             if (i >= iMax)
-            	return b.append(']').toString();
+                return b.append(']').toString();
             b.append(", ");
         }        
-	}
+    }
 
-	/**
-	 * Adds an object
-	 * @param obj
-	 */
-	@Override
-	public LeoObject $add(LeoObject obj) {
-		add(obj);
-		return this;
-	}	
-	
-	public void addAll(LeoObject other) {
-		if ( other.isOfType(LeoType.ARRAY)) {
-			LeoArray aOther = other.as();
-			addAll((Collection<LeoObject>)aOther);
-		}
-		else {
-			$add(other);
-		}
-	}
-	
-	/**
-	 * Adds an object to the array
-	 * @param obj
-	 */
-	public void push(LeoObject obj) {
-		add(obj);
-	}
+    /**
+     * Adds an object
+     * @param obj
+     */
+    @Override
+    public LeoObject $add(LeoObject obj) {
+        add(obj);
+        return this;
+    }    
+    
+    public void addAll(LeoObject other) {
+        if ( other.isOfType(LeoType.ARRAY)) {
+            LeoArray aOther = other.as();
+            addAll((Collection<LeoObject>)aOther);
+        }
+        else {
+            $add(other);
+        }
+    }
+    
+    /**
+     * Adds an object to the array
+     * @param obj
+     */
+    public void push(LeoObject obj) {
+        add(obj);
+    }
 
-	/**
-	 * Removes an object.
-	 * @param obj
-	 */
-	@LeolaMethod(alias="remove")
-	public boolean remove(LeoObject obj) {
-		return this._remove(obj);
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.types.LeoObject#sub(leola.types.LeoObject)
-	 */
-	@Override
-	public LeoObject $sub(LeoObject other) {
-		this._remove(other);
-		return this;
-	}
-	
-	public void removeAll(LeoObject other) {
-		if ( other.isOfType(LeoType.ARRAY)) {
-			LeoArray aOther = other.as();
-			this.removeAll((Collection<?>)aOther);
-		}
-		else {
-			_remove(other);
-		}
-	}
-	/**
-	 * Clears the array
-	 */
-	public void clear() {
-	    for(int i = 0; i < this.size; i++ ) {
-	    	this.array[i] = LeoNull.LEONULL;
-	    }
-	    this.size = 0;
-	}
+    /**
+     * Removes an object.
+     * @param obj
+     */
+    @LeolaMethod(alias="remove")
+    public boolean remove(LeoObject obj) {
+        return this._remove(obj);
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.types.LeoObject#sub(leola.types.LeoObject)
+     */
+    @Override
+    public LeoObject $sub(LeoObject other) {
+        this._remove(other);
+        return this;
+    }
+    
+    public void removeAll(LeoObject other) {
+        if ( other.isOfType(LeoType.ARRAY)) {
+            LeoArray aOther = other.as();
+            this.removeAll((Collection<?>)aOther);
+        }
+        else {
+            _remove(other);
+        }
+    }
+    /**
+     * Clears the array
+     */
+    public void clear() {
+        for(int i = 0; i < this.size; i++ ) {
+            this.array[i] = LeoNull.LEONULL;
+        }
+        this.size = 0;
+    }
 
-	/**
-	 * @return
-	 */
-	public LeoObject pop() {
-		return this.remove(this.size-1);
-	}
+    /**
+     * @return
+     */
+    public LeoObject pop() {
+        return this.remove(this.size-1);
+    }
 
-	/**
-	 * @return
-	 */
-	public LeoObject peek() {
-		return this.get(this.size-1);
-	}
+    /**
+     * @return
+     */
+    public LeoObject peek() {
+        return this.get(this.size-1);
+    }
 
-	/**
-	 * Gets an element
-	 * @param i
-	 * @return
-	 */
-	@LeolaMethod(alias="get")
-	public LeoObject get(int i) {
-		return this.array[i];
-	}
+    /**
+     * Gets an element
+     * @param i
+     * @return
+     */
+    @LeolaMethod(alias="get")
+    public LeoObject get(int i) {
+        return this.array[i];
+    }
 
-	/**
-	 * @return the size of the array
-	 */
-	public int size() {
-		return this.size;
-	}
+    /**
+     * @return the size of the array
+     */
+    public int size() {
+        return this.size;
+    }
 
-	/**
-	 * @return
-	 */
-	public boolean empty() {
-		return this.size == 0;
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#$index(double)
-	 */
-	@Override
-	public LeoObject $index(double other) {
-	    return get( (int) other);
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#$index(int)
-	 */
-	@Override
-	public LeoObject $index(int other) {
-	    return get(other);
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#$index(long)
-	 */
-	@Override
-	public LeoObject $index(long other) {	 
-	    return get( (int)other );
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#$index(leola.vm.types.LeoObject)
-	 */
-	@Override
-	public LeoObject $index(LeoObject other) {
-	    return get(other.asInt());
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#$index(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
-	 */
-	@Override
-	public void $sindex(LeoObject key, LeoObject other) {
-	    set(key, other);
-	}
+    /**
+     * @return
+     */
+    public boolean empty() {
+        return this.size == 0;
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(double)
+     */
+    @Override
+    public LeoObject $index(double other) {
+        return get( (int) other);
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(int)
+     */
+    @Override
+    public LeoObject $index(int other) {
+        return get(other);
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(long)
+     */
+    @Override
+    public LeoObject $index(long other) {     
+        return get( (int)other );
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(leola.vm.types.LeoObject)
+     */
+    @Override
+    public LeoObject $index(LeoObject other) {
+        return get(other.asInt());
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$index(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
+     */
+    @Override
+    public void $sindex(LeoObject key, LeoObject other) {
+        set(key, other);
+    }
 
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#setObject(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
-	 */
-	@Override
-	public void setObject(LeoObject key, LeoObject value) {	
-	    if(key.isNumber()) {
-	        set(key,value);
-	    }
-	    else {
-	        this.getApiMappings().put(key, value);
-	    }
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#getObject(leola.vm.types.LeoObject)
-	 */
-	@Override
-	public LeoObject getObject(LeoObject key) {
-	    if(key.isNumber()) {
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#setObject(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
+     */
+    @Override
+    public void setObject(LeoObject key, LeoObject value) {    
+        if(key.isNumber()) {
+            set(key,value);
+        }
+        else {
+            this.getApiMappings().put(key, value);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#getObject(leola.vm.types.LeoObject)
+     */
+    @Override
+    public LeoObject getObject(LeoObject key) {
+        if(key.isNumber()) {
             return get(key.asInt());
         }
         
-	    if(hasNativeMethod(this, key)) {
-	        return getNativeMethod(key);
-	    }
-	    
-	    return LeoObject.NULL;
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#getObject(leola.vm.types.LeoObject)
-	 */
-	@Override
-	public LeoObject xgetObject(LeoObject key) {
-	    if(key.isNumber()) {
-	        return get(key.asInt());
-	    }
-	    
-	    return getNativeMethod(key);
-	}
-	
-	
-	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#hasObject(leola.vm.types.LeoObject)
-	 */
-	@Override
-	public boolean hasObject(LeoObject key) {	 
-	    return hasNativeMethod(this, key);
-	}
-	
-	/**
-	 * Sets an element
-	 * @param index
-	 * @param obj
-	 */
-	public LeoObject set(int index, LeoObject obj) {
-		return this.array[index] = obj;
-	}
+        if(hasNativeMethod(this, key)) {
+            return getNativeMethod(key);
+        }
+        
+        return LeoObject.NULL;
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#getObject(leola.vm.types.LeoObject)
+     */
+    @Override
+    public LeoObject xgetObject(LeoObject key) {
+        if(key.isNumber()) {
+            return get(key.asInt());
+        }
+        
+        return getNativeMethod(key);
+    }
+    
+    
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#hasObject(leola.vm.types.LeoObject)
+     */
+    @Override
+    public boolean hasObject(LeoObject key) {     
+        return hasNativeMethod(this, key);
+    }
+    
+    /**
+     * Sets an element
+     * @param index
+     * @param obj
+     */
+    public LeoObject set(int index, LeoObject obj) {
+        return this.array[index] = obj;
+    }
 
-	/**
-	 * Sets the element at the provided index
-	 * @param index
-	 * @param obj
-	 */
-	public void set(LeoObject index, LeoObject obj) {
-		this.array[index.asInt()] = obj;
-	}
+    /**
+     * Sets the element at the provided index
+     * @param index
+     * @param obj
+     */
+    public void set(LeoObject index, LeoObject obj) {
+        this.array[index.asInt()] = obj;
+    }
 
-	public LeoObject reverse() {
-		LeoArray result = new LeoArray(this.size);
-		for(int i = this.size-1; i >=0; i--) {
-			result.add(get(i));
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * gets a sublist
-	 * @param start
-	 * @param end
-	 * @return
-	 */
-	public LeoArray slice(int start, int end) {
-		if(start>end) {
-			throw new LeolaRuntimeException("Can't slice an array with start > end");			
-		}
-		
-		LeoObject[] slice = new LeoObject[end-start];
-		System.arraycopy(this.array, start, slice, 0, slice.length);
-		
-		return new LeoArray(slice);
-	}
+    public LeoObject reverse() {
+        LeoArray result = new LeoArray(this.size);
+        for(int i = this.size-1; i >=0; i--) {
+            result.add(get(i));
+        }
+        
+        return result;
+    }
+    
+    /**
+     * gets a sublist
+     * @param start
+     * @param end
+     * @return
+     */
+    public LeoArray slice(int start, int end) {
+        if(start>end) {
+            throw new LeolaRuntimeException("Can't slice an array with start > end");            
+        }
+        
+        LeoObject[] slice = new LeoObject[end-start];
+        System.arraycopy(this.array, start, slice, 0, slice.length);
+        
+        return new LeoArray(slice);
+    }
 
-	/**
-	 * gets a sublist
-	 * @param start
-	 * @param end
-	 * @return
-	 */
-	public LeoArray tail(int start) {
-		return slice(start, this.size);
-	}
+    /**
+     * gets a sublist
+     * @param start
+     * @param end
+     * @return
+     */
+    public LeoArray tail(int start) {
+        return slice(start, this.size);
+    }
 
-	/**
-	 * @return the first element
-	 */
-	public LeoObject first() {
-		return this.array[0];
-	}
-	/**
-	 * @return the last element
-	 */
-	public LeoObject last() {
-		if(this.array.length > 0) {
-			return this.array[this.size-1];
-		}
-		return LeoNull.LEONULL;
-	}
+    /**
+     * @return the first element
+     */
+    public LeoObject first() {
+        return this.array[0];
+    }
+    /**
+     * @return the last element
+     */
+    public LeoObject last() {
+        if(this.array.length > 0) {
+            return this.array[this.size-1];
+        }
+        return LeoNull.LEONULL;
+    }
 
-	/**
-	 * Truncates the first element and returns the rest of the array.
-	 * @return
-	 */
-	public LeoObject rest() {
-		if (this.size < 2 ) return new LeoArray(0);
-		return slice(1, this.size);
-	}
+    /**
+     * Truncates the first element and returns the rest of the array.
+     * @return
+     */
+    public LeoObject rest() {
+        if (this.size < 2 ) return new LeoArray(0);
+        return slice(1, this.size);
+    }
 
-	/**
-	 * @return the array
-	 */
-	public List<LeoObject> getArray() {
-		return this;
-	}
+    /**
+     * @return the array
+     */
+    public List<LeoObject> getArray() {
+        return this;
+    }
 
-	/**
-	 * @param value
-	 * @return
-	 */
-	public boolean has(LeoObject value) {
-		for(int i = 0; i < this.size; i++) {
-			LeoObject l = this.array[i];
-			if ( l != null && l.$eq(value)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    /**
+     * @param value
+     * @return
+     */
+    public boolean has(LeoObject value) {
+        for(int i = 0; i < this.size; i++) {
+            LeoObject l = this.array[i];
+            if ( l != null && l.$eq(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	/**
-	 * @return a native array representation
-	 */
-	public LeoObject[] toArray() {
-	    LeoObject[] clone = new LeoObject[this.size];
-	    System.arraycopy(this.array, 0, clone, 0, clone.length);
-		return clone;
-	}
-	
-	/**
+    /**
+     * @return a native array representation
+     */
+    public LeoObject[] toArray() {
+        LeoObject[] clone = new LeoObject[this.size];
+        System.arraycopy(this.array, 0, clone, 0, clone.length);
+        return clone;
+    }
+    
+    /**
      * @return a native array representation
      */
     public LeoObject[] getRawArray() {
         return this.array;
     }
-	
-	/* (non-Javadoc)
-	 * @see leola.types.LeoObject#clone()
-	 */
-	@Override
-	public LeoObject clone() {
-		return new LeoArray(this.array, this.size);
-	}
-
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#$bsl(double)
-	 */
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#$bsl(leola.vm.types.LeoObject)
-	 */
-	@Override
-	public LeoObject $bsl(LeoObject other) {	
-		addAll(other);
-		return this;
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#$bsr(leola.vm.types.LeoObject)
-	 */
-	@Override
-	public LeoObject $bsr(LeoObject other) {
-		removeAll(other);
-		return this;
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#$xor(leola.vm.types.LeoObject)
-	 */
-	@Override
-	public LeoObject $xor(LeoObject other) {	
-		return has(other) ? LeoBoolean.LEOTRUE : LeoBoolean.LEOFALSE;
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#$neq(leola.vm.types.LeoObject)
-	 */
-	@Override
-	public boolean $neq(LeoObject other) {
-	    return ! $eq(other);
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.types.LeoObject#eq(leola.types.LeoObject)
-	 */
-	@Override
-	public boolean $eq(LeoObject other) {
-	    if(other==this) {
-	        return true;
-	    }
-	    
-		if ( other != null && other.isOfType(LeoType.ARRAY)) {
-			LeoArray otherarray = other.as();
-			if ( otherarray.size == this.size) {
-				for(int i = 0; i < this.size; i++) {
-					LeoObject l = this.array[i];
-					LeoObject r = otherarray.array[i];
-					if ( ! LeoObject.$eq(l, r) ) {
-						return false;
-					}
-				}
-
-				return true;
-			}			
-		}
-
-		return false;
-
-	}
-
-	/* (non-Javadoc)
-	 * @see leola.types.LeoObject#getValue()
-	 */
-	@Override
-	public Object getValue() {
-		return this; /*this.array;*/
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.vm.types.LeoObject#getValue(java.lang.Class)
-	 */
-	@Override
-	public Object getValue(Class<?> narrowType) {
-	    if(narrowType.isArray()) {
-	        Class<?> arrayType = narrowType.getComponentType();
-	        Object array = Array.newInstance(arrayType, size());
-	        for(int i = 0; i < size(); i++) {
-	            Object javaElement = LeoObject.toJavaObject(arrayType, this.array[i]);
-                Array.set(array, i, javaElement);
-	        }
-	        return array;
-	    }
-	    
-	    return super.getValue(narrowType);
-	}
-	
-	/* (non-Javadoc)
-	 * @see leola.types.LeoObject#gt(leola.types.LeoObject)
-	 */
-	@Override
-	public boolean $gt(LeoObject other) {
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see leola.types.LeoObject#lt(leola.types.LeoObject)
-	 */
-	@Override
-	public boolean $lt(LeoObject other) {
-		return false;
-	}
-
-	@Override
-	public void write(DataOutput out) throws IOException {
-		out.write(this.getType().ordinal());
-		out.writeInt(this.size);
-		for(int i = 0; i < this.size; i++) {			
-			this.array[i].write(out);
-		}
-	}
-	
-	/**
-	 * Reads from the {@link DataInput} stream, constructing a {@link LeoObject}
-	 * 
-	 * @param in
-	 * @return the {@link LeoObject}
-	 * @throws IOException
-	 */
-	public static LeoArray read(LeoObject env, DataInput in) throws IOException {
-		int size = in.readInt();
-		LeoArray result = new LeoArray(size);
-		for(int i = 0; i < size; i++) {
-			LeoObject obj = LeoObject.read(env, in);
-			result.$add(obj);
-		}
-		
-		return result;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.List#isEmpty()
-	 */	
-	public boolean isEmpty() {
-		return this.size == 0;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.List#contains(java.lang.Object)
-	 */
-	@LeolaMethod(alias="contains")
-	public boolean contains(Object o) {
-		return this.has(LeoObject.valueOf(o));
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.List#iterator()
-	 */
-	
-	public Iterator<LeoObject> iterator() {
-		return new LeoArrayListIterator(this, 0);
-	}
-
-	
-	
-	/* (non-Javadoc)
-	 * @see java.util.List#toArray(T[])
-	 */
-	
-	@SuppressWarnings("unchecked")
-	public <T> T[] toArray(T[] a) {
-		if(a.length < this.size) {
-			a = (T[])Array.newInstance(a.getClass().getComponentType(), this.size);
-		}
-		
-		for(int i = 0; i < this.size; i++) {			
-			a[i] = (T)this.array[i].getValue();
-		}
-		return a;
-	}
-	
-	
-
-	private void ensureCapacity(int minCapacity) {
-		
-		int oldCapacity = this.array.length;
-		if (minCapacity > oldCapacity) {
-		    LeoObject oldData[] = this.array;
-		    int newCapacity = (oldCapacity * 3)/2 + 1;
-		    
-	    	if (newCapacity < minCapacity) newCapacity = minCapacity;
-	    	
-	    	this.array = new LeoObject[newCapacity];
-	    	System.arraycopy(oldData, 0, this.array, 0, oldCapacity);	 
-	    	for(int i = this.size; i < newCapacity; i++) {
-	    		this.array[i] = LeoNull.LEONULL;
-	    	}
-		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see java.util.List#add(java.lang.Object)
-	 */
-	
-	public boolean add(LeoObject e) {
-		ensureCapacity(this.size + 1);
-		this.array[this.size++] = e;
-		return true;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.List#remove(java.lang.Object)
-	 */
-	
-	public boolean remove(Object o) {
-		return _remove(o);
+    
+    /* (non-Javadoc)
+     * @see leola.types.LeoObject#clone()
+     */
+    @Override
+    public LeoObject clone() {
+        return new LeoArray(this.array, this.size);
     }
 
-	private boolean _remove(Object o) {		
-	    for (int index = 0; index < size; index++) {
-			if (o.equals(this.array[index])) {
-			    fastRemove(index);
-			    return true;
-			}
-	    }
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$bsl(double)
+     */
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$bsl(leola.vm.types.LeoObject)
+     */
+    @Override
+    public LeoObject $bsl(LeoObject other) {    
+        addAll(other);
+        return this;
+    }
     
-		return false;
-	}
-	
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$bsr(leola.vm.types.LeoObject)
+     */
+    @Override
+    public LeoObject $bsr(LeoObject other) {
+        removeAll(other);
+        return this;
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$xor(leola.vm.types.LeoObject)
+     */
+    @Override
+    public LeoObject $xor(LeoObject other) {    
+        return has(other) ? LeoBoolean.LEOTRUE : LeoBoolean.LEOFALSE;
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#$neq(leola.vm.types.LeoObject)
+     */
+    @Override
+    public boolean $neq(LeoObject other) {
+        return ! $eq(other);
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.types.LeoObject#eq(leola.types.LeoObject)
+     */
+    @Override
+    public boolean $eq(LeoObject other) {
+        if(other==this) {
+            return true;
+        }
+        
+        if ( other != null && other.isOfType(LeoType.ARRAY)) {
+            LeoArray otherarray = other.as();
+            if ( otherarray.size == this.size) {
+                for(int i = 0; i < this.size; i++) {
+                    LeoObject l = this.array[i];
+                    LeoObject r = otherarray.array[i];
+                    if ( ! LeoObject.$eq(l, r) ) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }            
+        }
+
+        return false;
+
+    }
+
+    /* (non-Javadoc)
+     * @see leola.types.LeoObject#getValue()
+     */
+    @Override
+    public Object getValue() {
+        return this; /*this.array;*/
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.vm.types.LeoObject#getValue(java.lang.Class)
+     */
+    @Override
+    public Object getValue(Class<?> narrowType) {
+        if(narrowType.isArray()) {
+            Class<?> arrayType = narrowType.getComponentType();
+            Object array = Array.newInstance(arrayType, size());
+            for(int i = 0; i < size(); i++) {
+                Object javaElement = LeoObject.toJavaObject(arrayType, this.array[i]);
+                Array.set(array, i, javaElement);
+            }
+            return array;
+        }
+        
+        return super.getValue(narrowType);
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.types.LeoObject#gt(leola.types.LeoObject)
+     */
+    @Override
+    public boolean $gt(LeoObject other) {
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see leola.types.LeoObject#lt(leola.types.LeoObject)
+     */
+    @Override
+    public boolean $lt(LeoObject other) {
+        return false;
+    }
+
+    @Override
+    public void write(DataOutput out) throws IOException {
+        out.write(this.getType().ordinal());
+        out.writeInt(this.size);
+        for(int i = 0; i < this.size; i++) {            
+            this.array[i].write(out);
+        }
+    }
+    
+    /**
+     * Reads from the {@link DataInput} stream, constructing a {@link LeoObject}
+     * 
+     * @param in
+     * @return the {@link LeoObject}
+     * @throws IOException
+     */
+    public static LeoArray read(LeoObject env, DataInput in) throws IOException {
+        int size = in.readInt();
+        LeoArray result = new LeoArray(size);
+        for(int i = 0; i < size; i++) {
+            LeoObject obj = LeoObject.read(env, in);
+            result.$add(obj);
+        }
+        
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.List#isEmpty()
+     */    
+    public boolean isEmpty() {
+        return this.size == 0;
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.List#contains(java.lang.Object)
+     */
+    @LeolaMethod(alias="contains")
+    public boolean contains(Object o) {
+        return this.has(LeoObject.valueOf(o));
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.List#iterator()
+     */
+    
+    public Iterator<LeoObject> iterator() {
+        return new LeoArrayListIterator(this, 0);
+    }
+
+    
+    
+    /* (non-Javadoc)
+     * @see java.util.List#toArray(T[])
+     */
+    
+    @SuppressWarnings("unchecked")
+    public <T> T[] toArray(T[] a) {
+        if(a.length < this.size) {
+            a = (T[])Array.newInstance(a.getClass().getComponentType(), this.size);
+        }
+        
+        for(int i = 0; i < this.size; i++) {            
+            a[i] = (T)this.array[i].getValue();
+        }
+        return a;
+    }
+    
+    
+
+    private void ensureCapacity(int minCapacity) {
+        
+        int oldCapacity = this.array.length;
+        if (minCapacity > oldCapacity) {
+            LeoObject oldData[] = this.array;
+            int newCapacity = (oldCapacity * 3)/2 + 1;
+            
+            if (newCapacity < minCapacity) newCapacity = minCapacity;
+            
+            this.array = new LeoObject[newCapacity];
+            System.arraycopy(oldData, 0, this.array, 0, oldCapacity);     
+            for(int i = this.size; i < newCapacity; i++) {
+                this.array[i] = LeoNull.LEONULL;
+            }
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see java.util.List#add(java.lang.Object)
+     */
+    
+    public boolean add(LeoObject e) {
+        ensureCapacity(this.size + 1);
+        this.array[this.size++] = e;
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.List#remove(java.lang.Object)
+     */
+    
+    public boolean remove(Object o) {
+        return _remove(o);
+    }
+
+    private boolean _remove(Object o) {        
+        for (int index = 0; index < size; index++) {
+            if (o.equals(this.array[index])) {
+                fastRemove(index);
+                return true;
+            }
+        }
+    
+        return false;
+    }
+    
     /*
      * Private remove method that skips bounds checking and does not
      * return the value removed.
@@ -924,209 +924,209 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
         array[--size] = LeoNull.LEONULL;
     }
 
-	/* (non-Javadoc)
-	 * @see java.util.List#containsAll(java.util.Collection)
-	 */
-	
-	public boolean containsAll(Collection<?> c) {
-		boolean containsAll = true;
-		for(Object o : c) {
-			if( ! contains(o) ) {
-				return false;
-			}
-		}
-		
-		return containsAll;
-	}
+    /* (non-Javadoc)
+     * @see java.util.List#containsAll(java.util.Collection)
+     */
+    
+    public boolean containsAll(Collection<?> c) {
+        boolean containsAll = true;
+        for(Object o : c) {
+            if( ! contains(o) ) {
+                return false;
+            }
+        }
+        
+        return containsAll;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.util.List#addAll(java.util.Collection)
-	 */
-	
-	public boolean addAll(Collection<? extends LeoObject> c) {
-		ensureCapacity(this.size + c.size());
-		for(LeoObject o : c) {
-			this.add(o);
-		}
-		return true;
-	}
+    /* (non-Javadoc)
+     * @see java.util.List#addAll(java.util.Collection)
+     */
+    
+    public boolean addAll(Collection<? extends LeoObject> c) {
+        ensureCapacity(this.size + c.size());
+        for(LeoObject o : c) {
+            this.add(o);
+        }
+        return true;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.util.List#addAll(int, java.util.Collection)
-	 */
-	
-	public boolean addAll(int index, Collection<? extends LeoObject> c) {
-		ensureCapacity(this.size + c.size());
-		
-		for(LeoObject o : c) {
-			add(index++, o);
-		}
-		
-		return true;
-	}
+    /* (non-Javadoc)
+     * @see java.util.List#addAll(int, java.util.Collection)
+     */
+    
+    public boolean addAll(int index, Collection<? extends LeoObject> c) {
+        ensureCapacity(this.size + c.size());
+        
+        for(LeoObject o : c) {
+            add(index++, o);
+        }
+        
+        return true;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.util.List#removeAll(java.util.Collection)
-	 */
-	
-	public boolean removeAll(Collection<?> c) {
-		for(Object o : c) {
-			this._remove(o);
-		}
-		return true;
-	}
+    /* (non-Javadoc)
+     * @see java.util.List#removeAll(java.util.Collection)
+     */
+    
+    public boolean removeAll(Collection<?> c) {
+        for(Object o : c) {
+            this._remove(o);
+        }
+        return true;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.util.List#retainAll(java.util.Collection)
-	 */
-	
-	public boolean retainAll(Collection<?> c) {
-		List<LeoObject> objectsToRemove = new ArrayList<LeoObject>();
-		for(int i = 0; i < this.size; i++) {
-			LeoObject o = this.array[i];
-			if(o != null) {
-				if(!c.contains(o)) {
-					objectsToRemove.add(o);
-				}
-			}
-		}
-		
-		return this.removeAll(objectsToRemove);		
-	}
+    /* (non-Javadoc)
+     * @see java.util.List#retainAll(java.util.Collection)
+     */
+    
+    public boolean retainAll(Collection<?> c) {
+        List<LeoObject> objectsToRemove = new ArrayList<LeoObject>();
+        for(int i = 0; i < this.size; i++) {
+            LeoObject o = this.array[i];
+            if(o != null) {
+                if(!c.contains(o)) {
+                    objectsToRemove.add(o);
+                }
+            }
+        }
+        
+        return this.removeAll(objectsToRemove);        
+    }
 
-	/* (non-Javadoc)
-	 * @see java.util.List#add(int, java.lang.Object)
-	 */
-	
-	public void add(int index, LeoObject element) {
-		ensureCapacity(size+1); 
-		System.arraycopy(this.array, index, this.array, index + 1, size - index);
-		this.array[index] = element;
-		size++;
-	}
+    /* (non-Javadoc)
+     * @see java.util.List#add(int, java.lang.Object)
+     */
+    
+    public void add(int index, LeoObject element) {
+        ensureCapacity(size+1); 
+        System.arraycopy(this.array, index, this.array, index + 1, size - index);
+        this.array[index] = element;
+        size++;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.util.List#remove(int)
-	 */
-	
-	public LeoObject remove(int index) {
-		LeoObject oldValue = this.array[index];
+    /* (non-Javadoc)
+     * @see java.util.List#remove(int)
+     */
+    
+    public LeoObject remove(int index) {
+        LeoObject oldValue = this.array[index];
 
-		int numMoved = size - index - 1;
-		if (numMoved > 0)
-		    System.arraycopy(this.array, index+1, this.array, index, numMoved);
-		this.array[--size] = LeoNull.LEONULL;
-		return oldValue;
-	}
+        int numMoved = size - index - 1;
+        if (numMoved > 0)
+            System.arraycopy(this.array, index+1, this.array, index, numMoved);
+        this.array[--size] = LeoNull.LEONULL;
+        return oldValue;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.util.List#indexOf(java.lang.Object)
-	 */
-	
-	public int indexOf(Object o) {	
-	    for (int i = 0; i < size; i++) {
-			if (o.equals(this.array[i]))
-			    return i;
-	    }
-	
-		return -1;
-	}
+    /* (non-Javadoc)
+     * @see java.util.List#indexOf(java.lang.Object)
+     */
+    
+    public int indexOf(Object o) {    
+        for (int i = 0; i < size; i++) {
+            if (o.equals(this.array[i]))
+                return i;
+        }
+    
+        return -1;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.util.List#lastIndexOf(java.lang.Object)
-	 */
-	
-	public int lastIndexOf(Object o) {	
-	    for (int i = size-1; i >= 0; i--) {
-			if (o.equals(this.array[i]))
-			    return i;
-	    }	
-		return -1;
-	}
+    /* (non-Javadoc)
+     * @see java.util.List#lastIndexOf(java.lang.Object)
+     */
+    
+    public int lastIndexOf(Object o) {    
+        for (int i = size-1; i >= 0; i--) {
+            if (o.equals(this.array[i]))
+                return i;
+        }    
+        return -1;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.util.List#listIterator()
-	 */
-	
-	public ListIterator<LeoObject> listIterator() {
-		return new LeoArrayListIterator(this, 0);
-	}
+    /* (non-Javadoc)
+     * @see java.util.List#listIterator()
+     */
+    
+    public ListIterator<LeoObject> listIterator() {
+        return new LeoArrayListIterator(this, 0);
+    }
 
-	/* (non-Javadoc)
-	 * @see java.util.List#listIterator(int)
-	 */
-	
-	public ListIterator<LeoObject> listIterator(int index) {
-		return new LeoArrayListIterator(this, index);
-	}
+    /* (non-Javadoc)
+     * @see java.util.List#listIterator(int)
+     */
+    
+    public ListIterator<LeoObject> listIterator(int index) {
+        return new LeoArrayListIterator(this, index);
+    }
 
-	/* (non-Javadoc)
-	 * @see java.util.List#subList(int, int)
-	 */
-	
-	public List<LeoObject> subList(int fromIndex, int toIndex) {
-		return slice(fromIndex, toIndex);
-	}
-	
-	static class LeoArrayListIterator implements ListIterator<LeoObject> {
-		private int cursor;
-		private int lastRet;
-		private LeoArray array;
-		
-		
-		/**
-		 * 
-		 */
-		public LeoArrayListIterator(LeoArray leoArray, int index) {
-			this.array = leoArray;			
-			this.cursor = index;
-			this.lastRet = -1;
-			
-		}
-		
-		@Override
-		public boolean hasNext() {
-			return cursor < array.size;
-		}
+    /* (non-Javadoc)
+     * @see java.util.List#subList(int, int)
+     */
+    
+    public List<LeoObject> subList(int fromIndex, int toIndex) {
+        return slice(fromIndex, toIndex);
+    }
+    
+    static class LeoArrayListIterator implements ListIterator<LeoObject> {
+        private int cursor;
+        private int lastRet;
+        private LeoArray array;
+        
+        
+        /**
+         * 
+         */
+        public LeoArrayListIterator(LeoArray leoArray, int index) {
+            this.array = leoArray;            
+            this.cursor = index;
+            this.lastRet = -1;
+            
+        }
+        
+        @Override
+        public boolean hasNext() {
+            return cursor < array.size;
+        }
 
-		@Override
-		public LeoObject next() {
-			int i = cursor;
+        @Override
+        public LeoObject next() {
+            int i = cursor;
             if (i >= array.size)
                 throw new NoSuchElementException();
                                     
             cursor = i + 1;
-            return array.array[(lastRet = i)];			
-		}
+            return array.array[(lastRet = i)];            
+        }
 
-		@Override
-		public boolean hasPrevious() {
-			return cursor > 0;
-		}
+        @Override
+        public boolean hasPrevious() {
+            return cursor > 0;
+        }
 
-		@Override
-		public LeoObject previous() {
-			
+        @Override
+        public LeoObject previous() {
+            
             int i = cursor - 1;
             if (i < 0)
                 throw new NoSuchElementException();            
             cursor = i;
-            return array.array[(lastRet = i)];			
-		}
+            return array.array[(lastRet = i)];            
+        }
 
-		@Override
-		public int nextIndex() {
-			return cursor;
-		}
+        @Override
+        public int nextIndex() {
+            return cursor;
+        }
 
-		@Override
-		public int previousIndex() {
-			return cursor-1;
-		}
+        @Override
+        public int previousIndex() {
+            return cursor-1;
+        }
 
-		@Override
-		public void remove() {
-	         if (lastRet < 0)
+        @Override
+        public void remove() {
+             if (lastRet < 0)
                  throw new IllegalStateException();
              
              try {
@@ -1138,24 +1138,24 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
              } catch (IndexOutOfBoundsException ex) {
                  throw new ConcurrentModificationException();
              }
-			
-			
-		}
+            
+            
+        }
 
-		@Override
-		public void set(LeoObject e) {
+        @Override
+        public void set(LeoObject e) {
             if (lastRet < 0)
                 throw new IllegalStateException();            
 
             try {
-            	array.set(lastRet, e);
+                array.set(lastRet, e);
             } catch (IndexOutOfBoundsException ex) {
                 throw new ConcurrentModificationException();
             }
-		}
+        }
 
-		@Override
-		public void add(LeoObject e) {
+        @Override
+        public void add(LeoObject e) {
             try {
                 int i = cursor;                
                 array.add(i, e);
@@ -1165,7 +1165,7 @@ public class LeoArray extends LeoObject implements List<LeoObject> {
             } catch (IndexOutOfBoundsException ex) {
                 throw new ConcurrentModificationException();
             }
-		}
-	};
+        }
+    };
 }
 

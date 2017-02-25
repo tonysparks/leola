@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.ast;
 
@@ -16,94 +16,94 @@ import leola.frontend.EvalException;
  */
 public class BinaryAssignmentExpr extends OwnableExpr {
 
-	/**
-	 * Var name
-	 */
-	private String varName;
+    /**
+     * Var name
+     */
+    private String varName;
 
-	/**
-	 * Expr to assign
-	 */
-	private Expr expr;
+    /**
+     * Expr to assign
+     */
+    private Expr expr;
 
-	/**
-	 * If this is a map or an array index assignment
-	 */
-	private Expr lhsExpr;
+    /**
+     * If this is a map or an array index assignment
+     */
+    private Expr lhsExpr;
 
-	/**
-	 * Binary operator
-	 */
-	private BinaryOp binaryOp;
+    /**
+     * Binary operator
+     */
+    private BinaryOp binaryOp;
 
-	/**
-	 * @param varName
-	 * @param lhsExpr
-	 * @param expr
-	 * @param binaryOp
-	 */
-	public BinaryAssignmentExpr(String varName, Expr lhsExpr, Expr expr, BinaryOp binaryOp) {
-		this(varName, varName, lhsExpr, expr, binaryOp);
-	}
+    /**
+     * @param varName
+     * @param lhsExpr
+     * @param expr
+     * @param binaryOp
+     */
+    public BinaryAssignmentExpr(String varName, Expr lhsExpr, Expr expr, BinaryOp binaryOp) {
+        this(varName, varName, lhsExpr, expr, binaryOp);
+    }
 
-	/**
-	 * @param owner
-	 * @param varName
-	 * @param lhsExpr
-	 * @param expr
-	 * @param binaryOp
-	 */
-	public BinaryAssignmentExpr(String owner, String varName, Expr lhsExpr, Expr expr, BinaryOp binaryOp) {
-		super(owner);
-		this.varName = varName;
-		this.lhsExpr = becomeParentOf(lhsExpr);
-		this.expr = becomeParentOf(expr);
-		this.binaryOp = binaryOp;
-	}
+    /**
+     * @param owner
+     * @param varName
+     * @param lhsExpr
+     * @param expr
+     * @param binaryOp
+     */
+    public BinaryAssignmentExpr(String owner, String varName, Expr lhsExpr, Expr expr, BinaryOp binaryOp) {
+        super(owner);
+        this.varName = varName;
+        this.lhsExpr = becomeParentOf(lhsExpr);
+        this.expr = becomeParentOf(expr);
+        this.binaryOp = binaryOp;
+    }
 
 
 
-	/* (non-Javadoc)
-	 * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-	 */
-	@Override
-	public void visit(ASTNodeVisitor v) throws EvalException {
-		v.visit(this);
-	}
+    /* (non-Javadoc)
+     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
+     */
+    @Override
+    public void visit(ASTNodeVisitor v) throws EvalException {
+        v.visit(this);
+    }
 
-	/**
-	 * @return the varName
-	 */
-	public String getVarName() {
-		return varName;
-	}
+    /**
+     * @return the varName
+     */
+    public String getVarName() {
+        return varName;
+    }
 
-	/**
-	 * @return the lhsExpr
-	 */
-	public Expr getLhsExpr() {
-		return lhsExpr;
-	}
+    /**
+     * @return the lhsExpr
+     */
+    public Expr getLhsExpr() {
+        return lhsExpr;
+    }
 
-	/**
-	 * @param lhsExpr the lhsExpr to set
-	 */
-	public void setLhsExpr(Expr lhsExpr) {
-		this.lhsExpr = becomeParentOf(lhsExpr);
-	}
+    /**
+     * @param lhsExpr the lhsExpr to set
+     */
+    public void setLhsExpr(Expr lhsExpr) {
+        this.lhsExpr = becomeParentOf(lhsExpr);
+    }
 
-	/**
-	 * @return the expr
-	 */
-	public Expr getExpr() {
-		return expr;
-	}
+    /**
+     * @return the expr
+     */
+    public Expr getExpr() {
+        return expr;
+    }
 
-	/**
-	 * @return the binaryOp
-	 */
-	public BinaryOp getBinaryOp() {
-		return binaryOp;
-	}
+    /**
+     * @return the binaryOp
+     */
+    public BinaryOp getBinaryOp() {
+        return binaryOp;
+    }
 }
 

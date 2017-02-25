@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.ast;
 
@@ -13,32 +13,32 @@ import leola.frontend.EvalException;
  */
 public class StringExpr extends Expr {
 
-	private String value;
+    private String value;
 
 
 
-	/**
-	 * @param value
-	 */
-	public StringExpr(String value) {
-		this.value = value;
-	}
+    /**
+     * @param value
+     */
+    public StringExpr(String value) {
+        this.value = value;
+    }
 
 
 
-	/* (non-Javadoc)
-	 * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-	 */
-	@Override
-	public void visit(ASTNodeVisitor v) throws EvalException {
-		v.visit(this);
-	}
+    /* (non-Javadoc)
+     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
+     */
+    @Override
+    public void visit(ASTNodeVisitor v) throws EvalException {
+        v.visit(this);
+    }
 
-	/**
-	 * @return the value
-	 */
-	public String getValue() {
-		return value;
-	}
+    /**
+     * @return the value
+     */
+    public String getValue() {
+        return value;
+    }
 }
 

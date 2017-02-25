@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.vm.debug;
 
@@ -13,10 +13,10 @@ package leola.vm.debug;
  */
 public interface DebugListener {
 
-	/**
-	 * A line has been encountered
-	 * 
-	 * @param event
-	 */
-	public void onLineNumber(DebugEvent event);
+    /**
+     * A line has been encountered
+     * 
+     * @param event
+     */
+    public void onLineNumber(DebugEvent event);
 }

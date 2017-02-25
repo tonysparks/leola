@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.vm.util;
 
@@ -36,97 +36,97 @@ import leola.vm.types.LeoString;
  */
 public class ClassUtil {
 
-	public static final Class<?>[] STRING = { String.class, char.class, Character.class };
-	public static final Class<?>[] BOOLEAN = { boolean.class, Boolean.class };
-	public static final Class<?>[] BYTE = { byte.class, Byte.class };
-	public static final Class<?>[] CHAR = { char.class, Character.class };
-	public static final Class<?>[] SHORT = { short.class, Short.class };
-	public static final Class<?>[] INT = { int.class, Integer.class };
-	public static final Class<?>[] LONG = { long.class, Long.class };
-	public static final Class<?>[] FLOAT = { float.class, Float.class };
-	public static final Class<?>[] DOUBLE = { double.class, Double.class };
+    public static final Class<?>[] STRING = { String.class, char.class, Character.class };
+    public static final Class<?>[] BOOLEAN = { boolean.class, Boolean.class };
+    public static final Class<?>[] BYTE = { byte.class, Byte.class };
+    public static final Class<?>[] CHAR = { char.class, Character.class };
+    public static final Class<?>[] SHORT = { short.class, Short.class };
+    public static final Class<?>[] INT = { int.class, Integer.class };
+    public static final Class<?>[] LONG = { long.class, Long.class };
+    public static final Class<?>[] FLOAT = { float.class, Float.class };
+    public static final Class<?>[] DOUBLE = { double.class, Double.class };
 
-	public static final Class<?>[] INTEGER =
-	  { byte.class, Byte.class
-	  , short.class, Short.class
-	  , int.class, Integer.class
-//	  , float.class, Float.class
-//	  , double.class, Double.class
-//	  , long.class, Long.class
-//	  , Number.class
-	  };
+    public static final Class<?>[] INTEGER =
+      { byte.class, Byte.class
+      , short.class, Short.class
+      , int.class, Integer.class
+//      , float.class, Float.class
+//      , double.class, Double.class
+//      , long.class, Long.class
+//      , Number.class
+      };
 
-	public static final Class<?>[] NUMBER =
-		  { byte.class, Byte.class
-		  , short.class, Short.class
-		  , int.class, Integer.class
-		  , float.class, Float.class
-		  , double.class, Double.class
-		  , long.class, Long.class
-		  , Number.class };
+    public static final Class<?>[] NUMBER =
+          { byte.class, Byte.class
+          , short.class, Short.class
+          , int.class, Integer.class
+          , float.class, Float.class
+          , double.class, Double.class
+          , long.class, Long.class
+          , Number.class };
 
-	
-	/**
-	 * Re-throws the supplied exception as a {@link LeolaRuntimeException}.  This will
-	 * first check to see if the supplied exception is a {@link LeolaRuntimeException}, in which
-	 * case it will cast a throw.
-	 *  
-	 * @param e
-	 * @throws LeolaRuntimeException
-	 */
-	private static void rethrow(Exception e) throws LeolaRuntimeException {
-		Throwable cause = e.getCause();
-		
-		/* There are cases where 'cause' is null, which
-		 * is pretty lame
-		 */
-		if(cause != null) {
-    		if( cause instanceof LeolaRuntimeException) {
-    			throw (LeolaRuntimeException)cause;
-    		}
-    		throw new LeolaRuntimeException(e.getCause());
-		}
-		else {
-		    if(e instanceof LeolaRuntimeException) {
-		        throw (LeolaRuntimeException)e;
-		    }
-		    throw new LeolaRuntimeException(e);
-		}
-	}
-	
-	
-	/**
-	 * Return instructions for the {@link MethodIterator}
-	 * 
-	 * @author Tony
-	 *
-	 */
-	private static enum ReturnType {
-	    STOP_METHOD_LOOP,
-	    STOP_HIERARCHY_LOOP,	    
-	    DONT_STOP
-	    ;
-	    
-	}
-	
-	
-	/**
-	 * Iterate through {@link Method} callback.
-	 * 
-	 * @author Tony
-	 *
-	 */
-	private static interface MethodIterator {
-	    public ReturnType call(Method method) throws LeolaRuntimeException;
-	}
-		
-	/**
-	 * Iterates over a class hierarchy invoking the supplied callback function.
-	 *  
-	 * @param aClass the class to iterate over
-	 * @param it the callback function.  If the {@link MethodIterator} returns <code>true</code>, then the
-	 * iteration stops.
-	 */
+    
+    /**
+     * Re-throws the supplied exception as a {@link LeolaRuntimeException}.  This will
+     * first check to see if the supplied exception is a {@link LeolaRuntimeException}, in which
+     * case it will cast a throw.
+     *  
+     * @param e
+     * @throws LeolaRuntimeException
+     */
+    private static void rethrow(Exception e) throws LeolaRuntimeException {
+        Throwable cause = e.getCause();
+        
+        /* There are cases where 'cause' is null, which
+         * is pretty lame
+         */
+        if(cause != null) {
+            if( cause instanceof LeolaRuntimeException) {
+                throw (LeolaRuntimeException)cause;
+            }
+            throw new LeolaRuntimeException(e.getCause());
+        }
+        else {
+            if(e instanceof LeolaRuntimeException) {
+                throw (LeolaRuntimeException)e;
+            }
+            throw new LeolaRuntimeException(e);
+        }
+    }
+    
+    
+    /**
+     * Return instructions for the {@link MethodIterator}
+     * 
+     * @author Tony
+     *
+     */
+    private static enum ReturnType {
+        STOP_METHOD_LOOP,
+        STOP_HIERARCHY_LOOP,        
+        DONT_STOP
+        ;
+        
+    }
+    
+    
+    /**
+     * Iterate through {@link Method} callback.
+     * 
+     * @author Tony
+     *
+     */
+    private static interface MethodIterator {
+        public ReturnType call(Method method) throws LeolaRuntimeException;
+    }
+        
+    /**
+     * Iterates over a class hierarchy invoking the supplied callback function.
+     *  
+     * @param aClass the class to iterate over
+     * @param it the callback function.  If the {@link MethodIterator} returns <code>true</code>, then the
+     * iteration stops.
+     */
     private static void iterateOverHierarchy(Class<?> aClass, MethodIterator it) {
         try {
             ReturnType returnType = ReturnType.DONT_STOP;            
@@ -154,33 +154,33 @@ public class ClassUtil {
         }
     }
 
-	/**
-	 * Retrieves a method by name (grabs the first if overloaded).
-	 *
-	 * @param methodName
-	 * @return the method if found, otherwise null
-	 */
-	public static Method getMethodByName(Class<?> aClass, String methodName, Class<?> ... params) {
-		Method result = null;
-		try {
-			result = aClass.getMethod(methodName, params);
-		}
-		catch(Exception e) {
-		}
+    /**
+     * Retrieves a method by name (grabs the first if overloaded).
+     *
+     * @param methodName
+     * @return the method if found, otherwise null
+     */
+    public static Method getMethodByName(Class<?> aClass, String methodName, Class<?> ... params) {
+        Method result = null;
+        try {
+            result = aClass.getMethod(methodName, params);
+        }
+        catch(Exception e) {
+        }
 
-		return (result);
-	}
+        return (result);
+    }
 
-	/**
-	 * Retrieves all the overloaded methods by the supplied name
-	 * 
-	 * @param aClass
-	 * @param methodName
-	 * @return all methods by the given name.
-	 */
-	public static List<Method> getMethodsByName(final Class<?> aClass, final String methodName) {
-		final List<Method> methods = new ArrayList<Method>();
-	    iterateOverHierarchy(aClass, new MethodIterator() {
+    /**
+     * Retrieves all the overloaded methods by the supplied name
+     * 
+     * @param aClass
+     * @param methodName
+     * @return all methods by the given name.
+     */
+    public static List<Method> getMethodsByName(final Class<?> aClass, final String methodName) {
+        final List<Method> methods = new ArrayList<Method>();
+        iterateOverHierarchy(aClass, new MethodIterator() {
             
             @Override
             public ReturnType call(Method method) {
@@ -192,14 +192,14 @@ public class ClassUtil {
                     ReturnType.STOP_HIERARCHY_LOOP;
             }
         });
-	    
-	    return methods;
-	}
-	
-	/**
-	 * Retrieves the method names in which have the {@link LeolaMethod} annotation with the {@link LeolaMethod#alias()} of
-	 * the supplied 'methodName'
-	 * 
+        
+        return methods;
+    }
+    
+    /**
+     * Retrieves the method names in which have the {@link LeolaMethod} annotation with the {@link LeolaMethod#alias()} of
+     * the supplied 'methodName'
+     * 
      * @param aClass
      * @param methodName
      * @return all methods that have a {@link LeolaMethod} annotation with the matching alias name
@@ -224,7 +224,7 @@ public class ClassUtil {
         
         return methods;
     }
-	
+    
     
     /**
      * Retrieves a {@link Method} by looking at the {@link LeolaMethod} annotation's {@link LeolaMethod#alias()}
@@ -340,75 +340,75 @@ public class ClassUtil {
      * @return the result of executing the method
      * @throws LeolaRuntimeException
      */
-	public static Object invokeMethod(Method method, Object owner, LeoObject[] params) throws LeolaRuntimeException  {
-		Object result = null;
-		
-		try {
-			method.setAccessible(true);
-			result = tryMethod(owner, method, params);
-		}
-		catch (InvocationTargetException e) {
+    public static Object invokeMethod(Method method, Object owner, LeoObject[] params) throws LeolaRuntimeException  {
+        Object result = null;
+        
+        try {
+            method.setAccessible(true);
+            result = tryMethod(owner, method, params);
+        }
+        catch (InvocationTargetException e) {
             rethrow(e);
         }
         catch (Exception e) {
             LeoObject.throwNativeMethodError("Error executing Java method '" + method.getName() + "'");
         }
 
-		return result;
-	}
+        return result;
+    }
 
-	/**
-	 * Invokes a method reflectively.
-	 *
-	 * @param method the method to be executed
+    /**
+     * Invokes a method reflectively.
+     *
+     * @param method the method to be executed
      * @param owner the instance owner of the method
      * @param params the parameters to be used
      * @return the result of executing the method
-	 * @throws LeolaRuntimeException
-	 */
-	public static Object invokeMethod(Method method, Object owner, Object[] params) throws LeolaRuntimeException {
-		Object result = null;
+     * @throws LeolaRuntimeException
+     */
+    public static Object invokeMethod(Method method, Object owner, Object[] params) throws LeolaRuntimeException {
+        Object result = null;
 
-		try {
-			method.setAccessible(true);
-			result = method.invoke(owner, params);
-		}
-		catch(Exception e) {
-			/* This was a legitimate method invocation, so
-			 * lets bomb out
-			 */
-			rethrow(e);
-		}
+        try {
+            method.setAccessible(true);
+            result = method.invoke(owner, params);
+        }
+        catch(Exception e) {
+            /* This was a legitimate method invocation, so
+             * lets bomb out
+             */
+            rethrow(e);
+        }
 
-		return result;
-	}
-	
+        return result;
+    }
+    
 
-	/**
-	 * Attempts to invoke the supplied method.
-	 * 
-	 * @param owner the instance owner of the method (may be null)
-	 * @param method the method to be executed
-	 * @param params the method parameters
-	 * @return the result of the method execution
-	 */
-	private static Object tryMethod(Object owner, Method method, LeoObject[] params)
-		throws InvocationTargetException, Exception {
+    /**
+     * Attempts to invoke the supplied method.
+     * 
+     * @param owner the instance owner of the method (may be null)
+     * @param method the method to be executed
+     * @param params the method parameters
+     * @return the result of the method execution
+     */
+    private static Object tryMethod(Object owner, Method method, LeoObject[] params)
+        throws InvocationTargetException, Exception {
 
-		Class<?>[] paramTypes = method.getParameterTypes();
-		
-		Object[] args = new Object[paramTypes.length];
+        Class<?>[] paramTypes = method.getParameterTypes();
+        
+        Object[] args = new Object[paramTypes.length];
         Object varargs = null;
-		
+        
         Class<?> arrayType = null;
         
-		int startOfVarargs = -1;
-		boolean hasVarArgs = false;
-		
-		/* Determine if this Java method has variable arguments;
-		 * if it does, we need to do some special handling of the arguments
-		 * (convert the parameters into an array) 
-		 */
+        int startOfVarargs = -1;
+        boolean hasVarArgs = false;
+        
+        /* Determine if this Java method has variable arguments;
+         * if it does, we need to do some special handling of the arguments
+         * (convert the parameters into an array) 
+         */
         if (method.isAnnotationPresent(LeolaMethodVarargs.class) || method.isVarArgs()) {
             startOfVarargs = paramTypes.length - 1;
             hasVarArgs = true;
@@ -422,46 +422,46 @@ public class ClassUtil {
             }
         }
 
-		/* We attempt to convert the supplied LeoObject parameters to
-		 * Java parameters.
-		 */
-		for(int i = 0; i < paramTypes.length; i++ ) {
-			 		    
-		    /* If we have variable arguments, ensure we convert the
-		     * array elements too
-		     */
-			if(hasVarArgs && i>=startOfVarargs && params!=null) {
-			    int varargsIndex = 0;
-			    			    
-			    for(int paramIndex = startOfVarargs; paramIndex <  params.length; paramIndex++) {
-			        Object javaArg = LeoObject.toJavaObject(arrayType, params[paramIndex]);
-			        Array.set(varargs, varargsIndex++, javaArg);
-			    }
-			    break;
-			}
-			else {
-			    /* Attempt to coerce the the LeoObject parameter
-			     * into the appropriate Java object parameter
-			     */
-			    
-			    Class<?> aCl = paramTypes[i];
-			    
-	            /* Leola allows for missing arguments, so
-	             * if it is missing, just use null 
-	             */
-	            LeoObject arg = LeoNull.LEONULL;
-	            if (params != null && i < params.length ) {
-	                arg = params[i];
-	            }
-			    
-			    Object javaArg = LeoObject.toJavaObject(aCl, arg);
-			    args[i] = javaArg;
-			}
-		}
+        /* We attempt to convert the supplied LeoObject parameters to
+         * Java parameters.
+         */
+        for(int i = 0; i < paramTypes.length; i++ ) {
+                         
+            /* If we have variable arguments, ensure we convert the
+             * array elements too
+             */
+            if(hasVarArgs && i>=startOfVarargs && params!=null) {
+                int varargsIndex = 0;
+                                
+                for(int paramIndex = startOfVarargs; paramIndex <  params.length; paramIndex++) {
+                    Object javaArg = LeoObject.toJavaObject(arrayType, params[paramIndex]);
+                    Array.set(varargs, varargsIndex++, javaArg);
+                }
+                break;
+            }
+            else {
+                /* Attempt to coerce the the LeoObject parameter
+                 * into the appropriate Java object parameter
+                 */
+                
+                Class<?> aCl = paramTypes[i];
+                
+                /* Leola allows for missing arguments, so
+                 * if it is missing, just use null 
+                 */
+                LeoObject arg = LeoNull.LEONULL;
+                if (params != null && i < params.length ) {
+                    arg = params[i];
+                }
+                
+                Object javaArg = LeoObject.toJavaObject(aCl, arg);
+                args[i] = javaArg;
+            }
+        }
 
-		Object result = method.invoke(owner, args);
-		return (result);
-	}
+        Object result = method.invoke(owner, args);
+        return (result);
+    }
 
 
     /**
@@ -523,7 +523,7 @@ public class ClassUtil {
         catch(Throwable e) {}
 
         return result;
-    }	
+    }    
     
     
     private static final Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<>();
@@ -573,24 +573,24 @@ public class ClassUtil {
      * @param classes the classes to compare type against
      * @return true if type is any of the supplied classes; false otherwise
      */
-	public static boolean isType(Class<?> type, Class<?> ...classes ) {
-		boolean result = false;
-		for(Class<?> c: classes) {
-			result = result || type.equals(c);
-			if ( result ) {
-				break;
-			}
-		}
-		return result;
-	}
+    public static boolean isType(Class<?> type, Class<?> ...classes ) {
+        boolean result = false;
+        for(Class<?> c: classes) {
+            result = result || type.equals(c);
+            if ( result ) {
+                break;
+            }
+        }
+        return result;
+    }
 
-	/**
-	 * Determines if the supplied child class inherits from the supplied parent class.
-	 * 
-	 * @param child
-	 * @param parent
-	 * @return true if child inherits from parent, false otherwise
-	 */
+    /**
+     * Determines if the supplied child class inherits from the supplied parent class.
+     * 
+     * @param child
+     * @param parent
+     * @return true if child inherits from parent, false otherwise
+     */
     public static boolean inheritsFrom(Class<?> child, Class<?> parent) {
         for (Class<?> i = child; i != null && i != Object.class; i = i.getSuperclass()) {
 
@@ -602,34 +602,34 @@ public class ClassUtil {
         return false;
     }
 
-	/**
-	 * Determines if the supplied testMe class implements the supplied interface.
-	 *
-	 * @param testMe
-	 * @param aInterface
-	 * @return true if the testMe class implements aInterface, false otherwise.
-	 */
-	public static boolean doesImplement(Class<?> testMe, Class<?> aInterface) {
-		for(Class<?> inter : testMe.getInterfaces()) {
-			if ( inter.equals(aInterface) ) {
-				return true;
-			}
-		}
+    /**
+     * Determines if the supplied testMe class implements the supplied interface.
+     *
+     * @param testMe
+     * @param aInterface
+     * @return true if the testMe class implements aInterface, false otherwise.
+     */
+    public static boolean doesImplement(Class<?> testMe, Class<?> aInterface) {
+        for(Class<?> inter : testMe.getInterfaces()) {
+            if ( inter.equals(aInterface) ) {
+                return true;
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	/**
-	 * Retrieves all of the methods defined in the supplied {@link Class}.  This will navigate up the class
-	 * hierarchy up until the Object class is reached.
-	 * 
-	 * <p>
-	 * This will not grab any methods annotated with {@link LeolaIgnore}.
-	 * 
-	 * @param aClass the class to grab all the public methods from.
-	 * @return the {@link List} of public {@link Method}s.
-	 */
-	public static List<Method> getAllDeclaredMethods(Class<?> aClass) {
+    /**
+     * Retrieves all of the methods defined in the supplied {@link Class}.  This will navigate up the class
+     * hierarchy up until the Object class is reached.
+     * 
+     * <p>
+     * This will not grab any methods annotated with {@link LeolaIgnore}.
+     * 
+     * @param aClass the class to grab all the public methods from.
+     * @return the {@link List} of public {@link Method}s.
+     */
+    public static List<Method> getAllDeclaredMethods(Class<?> aClass) {
         final List<Method> methods = new ArrayList<Method>();
         iterateOverHierarchy(aClass, new MethodIterator() {
             
@@ -642,7 +642,7 @@ public class ClassUtil {
         });
         
         return methods;
-	}
+    }
 
     /**
      * Retrieves all of the fields defined in the supplied {@link Class}.  This will navigate up the class
@@ -654,41 +654,41 @@ public class ClassUtil {
      * @param aClass the class to grab all the public fields from.
      * @return the {@link List} of public {@link Field}s.
      */
-	public static List<Field> getAllDeclaredFields(Class<?> aClass) {
-		List<Field> methods = new ArrayList<Field>();
-		try {		    
-		    for(Class<?> i = aClass;
-	            i != null &&	         
-	            i != Object.class; 
-	            i = i.getSuperclass() ) {
+    public static List<Field> getAllDeclaredFields(Class<?> aClass) {
+        List<Field> methods = new ArrayList<Field>();
+        try {            
+            for(Class<?> i = aClass;
+                i != null &&             
+                i != Object.class; 
+                i = i.getSuperclass() ) {
 
-				for(Field m : i.getDeclaredFields()) {
-					/* Don't grab private members */
-					if( (m.getModifiers() & Modifier.PUBLIC) > 0 &&
-					    ! m.isAnnotationPresent(LeolaIgnore.class) ) {
-						methods.add(m);
-					}
-				}				
-			}
-		}
-		catch(Exception e) {
-			/* ignore */
-		}
+                for(Field m : i.getDeclaredFields()) {
+                    /* Don't grab private members */
+                    if( (m.getModifiers() & Modifier.PUBLIC) > 0 &&
+                        ! m.isAnnotationPresent(LeolaIgnore.class) ) {
+                        methods.add(m);
+                    }
+                }                
+            }
+        }
+        catch(Exception e) {
+            /* ignore */
+        }
 
-		return (methods);
-	}
+        return (methods);
+    }
 
-	/**
-	 * Get the method by name and parameter types. It walks the class hierarchy and attempts to
-	 * find the method by using {@link Class#getMethod(String, Class...)}.
-	 * 
-	 * 
-	 * @param aClass the class to check
-	 * @param methodName the methods name
-	 * @param parameterTypes the parameter types.
-	 * 
-	 * @return the {@link Method} if found; otherwise null.
-	 */
+    /**
+     * Get the method by name and parameter types. It walks the class hierarchy and attempts to
+     * find the method by using {@link Class#getMethod(String, Class...)}.
+     * 
+     * 
+     * @param aClass the class to check
+     * @param methodName the methods name
+     * @param parameterTypes the parameter types.
+     * 
+     * @return the {@link Method} if found; otherwise null.
+     */
     public static Method getInheritedMethodByName(Class<?> aClass, String name, Class<?>[] parameterTypes) {
         Method inheritedMethod = null;
 
@@ -718,7 +718,7 @@ public class ClassUtil {
      * @param fieldName the data member name
      * @return the {@link Field} if found; otherwise null.
      */
-	public static Field getInheritedField(Class<?> aClass, String fieldName) {
+    public static Field getInheritedField(Class<?> aClass, String fieldName) {
         for (Class<?> i = aClass; i != null && i != Object.class; i = i.getSuperclass()) {
 
             try {
@@ -733,150 +733,150 @@ public class ClassUtil {
 
         }
         return null;
-	}
+    }
 
-	/**
-	 * Retrieves the annotation from the method, if it is not on the method, the parent
-	 * is checked.  This solves the "inherited annotation" problem for interfaces.
-	 * 
-	 * @param annotation the annotation to look for
-	 * @param ownerClass the class in which this method belongs to
-	 * @param method the method which should be probed for annotations
-	 * @return the Annotation instance if found; otherwise null
-	 */
-	public static <T extends Annotation> T getAnnotation(Class<T> annotation, Class<?> ownerClass, Method method) {
-		if ( method == null ) {
-			return null;
-		}
+    /**
+     * Retrieves the annotation from the method, if it is not on the method, the parent
+     * is checked.  This solves the "inherited annotation" problem for interfaces.
+     * 
+     * @param annotation the annotation to look for
+     * @param ownerClass the class in which this method belongs to
+     * @param method the method which should be probed for annotations
+     * @return the Annotation instance if found; otherwise null
+     */
+    public static <T extends Annotation> T getAnnotation(Class<T> annotation, Class<?> ownerClass, Method method) {
+        if ( method == null ) {
+            return null;
+        }
 
-		if ( method.isAnnotationPresent(annotation) ) {
-			return method.getAnnotation(annotation);
-		}
-		else {
-		    
-		    /* Check all the interface Classes to determine if the annotation
-		     * exists
-		     */
-			for(Class<?> aInterface : ownerClass.getInterfaces()) {
-				Method inheritedMethod = getInheritedMethodByName(aInterface, method.getName(), method.getParameterTypes());
-				if ( inheritedMethod != null ) {
-					T result = getAnnotation(annotation, aInterface, inheritedMethod);
-					if ( result != null ) {
-						return result;
-					}
-				}
-			}
+        if ( method.isAnnotationPresent(annotation) ) {
+            return method.getAnnotation(annotation);
+        }
+        else {
+            
+            /* Check all the interface Classes to determine if the annotation
+             * exists
+             */
+            for(Class<?> aInterface : ownerClass.getInterfaces()) {
+                Method inheritedMethod = getInheritedMethodByName(aInterface, method.getName(), method.getParameterTypes());
+                if ( inheritedMethod != null ) {
+                    T result = getAnnotation(annotation, aInterface, inheritedMethod);
+                    if ( result != null ) {
+                        return result;
+                    }
+                }
+            }
 
-			/* Query the parent class for the annotation */
-			Class<?> superClass = method.getDeclaringClass().getSuperclass();
-			Method inheritedMethod = getInheritedMethodByName(superClass, method.getName(), method.getParameterTypes());
+            /* Query the parent class for the annotation */
+            Class<?> superClass = method.getDeclaringClass().getSuperclass();
+            Method inheritedMethod = getInheritedMethodByName(superClass, method.getName(), method.getParameterTypes());
 
-			return getAnnotation(annotation, superClass, inheritedMethod);
-		}
-	}
-
-
-	/**
-	 * Creates a new {@link LeoNativeClass} based off of the Java fully qualified name and supplied parameters.
-	 *
-	 * @param className the fully qualified Java class name
-	 * @param params the parameters used to construct the instance
-	 * @return the {@link LeoNativeClass}
-	 * @throws LeolaRuntimeException
-	 */
-	public static LeoNativeClass newNativeInstance(String className, LeoObject ... params) throws LeolaRuntimeException {
-		LeoNativeClass result = null;
-
-		/* ensure we always have a valid array */
-		if ( params == null ) {
-			params = new LeoObject[0];
-		}
-
-		
-		try {
-		    /* first determine if this is a valid Java class type.
-		     * If it isn't, we can't instantiate this, and return
-		     * an error
-		     */
-			Class<?> nativeClass = Class.forName(className);
-			
-			
-			/* Only allow for constructing non-abstract class types
-			 * - this might change in the future if we decide to add
-			 * Java bytecode creation here
-			 */
-			if ( Modifier.isAbstract(nativeClass.getModifiers()) ) {
-			    LeoObject.throwNativeMethodError("Can't instantiate an abstract Java class '" + className + "'");
-			}
-			
-			
-			Object instance = null;
-			for(Constructor<?> constructor : nativeClass.getConstructors()) {
-				Class<?>[] paramTypes = constructor.getParameterTypes();
-				if ( paramTypes.length == params.length) {
-					instance = tryNativeConstructor(constructor, params, paramTypes);
-					
-					/* if we were able to successfully create the Java instance
-					 * go ahead and wrap it in the LeoNativeClass; we
-					 * are done here now.
-					 */
-					if ( instance != null ) {
-					    result = new LeoNativeClass(nativeClass, instance);
-						break;
-					}
-				}
-			}
-			
-			
-			/* if we were not able to find a matching constructor, bail out
-			 * and throw an error
-			 */
-	        if (result == null ) {
-	            LeoObject.throwClassNotFoundError("The Java class '" + className + "' was not found.");
-	        }
-	        
-		}
-		catch(LeolaRuntimeException e) {
-		    throw e;
-		}
-		catch(ClassNotFoundException e) {
-		    LeoObject.throwClassNotFoundError("The Java class '" + className + "' was not found.");
-		}
-		catch(Throwable e) {
-		    LeoObject.throwNativeMethodError("Unable to construct Java native type: " + className + " - " + e);
-		}
+            return getAnnotation(annotation, superClass, inheritedMethod);
+        }
+    }
 
 
-		return result;
-	}
+    /**
+     * Creates a new {@link LeoNativeClass} based off of the Java fully qualified name and supplied parameters.
+     *
+     * @param className the fully qualified Java class name
+     * @param params the parameters used to construct the instance
+     * @return the {@link LeoNativeClass}
+     * @throws LeolaRuntimeException
+     */
+    public static LeoNativeClass newNativeInstance(String className, LeoObject ... params) throws LeolaRuntimeException {
+        LeoNativeClass result = null;
 
-	/**
-	 * Attempts to instantiate the object
-	 * 
-	 * @param constructor
-	 * @param params
-	 * @param paramTypes
-	 * @return the resulting object from executing the constructor
-	 */
-	private static Object tryNativeConstructor(Constructor<?> constructor, LeoObject[] params, Class<?>[] paramTypes) {
-		Object result = null;
-		try {
-			Object[] args = new Object[paramTypes.length];
-			for(int i = 0; i < paramTypes.length; i++ ) {
-				Class<?> aCl = paramTypes[i];
-				args[i] = LeoObject.toJavaObject(aCl, params[i]);
-			}
+        /* ensure we always have a valid array */
+        if ( params == null ) {
+            params = new LeoObject[0];
+        }
 
-			result = constructor.newInstance(args);
-		}
-		catch(InvocationTargetException e) {
-		    rethrow(e);
-		}
-		catch(Throwable ignore) {
-		    /* allow to retry */
-		}
+        
+        try {
+            /* first determine if this is a valid Java class type.
+             * If it isn't, we can't instantiate this, and return
+             * an error
+             */
+            Class<?> nativeClass = Class.forName(className);
+            
+            
+            /* Only allow for constructing non-abstract class types
+             * - this might change in the future if we decide to add
+             * Java bytecode creation here
+             */
+            if ( Modifier.isAbstract(nativeClass.getModifiers()) ) {
+                LeoObject.throwNativeMethodError("Can't instantiate an abstract Java class '" + className + "'");
+            }
+            
+            
+            Object instance = null;
+            for(Constructor<?> constructor : nativeClass.getConstructors()) {
+                Class<?>[] paramTypes = constructor.getParameterTypes();
+                if ( paramTypes.length == params.length) {
+                    instance = tryNativeConstructor(constructor, params, paramTypes);
+                    
+                    /* if we were able to successfully create the Java instance
+                     * go ahead and wrap it in the LeoNativeClass; we
+                     * are done here now.
+                     */
+                    if ( instance != null ) {
+                        result = new LeoNativeClass(nativeClass, instance);
+                        break;
+                    }
+                }
+            }
+            
+            
+            /* if we were not able to find a matching constructor, bail out
+             * and throw an error
+             */
+            if (result == null ) {
+                LeoObject.throwClassNotFoundError("The Java class '" + className + "' was not found.");
+            }
+            
+        }
+        catch(LeolaRuntimeException e) {
+            throw e;
+        }
+        catch(ClassNotFoundException e) {
+            LeoObject.throwClassNotFoundError("The Java class '" + className + "' was not found.");
+        }
+        catch(Throwable e) {
+            LeoObject.throwNativeMethodError("Unable to construct Java native type: " + className + " - " + e);
+        }
 
-		return (result);
-	}
+
+        return result;
+    }
+
+    /**
+     * Attempts to instantiate the object
+     * 
+     * @param constructor
+     * @param params
+     * @param paramTypes
+     * @return the resulting object from executing the constructor
+     */
+    private static Object tryNativeConstructor(Constructor<?> constructor, LeoObject[] params, Class<?>[] paramTypes) {
+        Object result = null;
+        try {
+            Object[] args = new Object[paramTypes.length];
+            for(int i = 0; i < paramTypes.length; i++ ) {
+                Class<?> aCl = paramTypes[i];
+                args[i] = LeoObject.toJavaObject(aCl, params[i]);
+            }
+
+            result = constructor.newInstance(args);
+        }
+        catch(InvocationTargetException e) {
+            rethrow(e);
+        }
+        catch(Throwable ignore) {
+            /* allow to retry */
+        }
+
+        return (result);
+    }
 }
 

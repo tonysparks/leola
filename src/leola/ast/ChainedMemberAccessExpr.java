@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.ast;
 
@@ -13,39 +13,39 @@ import leola.frontend.EvalException;
  */
 public class ChainedMemberAccessExpr extends OwnableExpr {
 
-	/**
-	 * Expression
-	 */
-	private Expr access;
+    /**
+     * Expression
+     */
+    private Expr access;
 
 
-	/**
-	 * @param parentName
-	 * @param access
-	 */
-	public ChainedMemberAccessExpr(String parentName, Expr access) {
-		super(parentName);
-		this.access = becomeParentOf(access);
-		if(this.access instanceof OwnableExpr) {
-			((OwnableExpr)this.access).setParent(false);
-		}
-	}
+    /**
+     * @param parentName
+     * @param access
+     */
+    public ChainedMemberAccessExpr(String parentName, Expr access) {
+        super(parentName);
+        this.access = becomeParentOf(access);
+        if(this.access instanceof OwnableExpr) {
+            ((OwnableExpr)this.access).setParent(false);
+        }
+    }
 
 
 
-	/* (non-Javadoc)
-	 * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-	 */
-	@Override
-	public void visit(ASTNodeVisitor v) throws EvalException {
-		v.visit(this);
-	}
+    /* (non-Javadoc)
+     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
+     */
+    @Override
+    public void visit(ASTNodeVisitor v) throws EvalException {
+        v.visit(this);
+    }
 
-	/**
-	 * @return the access
-	 */
-	public Expr getAccess() {
-		return access;
-	}
+    /**
+     * @return the access
+     */
+    public Expr getAccess() {
+        return access;
+    }
 }
 

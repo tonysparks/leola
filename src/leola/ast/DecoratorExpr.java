@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.ast;
 
@@ -15,13 +15,13 @@ import leola.frontend.EvalException;
  */
 public class DecoratorExpr extends Expr {
 
-	private String decoratorName;
-	private Expr[] parameters;
-	private Expr followingExpr;
+    private String decoratorName;
+    private Expr[] parameters;
+    private Expr followingExpr;
 
-	
-	
-	/**
+    
+    
+    /**
      * @param decoratorName
      * @param parameters
      * @param followingExpr
@@ -35,14 +35,14 @@ public class DecoratorExpr extends Expr {
 
 
     /* (non-Javadoc)
-	 * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-	 */
-	@Override
-	public void visit(ASTNodeVisitor v) throws EvalException {
-		v.visit(this);
-	}
+     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
+     */
+    @Override
+    public void visit(ASTNodeVisitor v) throws EvalException {
+        v.visit(this);
+    }
 
-	/**
+    /**
      * @return the decoratorName
      */
     public String getDecoratorName() {

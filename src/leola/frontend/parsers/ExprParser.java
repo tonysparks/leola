@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -86,7 +86,7 @@ public class ExprParser extends StmtParser {
 
     public static final EnumSet<LeolaTokenType> EXPR_END_SET =
         EnumSet.of(IDENTIFIER, /*INTEGER, REAL, STRING, DEF, $ME,
-        		   NULL, */RIGHT_PAREN, RIGHT_BRACKET);
+                   NULL, */RIGHT_PAREN, RIGHT_BRACKET);
     
     // Set of relational operators.
     private static final EnumSet<LeolaTokenType> REL_OPS =
@@ -102,7 +102,7 @@ public class ExprParser extends StmtParser {
     // Set of multiplicative operators.
     private static final EnumSet<LeolaTokenType> MULT_OPS =
         EnumSet.of(STAR, SLASH, MOD, /*LOGICAL_AND, BITWISE_AND, BITWISE_OR,*/
-        		   BIT_SHIFT_LEFT, BIT_SHIFT_RIGHT);
+                   BIT_SHIFT_LEFT, BIT_SHIFT_RIGHT);
 
     // Set of additive operators.
     private static final EnumSet<LeolaTokenType> ADD_OPS =
@@ -115,22 +115,22 @@ public class ExprParser extends StmtParser {
     private boolean isNamedParameter;
     
     /**
-	 * @param parser
-	 */
-	public ExprParser(LeolaParser parser) {
-		this(parser, false);
-	}
+     * @param parser
+     */
+    public ExprParser(LeolaParser parser) {
+        this(parser, false);
+    }
     
-	/**
-	 * @param parser
-	 * @param isNamedParameter
-	 */
-	public ExprParser(LeolaParser parser, boolean isNamedParameter) {
-		super(parser);
-		this.isNamedParameter = isNamedParameter;
-	}
-	
-	/**
+    /**
+     * @param parser
+     * @param isNamedParameter
+     */
+    public ExprParser(LeolaParser parser, boolean isNamedParameter) {
+        super(parser);
+        this.isNamedParameter = isNamedParameter;
+    }
+    
+    /**
      * Parse an expression.
      * To be overridden by the specialized statement parser subclasses.
      * @param token the initial token.
@@ -168,8 +168,8 @@ public class ExprParser extends StmtParser {
             ASTNode simExprNode = parseSimpleExpression(token);
 
             BinaryExpr bExpr = new BinaryExpr( (Expr)rootNode
-            								  ,(Expr)simExprNode
-            								  , tokenType.toBinaryOp() );
+                                              ,(Expr)simExprNode
+                                              , tokenType.toBinaryOp() );
 
             // The operator node becomes the new root node.
             rootNode = bExpr;
@@ -187,8 +187,8 @@ public class ExprParser extends StmtParser {
             ASTNode simExprNode = parseSimpleExpression(token);
 
             BinaryExpr bExpr = new BinaryExpr( (Expr)rootNode
-            								  ,(Expr)simExprNode
-            								  , tokenType.toBinaryOp() );
+                                              ,(Expr)simExprNode
+                                              , tokenType.toBinaryOp() );
 
             // The operator node becomes the new root node.
             rootNode = bExpr;
@@ -206,8 +206,8 @@ public class ExprParser extends StmtParser {
             ASTNode simExprNode = parseExpr(token);
 
             BinaryExpr bExpr = new BinaryExpr( (Expr)rootNode
-            								  ,(Expr)simExprNode
-            								  , tokenType.toBinaryOp() );
+                                              ,(Expr)simExprNode
+                                              , tokenType.toBinaryOp() );
 
             // The operator node becomes the new root node.
             rootNode = bExpr;
@@ -218,22 +218,22 @@ public class ExprParser extends StmtParser {
 
 //        else if (CHAINED_OP.contains(tokenType) ) {
 //
-//        	CompoundExpr compoundExpr = new CompoundExpr();
-//        	compoundExpr.addChild(rootNode);
-//        	rootNode = compoundExpr;
+//            CompoundExpr compoundExpr = new CompoundExpr();
+//            compoundExpr.addChild(rootNode);
+//            rootNode = compoundExpr;
 //
-//	        do {
+//            do {
 //
-//	            // Parse the second simple expression.  The operator node adopts
-//	            // the simple expression's tree as its second child.
-//	            ASTNode simExprNode = parseChainedExpr(token);
-//	            compoundExpr.addChild(simExprNode);
+//                // Parse the second simple expression.  The operator node adopts
+//                // the simple expression's tree as its second child.
+//                ASTNode simExprNode = parseChainedExpr(token);
+//                compoundExpr.addChild(simExprNode);
 //
-//	            token = currentToken();
-//	            tokenType = token.getType();
-//        	} while( ( CHAINED_OP.contains(tokenType) ||
-//        			   IDENTIFIER.equals(tokenType) ) &&
-//        			!tokenType.equals(LeolaTokenType.END_OF_FILE));
+//                token = currentToken();
+//                tokenType = token.getType();
+//            } while( ( CHAINED_OP.contains(tokenType) ||
+//                       IDENTIFIER.equals(tokenType) ) &&
+//                    !tokenType.equals(LeolaTokenType.END_OF_FILE));
 //
 //        }
         
@@ -250,7 +250,7 @@ public class ExprParser extends StmtParser {
      * @throws Exception
      */
     private ASTNode parseSimpleExpression(Token token)
-    	throws Exception {
+        throws Exception {
 
         LeolaTokenType signType = null;  // type of leading sign (if any)
 
@@ -259,7 +259,7 @@ public class ExprParser extends StmtParser {
         LeolaTokenType tokenType = token.getType();
         if ( (tokenType == STAR) ||
              (tokenType == PLUS) ||             
-        	 (tokenType == MINUS)) {            
+             (tokenType == MINUS)) {            
             signType = tokenType;
             token = nextToken();  // consume the + or - or *            
         }
@@ -288,10 +288,10 @@ public class ExprParser extends StmtParser {
         tokenType = token.getType();
 
         if ( tokenType.equals(LeolaTokenType.IS)) {
-        	IsExpr isExpr = (IsExpr)(new IsExprParser((Expr)rootNode, this).parse(token));
-        	rootNode = isExpr;
+            IsExpr isExpr = (IsExpr)(new IsExprParser((Expr)rootNode, this).parse(token));
+            rootNode = isExpr;
 
-        	token = currentToken();
+            token = currentToken();
             tokenType = token.getType();
         } 
 
@@ -306,8 +306,8 @@ public class ExprParser extends StmtParser {
             ASTNode termNode = parseTerm(token);
 
             BinaryExpr bExpr = new BinaryExpr( (Expr)rootNode
-            		                         , (Expr)termNode
-            		                         , operator.toBinaryOp());
+                                             , (Expr)termNode
+                                             , operator.toBinaryOp());
 
             // The operator node becomes the new root node.
             rootNode = bExpr;
@@ -335,26 +335,26 @@ public class ExprParser extends StmtParser {
 
         if (CHAINED_OP.contains(tokenType) ) {
 
-        	CompoundExpr compoundExpr = new CompoundExpr();
-        	compoundExpr.addChild(rootNode);
-        	rootNode = compoundExpr;
+            CompoundExpr compoundExpr = new CompoundExpr();
+            compoundExpr.addChild(rootNode);
+            rootNode = compoundExpr;
 
 
-        	LeolaTokenType prevToken = null;
-	        do {	        		        	
-	        	
-	            // Parse the second simple expression.  The operator node adopts
-	            // the simple expression's tree as its second child.
-	            ASTNode simExprNode = parseChainedExpr(token);
-	            compoundExpr.addChild(simExprNode);
+            LeolaTokenType prevToken = null;
+            do {                                
+                
+                // Parse the second simple expression.  The operator node adopts
+                // the simple expression's tree as its second child.
+                ASTNode simExprNode = parseChainedExpr(token);
+                compoundExpr.addChild(simExprNode);
 
-	            token = currentToken();
-	            tokenType = token.getType();
-	            
-            	prevToken = previousToken().getType();
-	            
-        	} while( ( CHAINED_OP.contains(tokenType) || ( IDENTIFIER.equals(tokenType) && ! EXPR_END_SET.contains(prevToken)) ) &&
-        			!tokenType.equals(LeolaTokenType.END_OF_FILE));
+                token = currentToken();
+                tokenType = token.getType();
+                
+                prevToken = previousToken().getType();
+                
+            } while( ( CHAINED_OP.contains(tokenType) || ( IDENTIFIER.equals(tokenType) && ! EXPR_END_SET.contains(prevToken)) ) &&
+                    !tokenType.equals(LeolaTokenType.END_OF_FILE));
         }
 
 
@@ -369,8 +369,8 @@ public class ExprParser extends StmtParser {
             ASTNode factorNode = parseFactor(token);
 
             BinaryExpr bExpr = new BinaryExpr( (Expr)rootNode
-            								 , (Expr)factorNode
-            								 , operator.toBinaryOp());
+                                             , (Expr)factorNode
+                                             , operator.toBinaryOp());
 
             // The operator node becomes the new root node.
             rootNode = bExpr;
@@ -405,66 +405,66 @@ public class ExprParser extends StmtParser {
                 return parseIdentifier(token);
             }
 
-        	case STRING: {
-        		rootNode = new StringExpr((String)token.getValue());
-        		token = nextToken();  // consume the string
-        		break;
-        	}
-        	case TRUE:
-        	case FALSE: {
-        		rootNode = new BooleanExpr(tokenType.equals(LeolaTokenType.TRUE));
-        		token = nextToken(); // consume the true or false
-        		break;
-        	}
-        	
-        	case LONG:
-        	case INTEGER:
-        	case REAL: {
-        		try {
-        			Object value = token.getValue();
-        			if ( value instanceof Integer) {
-        				rootNode = new IntegerExpr( (Integer)value );
-        			}
-        			else if ( value instanceof Long ) {
-        				rootNode = new LongExpr( (Long)value );
-        			}
-        			else {        				
-        				rootNode = new RealExpr( (Double) value );
-        			}
+            case STRING: {
+                rootNode = new StringExpr((String)token.getValue());
+                token = nextToken();  // consume the string
+                break;
+            }
+            case TRUE:
+            case FALSE: {
+                rootNode = new BooleanExpr(tokenType.equals(LeolaTokenType.TRUE));
+                token = nextToken(); // consume the true or false
+                break;
+            }
+            
+            case LONG:
+            case INTEGER:
+            case REAL: {
+                try {
+                    Object value = token.getValue();
+                    if ( value instanceof Integer) {
+                        rootNode = new IntegerExpr( (Integer)value );
+                    }
+                    else if ( value instanceof Long ) {
+                        rootNode = new LongExpr( (Long)value );
+                    }
+                    else {                        
+                        rootNode = new RealExpr( (Double) value );
+                    }
 
-        			
-        			token = nextToken();  // consume the number
-        		}
-        		catch(Exception e) {
-        		    throwParseError(token, LeolaErrorCode.INVALID_NUMBER);
-        		}
-        		break;
-        	}
-        	case DEF: {
-        		FuncDefExprParser parser = new FuncDefExprParser(this);
-        		rootNode = parser.parse(token);
-        		break;
-        	}
-        	case GEN: {
-        		GenDefExprParser parser = new GenDefExprParser(this);
-        		rootNode = parser.parse(token);
-        		break;
-        	}
-        	case CASE: {
-        	    CaseExprParser parser = new CaseExprParser(this);
-        	    rootNode = parser.parse(token);
-        	    break;
-        	}
-        	case NEW: {
-        		NewExprParser parser = new NewExprParser(this);
-        		rootNode = parser.parse(token);
-        		break;
-        	}
-        	case NULL: {
-        		NullExprParser parser = new NullExprParser(this);
-        		rootNode = parser.parse(token);
-        		break;
-        	}
+                    
+                    token = nextToken();  // consume the number
+                }
+                catch(Exception e) {
+                    throwParseError(token, LeolaErrorCode.INVALID_NUMBER);
+                }
+                break;
+            }
+            case DEF: {
+                FuncDefExprParser parser = new FuncDefExprParser(this);
+                rootNode = parser.parse(token);
+                break;
+            }
+            case GEN: {
+                GenDefExprParser parser = new GenDefExprParser(this);
+                rootNode = parser.parse(token);
+                break;
+            }
+            case CASE: {
+                CaseExprParser parser = new CaseExprParser(this);
+                rootNode = parser.parse(token);
+                break;
+            }
+            case NEW: {
+                NewExprParser parser = new NewExprParser(this);
+                rootNode = parser.parse(token);
+                break;
+            }
+            case NULL: {
+                NullExprParser parser = new NullExprParser(this);
+                rootNode = parser.parse(token);
+                break;
+            }
             case NOT: {
                 token = nextToken();  // consume the NOT
 
@@ -504,9 +504,9 @@ public class ExprParser extends StmtParser {
                 break;
             }
             case LEFT_BRACKET: {
-            	ArrayDeclExprParser parser = new ArrayDeclExprParser(this);
-            	rootNode = parser.parse(token);
-            	break;
+                ArrayDeclExprParser parser = new ArrayDeclExprParser(this);
+                rootNode = parser.parse(token);
+                break;
             }
             case SEMICOLON: {
                 rootNode = new NullExpr();
@@ -529,80 +529,80 @@ public class ExprParser extends StmtParser {
     protected ASTNode parseIdentifier(Token token)
         throws Exception
     {
-    	ASTNode result = null;
+        ASTNode result = null;
 
-    	Token next = this.nextToken(); // eat the identifier name
+        Token next = this.nextToken(); // eat the identifier name
 
-    	LeolaTokenType type = next.getType();
-    	switch(type) {
-    	case LEFT_PAREN: {
-    		/* method invocation */
-    		FuncInvocationParser parser = new FuncInvocationParser(this);
-    		result = parser.parse(token);
-    		break;
-    	}
-    	case LEFT_BRACKET: {
-    		/* array index */
-    		ArrayAccessExprParser parser = new ArrayAccessExprParser(this);
-    		result = parser.parse(token);
-    		break;
-    	}
-    	case DOT: {
-    		MemberAccessParser parser = new MemberAccessParser(this);
-    		result = parser.parse(token);
-    		break;
-    	}
-    	case COLON: {
-    		NamespaceAccessParser parser = new NamespaceAccessParser(this);
-    		result = parser.parse(token);
-    		break;
-    	}
-    	case EQUALS: {
-    		/* assignment */
-    		AssignmentExprParser parser = new AssignmentExprParser(this);
-    		result = parser.parse(token);
-    		break;
-    	}
-    	case ARROW: {
-    		
-    		/* If this is a named parameter, parse it as
-    		 * such, otherwise it is just a Variable Expression
-    		 */
-    		if(this.isNamedParameter) {
-    			NamedParameterExprParser parser = new NamedParameterExprParser(this);
+        LeolaTokenType type = next.getType();
+        switch(type) {
+        case LEFT_PAREN: {
+            /* method invocation */
+            FuncInvocationParser parser = new FuncInvocationParser(this);
+            result = parser.parse(token);
+            break;
+        }
+        case LEFT_BRACKET: {
+            /* array index */
+            ArrayAccessExprParser parser = new ArrayAccessExprParser(this);
+            result = parser.parse(token);
+            break;
+        }
+        case DOT: {
+            MemberAccessParser parser = new MemberAccessParser(this);
+            result = parser.parse(token);
+            break;
+        }
+        case COLON: {
+            NamespaceAccessParser parser = new NamespaceAccessParser(this);
+            result = parser.parse(token);
+            break;
+        }
+        case EQUALS: {
+            /* assignment */
+            AssignmentExprParser parser = new AssignmentExprParser(this);
+            result = parser.parse(token);
+            break;
+        }
+        case ARROW: {
+            
+            /* If this is a named parameter, parse it as
+             * such, otherwise it is just a Variable Expression
+             */
+            if(this.isNamedParameter) {
+                NamedParameterExprParser parser = new NamedParameterExprParser(this);
                 result = parser.parse(token);
-    		}
-    		else {
-    		    result = new VarExpr(token.getText());
-    		}
-    	    break;
-    	}
-    	case PLUS_EQ:
-    	case MINUS_EQ:
-    	case MOD_EQ:
-    	case STAR_EQ:
-    	case SLASH_EQ:
-    	case BAND_EQ:
-    	case BOR_EQ:
-    	case BSL_EQ:
-    	case BSR_EQ:
-    	case BXOR_EQ: {
-    		BinaryAssignmentExprParser parser = new BinaryAssignmentExprParser(this);
-    		result = parser.parse(token);
-    		break;
-    	}
-    	case IS: {
-    		IsExprParser parser = new IsExprParser(null, this);
-    		result = parser.parse(token);
-    		break;
-    	}
-    	default:
-    		result = new VarExpr(token.getText());
-    		break;
-    	}
+            }
+            else {
+                result = new VarExpr(token.getText());
+            }
+            break;
+        }
+        case PLUS_EQ:
+        case MINUS_EQ:
+        case MOD_EQ:
+        case STAR_EQ:
+        case SLASH_EQ:
+        case BAND_EQ:
+        case BOR_EQ:
+        case BSL_EQ:
+        case BSR_EQ:
+        case BXOR_EQ: {
+            BinaryAssignmentExprParser parser = new BinaryAssignmentExprParser(this);
+            result = parser.parse(token);
+            break;
+        }
+        case IS: {
+            IsExprParser parser = new IsExprParser(null, this);
+            result = parser.parse(token);
+            break;
+        }
+        default:
+            result = new VarExpr(token.getText());
+            break;
+        }
 
-    	setLineNumber(result, token);
-    	return (result);
+        setLineNumber(result, token);
+        return (result);
     }
 
 
@@ -615,59 +615,59 @@ public class ExprParser extends StmtParser {
     protected ASTNode parseChainedExpr(Token token)
         throws Exception
     {
-    	ASTNode result = null;
+        ASTNode result = null;
 
-    	LeolaTokenType type = token.getType();
-    	switch(type) {
-    	case LEFT_PAREN: {
-    		/* method invocation */
-    		Expr[] params = ParserUtils.parseArgumentExpressions(this, token);
-    		result = new ChainedFuncInvocationExpr(params);
-    		break;
-    	}
-    	case LEFT_BRACKET: {
-    		/* array index */
-    		ChainedArrayAccessExprParser parser = new ChainedArrayAccessExprParser(this);
-    		result = parser.parse(token);
-    		break;
-    	}
-    	case DOT: {
-    		ChainedMemberAccessParser parser = new ChainedMemberAccessParser(this);
-    		result = parser.parse(token);
-    		break;
-    	}
-    	case COLON: {    		
-    		throwParseError(token, LeolaErrorCode.UNIMPLEMENTED);
-    		break;
-    	}
-    	case EQUALS: {
-    		/* assignment */
-    		ChainedAssignmentExprParser parser = new ChainedAssignmentExprParser(this);
-    		result = parser.parse(token);
-    		break;
-    	}
-    	case PLUS_EQ:
-    	case MINUS_EQ:
-    	case MOD_EQ:
-    	case STAR_EQ:
-    	case SLASH_EQ:
-    	case BAND_EQ:
-    	case BOR_EQ:
-    	case BSL_EQ:
-    	case BSR_EQ:
-    	case BXOR_EQ: {
-    		ChainedBinaryAssignmentExprParser parser = new ChainedBinaryAssignmentExprParser(this);
-    		result = parser.parse(token);
-    		break;
-    	}
-    	default:
-    		result = new VarExpr(token.getText());
-    		nextToken(); /* eat the identifier */
-    		break;
-    	}
+        LeolaTokenType type = token.getType();
+        switch(type) {
+        case LEFT_PAREN: {
+            /* method invocation */
+            Expr[] params = ParserUtils.parseArgumentExpressions(this, token);
+            result = new ChainedFuncInvocationExpr(params);
+            break;
+        }
+        case LEFT_BRACKET: {
+            /* array index */
+            ChainedArrayAccessExprParser parser = new ChainedArrayAccessExprParser(this);
+            result = parser.parse(token);
+            break;
+        }
+        case DOT: {
+            ChainedMemberAccessParser parser = new ChainedMemberAccessParser(this);
+            result = parser.parse(token);
+            break;
+        }
+        case COLON: {            
+            throwParseError(token, LeolaErrorCode.UNIMPLEMENTED);
+            break;
+        }
+        case EQUALS: {
+            /* assignment */
+            ChainedAssignmentExprParser parser = new ChainedAssignmentExprParser(this);
+            result = parser.parse(token);
+            break;
+        }
+        case PLUS_EQ:
+        case MINUS_EQ:
+        case MOD_EQ:
+        case STAR_EQ:
+        case SLASH_EQ:
+        case BAND_EQ:
+        case BOR_EQ:
+        case BSL_EQ:
+        case BSR_EQ:
+        case BXOR_EQ: {
+            ChainedBinaryAssignmentExprParser parser = new ChainedBinaryAssignmentExprParser(this);
+            result = parser.parse(token);
+            break;
+        }
+        default:
+            result = new VarExpr(token.getText());
+            nextToken(); /* eat the identifier */
+            break;
+        }
 
-    	setLineNumber(result, token);
-    	return (result);
+        setLineNumber(result, token);
+        return (result);
     }
 
 }

@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.frontend.parsers;
 
@@ -23,12 +23,12 @@ import leola.frontend.tokens.LeolaTokenType;
  */
 public class CatchStmtParser extends StmtParser {
 
-	/**
-	 * @param parser
-	 */
-	public CatchStmtParser(LeolaParser parser) {
-		super(parser);
-	}
+    /**
+     * @param parser
+     */
+    public CatchStmtParser(LeolaParser parser) {
+        super(parser);
+    }
 
     /**
      * Parse the {@link CatchStmt}
@@ -37,21 +37,21 @@ public class CatchStmtParser extends StmtParser {
      * @return the root node of the generated parse tree.
      * @throws Exception if an error occurred.
      */
-	@Override
+    @Override
     public ASTNode parse(Token token)
-        throws Exception {		
-	       
-	    Token startingToken = token;
+        throws Exception {        
+           
+        Token startingToken = token;
         token = nextToken(); // eat the CATCH token        
         expectToken(token, LeolaTokenType.IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
         
         String identifier = token.getText();
         
         Stmt stmt = parseStmt(nextToken());
-	    
-		
+        
+        
         // Create the Catch node.
-    	CatchStmt onStmt = new CatchStmt(identifier, stmt);
+        CatchStmt onStmt = new CatchStmt(identifier, stmt);
         setLineNumber(onStmt, startingToken);
         return onStmt;
     }

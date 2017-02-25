@@ -1,7 +1,7 @@
 /*
-	Leola Programming Language
-	Author: Tony Sparks
-	See license.txt
+    Leola Programming Language
+    Author: Tony Sparks
+    See license.txt
 */
 package leola.ast;
 
@@ -15,59 +15,59 @@ import leola.frontend.EvalException;
  */
 public class NewExpr extends Expr {
 
-	/**
-	 * Class name
-	 */
-	private String className;
+    /**
+     * Class name
+     */
+    private String className;
 
-	/**
-	 * The parameters for the constructor
-	 */
-	private Expr[] parameters;
-
-
-
-	/**
-	 * @param className
-	 * @param parameters
-	 */
-	public NewExpr(String className, Expr[] parameters) {
-		this.className = className;
-		this.parameters = parameters;
-		if(this.parameters != null) {
-			for(int i = 0; i < this.parameters.length; i++) {
-				becomeParentOf(this.parameters[i]);
-			}
-		}
-	}
+    /**
+     * The parameters for the constructor
+     */
+    private Expr[] parameters;
 
 
 
-	/* (non-Javadoc)
-	 * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-	 */
-	@Override
-	public void visit(ASTNodeVisitor v) throws EvalException {
-		v.visit(this);
-	}
+    /**
+     * @param className
+     * @param parameters
+     */
+    public NewExpr(String className, Expr[] parameters) {
+        this.className = className;
+        this.parameters = parameters;
+        if(this.parameters != null) {
+            for(int i = 0; i < this.parameters.length; i++) {
+                becomeParentOf(this.parameters[i]);
+            }
+        }
+    }
 
 
 
-	/**
-	 * @return the className
-	 */
-	public String getClassName() {
-		return className;
-	}
+    /* (non-Javadoc)
+     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
+     */
+    @Override
+    public void visit(ASTNodeVisitor v) throws EvalException {
+        v.visit(this);
+    }
 
 
 
-	/**
-	 * @return the parameters
-	 */
-	public Expr[] getParameters() {
-		return parameters;
-	}
+    /**
+     * @return the className
+     */
+    public String getClassName() {
+        return className;
+    }
+
+
+
+    /**
+     * @return the parameters
+     */
+    public Expr[] getParameters() {
+        return parameters;
+    }
 
 }
 
