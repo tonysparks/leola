@@ -1,31 +1,20 @@
 package leola.frontend;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.Reader;
 
 import leola.frontend.listener.EventDispatcher;
 
 /**
- * <h1>Source</h1>
+ * 
+ * @author Tony
  *
- * <p>
- * The framework class that represents the source program.
- * </p>
- *
- * <p>
- * Copyright (c) 2009 by Ronald Mak
- * </p>
- * <p>
- * For instructional purposes only. No warranties.
- * </p>
  */
 public class Source implements AutoCloseable {
     
     public static final char EOL = '\n'; // end-of-line character
     public static final char EOF = (char) 0; // end-of-file character
 
-    private BufferedReader reader; // reader for the source program
+    private SourceReader reader; // reader for the source program
     private String line; // source line
     private int lineNum; // current source line number
     private int currentPos; // current source line position
@@ -33,18 +22,15 @@ public class Source implements AutoCloseable {
     private EventDispatcher eventDispatcher;
 
     /**
-     * Constructor.
-     * 
+     * @param eventDispatcher
      * @param reader
      *            the reader for the source program
-     * @throws IOException
-     *             if an I/O error occurred
      */
-    public Source(EventDispatcher eventDispatcher, Reader reader) {
+    public Source(EventDispatcher eventDispatcher, SourceReader reader) {
+        this.eventDispatcher = eventDispatcher;
+        this.reader = reader;
         this.lineNum = 0;
         this.currentPos = -2; // set to -2 to read the first source line
-        this.reader = (reader instanceof BufferedReader) ? (BufferedReader)reader : new BufferedReader(reader);
-        this.eventDispatcher = eventDispatcher;
     }
 
     /**
@@ -196,8 +182,8 @@ public class Source implements AutoCloseable {
      * @throws IOException
      *             if an I/O error occurred.
      */
-    private void readLine() throws IOException {
-        line = reader.readLine(); // null when at the end of the source
+    private void readLine() throws IOException {                
+        line = reader.readLine();
         currentPos = -1;
 
         if (line != null) {

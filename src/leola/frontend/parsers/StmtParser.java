@@ -61,7 +61,7 @@ public class StmtParser extends LeolaParser {
     public StmtParser(LeolaParser parser) {
         super(parser);
     }
-    
+        
     /**
      * Parse a statement.
      * To be overridden by the specialized statement parser subclasses.

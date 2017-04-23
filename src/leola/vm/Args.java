@@ -220,6 +220,17 @@ public class Args {
         }
         
         /**
+         * Sets the REPL mode (deactivated by default)
+         * 
+         * @param repl
+         * @return the {@link ArgsBuilder} for method chaining
+         */
+        public ArgsBuilder setREPL(boolean repl) {
+            args.setREPL(repl);
+            return this;
+        }
+        
+        /**
          * Builds the {@link Args} structure with the configuration
          * of the {@link ArgsBuilder}.
          * 
@@ -252,6 +263,7 @@ public class Args {
     private boolean barebones;
     private boolean isExecuteStatement;
     private boolean isDebugMode;
+    private boolean isREPL;
     private boolean allowThreadLocals;
     private boolean isSandboxed;
     private String statement;
@@ -273,6 +285,7 @@ public class Args {
         { "x", "Sets the stack size. Ex. x=1024 "    },
         { "mx", "Sets the max stack size. Ex. mx=1000000" },
         { "t", "Disables allocating a VM per thread. "    },
+        { "l", "Runs the REPL (run, evaluate, print, loop)" },
         { "cp", "Path names to be included on include, require look ups.  Use a ';' as " +
                     "a path separater. \n\t\t Ex. \"cp=C:/My Documents/libs;C:/leola/libs\" " },
     };
@@ -360,6 +373,9 @@ public class Args {
                 }
                 
                 break;
+            }
+            else if ( arg.startsWith("l") ) {
+                pargs.isREPL = true;
             }
             else {
                 pargs.fileName = arg;
@@ -578,6 +594,22 @@ public class Args {
      */
     public void enableVMThreadLocal(boolean allow) {
         this.allowThreadLocals = allow;
+    }
+    
+    /**
+     * @return is in REPL mode
+     */
+    public boolean isREPL() {
+        return isREPL;
+    }
+    
+    /**
+     * Set the REPL mode
+     * 
+     * @param isREPL
+     */
+    public void setREPL(boolean isREPL) {
+        this.isREPL = isREPL;
     }
 }
 

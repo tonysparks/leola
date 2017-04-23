@@ -22,10 +22,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import leola.ast.ASTNode;
+import leola.frontend.DefaultSourceReader;
 import leola.frontend.ExceptionHandler;
 import leola.frontend.LeolaParser;
 import leola.frontend.LeolaScanner;
@@ -33,10 +36,12 @@ import leola.frontend.ParseException;
 import leola.frontend.Parser;
 import leola.frontend.Scanner;
 import leola.frontend.Source;
+import leola.frontend.SourceReader;
 import leola.frontend.Token;
 import leola.frontend.events.SyntaxErrorEvent;
 import leola.frontend.events.SyntaxErrorListener;
 import leola.frontend.listener.EventDispatcher;
+import leola.frontend.parsers.StmtParser;
 import leola.frontend.tokens.LeolaErrorCode;
 import leola.lang.ArrayLeolaLibrary;
 import leola.lang.CollectionsLeolaLibrary;
@@ -52,6 +57,7 @@ import leola.lang.sql.SqlLeolaLibrary;
 import leola.vm.compiler.Bytecode;
 import leola.vm.compiler.BytecodeEmitter;
 import leola.vm.compiler.BytecodeGeneratorVisitor;
+import leola.vm.compiler.EmitterScope.ScopeType;
 import leola.vm.compiler.EmitterScopes;
 import leola.vm.debug.DebugListener;
 import leola.vm.exceptions.LeolaRuntimeException;
@@ -83,6 +89,8 @@ public class Leola {
 
     public static final String GLOBAL_SCOPE_NAME = "$G";
 
+    public static final String VERSION = "v0.9.9";
+    
     /**
      * Converts the supplied Java Object into a {@link LeoObject} equivalent
      * 
@@ -108,8 +116,11 @@ public class Leola {
 
             Args pargs = Args.parse(args);
             try {
-                if ( pargs.executeStatement()) {
+                if (pargs.executeStatement()) {
                     executeStatement(pargs);
+                }
+                else if (pargs.isREPL()) {
+                    executeREPL(pargs);
                 }
                 else {
                     executeScript(pargs);
@@ -183,6 +194,43 @@ public class Leola {
                 System.err.println(result);
             }
         }
+    }
+    
+    /**
+     * Runs Leola in REPL mode
+     * 
+     * @param pargs
+     * @throws Exception
+     */
+    private static void executeREPL(Args pargs) throws Exception {
+        Leola runtime = new Leola(pargs);
+        System.out.println("");
+        System.out.println("Leola " + VERSION);
+        System.out.println("Date: " + DateFormat.getDateInstance().format(new Date()));
+        System.out.println("");
+        System.out.println("");
+        System.out.println("Type sys:exit() to quit");
+        System.out.println("");
+        System.out.println("===================================================");
+        
+        SourceReader reader = new DefaultSourceReader(new InputStreamReader(System.in));
+        LeolaParser parser = new LeolaParser(new LeolaScanner(new Source(runtime.eventDispatcher, reader)), runtime.exceptionHandler);
+        BytecodeGeneratorVisitor gen = new BytecodeGeneratorVisitor(runtime, new EmitterScopes());
+        
+        while(true) {
+            System.out.println("> ");
+            ASTNode node = new StmtParser(parser).parse(parser.nextToken());
+
+            gen.getAsm().start(ScopeType.GLOBAL_SCOPE);            
+            node.visit(gen);
+            gen.getAsm().end();
+            BytecodeEmitter asm = gen.getAsm();
+            Bytecode bytecode = asm.compile();
+            
+            LeoObject result = runtime.execute(bytecode);
+            System.out.println(result.toString());
+        }
+        
     }
     
     /**
@@ -1054,6 +1102,17 @@ public class Leola {
      * @throws Exception
      */
     public Bytecode compile(Reader reader, ExceptionHandler exceptionHandler) throws Exception {
+        return compile(new DefaultSourceReader(reader), exceptionHandler);
+    }
+    
+    /**
+     * Compiles the file.
+     *
+     * @param reader
+     * @return
+     * @throws Exception
+     */
+    private Bytecode compile(SourceReader reader, ExceptionHandler exceptionHandler) throws Exception {
         ASTNode program = generateAST(reader, exceptionHandler);
         //program.visit(new DeadcodeOptimizerVisitor());
         
@@ -1104,6 +1163,17 @@ public class Leola {
      * @throws Exception
      */
     public ASTNode generateAST(Reader reader, ExceptionHandler exceptionHandler) throws Exception {
+        return generateAST(new DefaultSourceReader(reader), exceptionHandler);
+    }
+    
+    /**
+     * Generates an Abstract Syntax Tree from the stream.
+     *
+     * @param reader
+     * @return the root node of the AST
+     * @throws Exception
+     */
+    private ASTNode generateAST(SourceReader reader, ExceptionHandler exceptionHandler) throws Exception {
         final Source source = new Source(this.eventDispatcher, reader);
 
         Scanner scanner = new LeolaScanner(source);
@@ -1189,4 +1259,5 @@ public class Leola {
         }
     }
 }
+
 
