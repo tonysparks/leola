@@ -1,10 +1,9 @@
 package leola.frontend.tokens;
 
-import static leola.frontend.tokens.LeolaTokenType.ERROR;
-
-import java.io.IOException;
+import static leola.frontend.tokens.TokenType.ERROR;
 
 import leola.frontend.Source;
+import leola.frontend.Token;
 
 
 /**
@@ -13,20 +12,17 @@ import leola.frontend.Source;
  * @author Tony
  *
  */
-public class LeolaErrorToken extends LeolaToken {
+public class LeolaErrorToken extends Token {
+    
     /**
-     * Constructor.
-     * 
      * @param source
      *            the source from where to fetch subsequent characters.
      * @param errorCode
      *            the error code.
      * @param tokenText
      *            the text of the erroneous token.
-     * @throws Exception
-     *             if an error occurred.
      */
-    public LeolaErrorToken(Source source, LeolaErrorCode errorCode, String tokenText) throws IOException {
+    public LeolaErrorToken(Source source, LeolaErrorCode errorCode, String tokenText) {
         super(source);
 
         this.text = tokenText;
@@ -34,13 +30,7 @@ public class LeolaErrorToken extends LeolaToken {
         this.value = errorCode;
     }
 
-    /**
-     * Do nothing. Do not consume any source characters.
-     * 
-     * @throws Exception
-     *             if an error occurred.
-     */
     @Override
-    protected void extract() throws IOException {
+    protected void extract() {
     }
 }

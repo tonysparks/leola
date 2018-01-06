@@ -5,14 +5,19 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
-
+import leola.vm.EvalException;
 
 /**
+ * Accounts for array access expressions:
+ * 
+ * <pre>
+ *  array[10]
+ * </pre>
+ * 
  * @author Tony
  *
  */
-public class ChainedArrayAccessSetExpr extends Expr {
+public class SubscriptGetExpr extends Expr {
 
     /**
      * element index
@@ -20,10 +25,17 @@ public class ChainedArrayAccessSetExpr extends Expr {
     private Expr elementIndex;
 
     /**
+     * Variable name
+     */
+    private Expr object;
+
+
+    /**
      * @param elementIndex
      */
-    public ChainedArrayAccessSetExpr(Expr elementIndex) {
-        this.elementIndex = becomeParentOf(elementIndex);
+    public SubscriptGetExpr(Expr object, Expr elementIndex) {
+        this.object = object;
+        this.elementIndex = becomeParentOf(elementIndex); 
     }
 
 
@@ -35,6 +47,11 @@ public class ChainedArrayAccessSetExpr extends Expr {
     public void visit(ASTNodeVisitor v) throws EvalException {
         v.visit(this);
     }
+
+    public Expr getObject() {
+        return object;
+    }
+
     /**
      * @return the elementIndex
      */

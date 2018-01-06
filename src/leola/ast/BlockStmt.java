@@ -5,7 +5,9 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
+import java.util.List;
+
+import leola.vm.EvalException;
 
 /**
  * A statement composed of two statements
@@ -13,20 +15,24 @@ import leola.frontend.EvalException;
  * @author Tony
  *
  */
-public class CompoundExpr extends Expr {
-
+public class BlockStmt extends Stmt {
+    
+    private List<Stmt> statements;
+    
     /**
      */
-    public CompoundExpr() {
+    public BlockStmt(List<Stmt> statements) {
+        this.statements = statements;
     }
 
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-     */
     @Override
     public void visit(ASTNodeVisitor v) throws EvalException {
         v.visit(this);
     }
 
+    
+    public List<Stmt> getStatements() {
+        return statements;
+    }
 }
 

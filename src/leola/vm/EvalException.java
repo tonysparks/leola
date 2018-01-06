@@ -3,7 +3,7 @@
     Author: Tony Sparks
     See license.txt
 */
-package leola.frontend;
+package leola.vm;
 
 import leola.ast.ASTNode;
 

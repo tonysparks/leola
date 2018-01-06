@@ -7,7 +7,7 @@ package leola.ast;
 
 import java.util.List;
 
-import leola.frontend.EvalException;
+import leola.vm.EvalException;
 import leola.vm.util.Pair;
 
 /**

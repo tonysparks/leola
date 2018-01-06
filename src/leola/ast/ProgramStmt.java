@@ -5,7 +5,9 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
+import java.util.List;
+
+import leola.vm.EvalException;
 
 /**
  * A program, the root node
@@ -13,11 +15,12 @@ import leola.frontend.EvalException;
  * @author Tony
  *
  */
-public class ProgramStmt extends Stmt {
+public class ProgramStmt extends BlockStmt {
 
     /**
      */
-    public ProgramStmt() {
+    public ProgramStmt(List<Stmt> statements) {
+        super(statements);
     }
 
     /* (non-Javadoc)

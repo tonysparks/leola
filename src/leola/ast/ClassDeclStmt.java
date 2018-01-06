@@ -5,8 +5,9 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
-import leola.frontend.parsers.ParameterList;
+import java.util.List;
+
+import leola.vm.EvalException;
 
 /**
  * Class Declaration
@@ -34,12 +35,12 @@ public class ClassDeclStmt extends Stmt {
     /**
      * Parent classes params
      */
-    private Expr[] parentClassParams;
+    private List<Expr> parentClassParams;
 
     /**
      * Interfaces names
      */
-    private String[] interfaceNames;
+    private List<String> interfaceNames;
 
     /**
      * Class body
@@ -59,20 +60,14 @@ public class ClassDeclStmt extends Stmt {
                       , ParameterList classParams
                       , Stmt classBodyStmt
                       , String parentClassName
-                      , Expr[] parentClassParams
-                      , String[] interfaceNames) {
+                      , List<Expr> parentClassParams
+                      , List<String> interfaceNames) {
         this.className = className;
         this.classParameters = classParams;
         this.classBodyStmt = becomeParentOf(classBodyStmt);
         this.parentClassName = parentClassName;
         this.parentClassParams = parentClassParams;
         this.interfaceNames = interfaceNames;
-        
-        if(this.parentClassParams!=null) {
-            for(int i = 0; i < this.parentClassParams.length; i++) {
-                becomeParentOf(this.parentClassParams[i]);
-            }
-        }
     }
 
     /* (non-Javadoc)
@@ -101,7 +96,7 @@ public class ClassDeclStmt extends Stmt {
     /**
      * @return the interfaceNames
      */
-    public String[] getInterfaceNames() {
+    public List<String> getInterfaceNames() {
         return interfaceNames;
     }
 
@@ -122,7 +117,7 @@ public class ClassDeclStmt extends Stmt {
     /**
      * @return the parentClassParams
      */
-    public Expr[] getParentClassParams() {
+    public List<Expr> getParentClassParams() {
         return parentClassParams;
     }
 

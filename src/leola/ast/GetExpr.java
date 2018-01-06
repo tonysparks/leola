@@ -8,27 +8,18 @@ package leola.ast;
 import leola.vm.EvalException;
 
 /**
- * IS Expression
- *
  * @author Tony
  *
  */
-public class IsExpr extends Expr {
+public class GetExpr extends Expr {
 
-    /**
-     * Expression
-     */
     private Expr object;
+    private String identifier;
 
-    private String className;
 
-    /**
-     * @param object
-     * @param className
-     */
-    public IsExpr(Expr object, String className) {        
+    public GetExpr(Expr object, String identifier) {
         this.object = object;
-        this.className = className;
+        this.identifier = identifier;
     }
 
     @Override
@@ -39,12 +30,11 @@ public class IsExpr extends Expr {
     public Expr getObject() {
         return object;
     }
-
-    /**
-     * @return the className
-     */
-    public String getClassName() {
-        return className;
+    
+    
+    public String getIdentifier() {
+        return identifier;
     }
+
 }
 

@@ -5,7 +5,8 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
+import leola.frontend.Token;
+import leola.vm.EvalException;
 
 /**
  * Unary operator
@@ -16,18 +17,13 @@ import leola.frontend.EvalException;
 public class UnaryExpr extends Expr {
 
     private Expr expr;
-    private UnaryOp op;
+    private Token op;
 
-    public enum UnaryOp {
-          NOT
-        , NEGATE
-        , BIT_NOT
-    }
 
     /**
      * @param expr
      */
-    public UnaryExpr(Expr expr, UnaryOp op) {
+    public UnaryExpr(Expr expr, Token op) {
         this.expr = becomeParentOf(expr);
         this.op = op;
     }
@@ -35,7 +31,7 @@ public class UnaryExpr extends Expr {
     /**
      * @return the op
      */
-    public UnaryOp getOp() {
+    public Token getOp() {
         return op;
     }
 

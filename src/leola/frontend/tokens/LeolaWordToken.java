@@ -1,11 +1,10 @@
 package leola.frontend.tokens;
 
-import static leola.frontend.tokens.LeolaTokenType.IDENTIFIER;
-import static leola.frontend.tokens.LeolaTokenType.RESERVED_WORDS;
-
-import java.io.IOException;
+import static leola.frontend.tokens.TokenType.IDENTIFIER;
+import static leola.frontend.tokens.TokenType.RESERVED_WORDS;
 
 import leola.frontend.Source;
+import leola.frontend.Token;
 
 
 /**
@@ -14,7 +13,7 @@ import leola.frontend.Source;
  * @author Tony
  *
  */
-public class LeolaWordToken extends LeolaToken {
+public class LeolaWordToken extends Token {
 
     /**
      * Determines if the supplied character is valid inside the identifier
@@ -59,20 +58,16 @@ public class LeolaWordToken extends LeolaToken {
 
     /**
      * @param source the source from where to fetch the token's characters.
-     * @throws Exception if an error occurred.
      */
-    public LeolaWordToken(Source source)
-        throws IOException {
+    public LeolaWordToken(Source source) {
         super(source);
     }
 
     /**
      * Extract a Leola word token from the source.
-     * @throws Exception if an error occurred.
      */
     @Override
-    protected void extract()
-        throws IOException {
+    protected void extract() {
         StringBuilder textBuffer = new StringBuilder();
         char currentChar = currentChar();
 
@@ -87,7 +82,7 @@ public class LeolaWordToken extends LeolaToken {
 
         // Is it a reserved word or an identifier?
         type = (RESERVED_WORDS.contains(text))
-               ? LeolaTokenType.valueOf(text.toUpperCase())  // reserved word
+               ? TokenType.valueOf(text.toUpperCase())  // reserved word
                : IDENTIFIER;                                  // identifier
     }
 }

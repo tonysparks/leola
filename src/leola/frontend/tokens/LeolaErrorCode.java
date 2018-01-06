@@ -14,8 +14,10 @@ public enum LeolaErrorCode {
     INVALID_VAR_ARGS("Invalid variable argument; must be last argument"),
     INVALID_MULTI_VAR_ARGS("Invalid variable argument; only one variable argument is allowed"),
     INVALID_ARGS_EXPANSION("Invalid variable argument expansion; can only be used in function arguments"),
+    INVALID_NAMED_PARAMETER("Invalid name parameter expression"),
     INVALID_MULTI_ARGS_EXPANSION("Invalid variable argument expansion; can only expand one argument"),
-    
+    INVALID_CONTINUE_STMT("Invalid 'continue' use, must be inside a while loop"),
+    INVALID_BREAK_STMT("Invalid 'break' use, must be inside a while loop"),
     
     MISSING_ARROW("Missing ->"),
     MISSING_COMMA("Missing ,"),
@@ -26,8 +28,10 @@ public enum LeolaErrorCode {
     MISSING_RIGHT_PAREN("Missing )"),
     MISSING_LEFT_PAREN("Missing ("),
     MISSING_LEFT_BRACE("Missing {"),
+    MISSING_WHEN("Missing 'when'"),
     MISSING_CATCH_OR_FINALLY("Missing an 'catch' or 'finally' block"),
     MISSING_INTERFACE("Missing interface definition on class."),
+    MISSING_SEMICOLON("Missing semicolon after empty 'return' or 'yield' statement"),
     
     RANGE_INTEGER("Integer literal out of range"),
     RANGE_LONG("Long literal out of range"),

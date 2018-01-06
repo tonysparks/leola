@@ -9,14 +9,14 @@ import java.util.List;
 
 import leola.ast.ASTNode;
 import leola.ast.ASTNodeVisitorAdapter;
-import leola.ast.CompoundStmt;
+import leola.ast.BlockStmt;
 import leola.ast.Expr;
 import leola.ast.FuncInvocationExpr;
 import leola.ast.IfStmt;
 import leola.ast.ReturnStmt;
 import leola.ast.Stmt;
 import leola.ast.YieldStmt;
-import leola.frontend.EvalException;
+import leola.vm.EvalException;
 
 /**
  * Scans a function definition to see if it can apply a tail-call optimization
@@ -56,11 +56,11 @@ public class TailcallOptimizerVisitor extends ASTNodeVisitorAdapter {
     
     
     /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.CompoundStmt)
+     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.BlockStmt)
      */
     @Override
-    public void visit(CompoundStmt s) throws EvalException {
-        List<ASTNode> nodes = s.getChildren();
+    public void visit(BlockStmt s) throws EvalException {
+        List<Stmt> nodes = s.getStatements();
         int size = nodes.size();
         if ( size > 0 ) {
             this.isTerminal = true;

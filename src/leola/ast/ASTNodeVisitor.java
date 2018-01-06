@@ -5,7 +5,7 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
+import leola.vm.EvalException;
 
 
 /**
@@ -16,33 +16,24 @@ import leola.frontend.EvalException;
  */
 public interface ASTNodeVisitor {
 
-    void visit(ArrayAccessExpr s) throws EvalException;
-    void visit(ArrayAccessSetExpr s) throws EvalException;
+    void visit(SubscriptGetExpr s) throws EvalException;
+    void visit(SubscriptSetExpr s) throws EvalException;
     void visit(ArrayDeclExpr s) throws EvalException;
 
     void visit(MapDeclExpr s) throws EvalException;
 
     void visit(AssignmentExpr s) throws EvalException;
     void visit(BinaryExpr s) throws EvalException;
-    void visit(BinaryAssignmentExpr s) throws EvalException;
     void visit(BooleanExpr s) throws EvalException;
     void visit(BreakStmt s) throws EvalException;
     void visit(CaseExpr s) throws EvalException;
-    void visit(ChainedArrayAccessExpr s) throws EvalException;
-    void visit(ChainedArrayAccessSetExpr s) throws EvalException;
-    void visit(ChainedAssignmentExpr s) throws EvalException;
-    void visit(ChainedBinaryAssignmentExpr s) throws EvalException;
-    void visit(ChainedFuncInvocationExpr s) throws EvalException;
-    void visit(ChainedMemberAccessExpr s) throws EvalException;
     void visit(ClassDeclStmt s) throws EvalException;
-    void visit(CompoundStmt s) throws EvalException;
-    void visit(CompoundExpr s) throws EvalException;
+    void visit(BlockStmt s) throws EvalException;
     void visit(ContinueStmt s) throws EvalException;
     
     void visit(DecoratorExpr s) throws EvalException;
     
     void visit(NamespaceStmt s) throws EvalException;
-    void visit(NamespaceAccessExpr s) throws EvalException;
     
     void visit(CatchStmt s) throws EvalException;
     
@@ -60,7 +51,8 @@ public interface ASTNodeVisitor {
     void visit(FuncInvocationExpr s) throws EvalException;
     void visit(IfStmt s) throws EvalException;
     
-    void visit(MemberAccessExpr s) throws EvalException;
+    void visit(GetExpr s) throws EvalException;
+    void visit(SetExpr s) throws EvalException;
     void visit(NamedParameterExpr s) throws EvalException;
     void visit(NewExpr s) throws EvalException;    
     void visit(NullExpr s) throws EvalException;

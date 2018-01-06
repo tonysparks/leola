@@ -5,7 +5,7 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
+import leola.vm.EvalException;
 
 /**
  * Serves as an Adapter
@@ -16,16 +16,16 @@ import leola.frontend.EvalException;
 public class ASTNodeVisitorAdapter implements ASTNodeVisitor {
     
     /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ArrayAccessExpr)
+     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.SubscriptGetExpr)
      */
     @Override
-    public void visit(ArrayAccessExpr s) throws EvalException {}
+    public void visit(SubscriptGetExpr s) throws EvalException {}
 
     /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ArrayAccessSetExpr)
+     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.SubscriptSetExpr)
      */
     @Override
-    public void visit(ArrayAccessSetExpr s) throws EvalException {}
+    public void visit(SubscriptSetExpr s) throws EvalException {}
     
 
     /* (non-Javadoc)
@@ -53,12 +53,6 @@ public class ASTNodeVisitorAdapter implements ASTNodeVisitor {
     public void visit(BinaryExpr s) throws EvalException {}
 
     /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.BinaryAssignmentExpr)
-     */
-    @Override
-    public void visit(BinaryAssignmentExpr s) throws EvalException {}
-
-    /* (non-Javadoc)
      * @see leola.ast.ASTNodeVisitor#visit(leola.ast.BooleanExpr)
      */
     @Override
@@ -77,58 +71,16 @@ public class ASTNodeVisitorAdapter implements ASTNodeVisitor {
     public void visit(CaseExpr s) throws EvalException {}
 
     /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ChainedArrayAccessExpr)
-     */
-    @Override
-    public void visit(ChainedArrayAccessExpr s) throws EvalException {}
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ChainedArrayAccessSetExpr)
-     */
-    @Override
-    public void visit(ChainedArrayAccessSetExpr s) throws EvalException {}
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ChainedAssignmentExpr)
-     */
-    @Override
-    public void visit(ChainedAssignmentExpr s) throws EvalException {}
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ChainedBinaryAssignmentExpr)
-     */
-    @Override
-    public void visit(ChainedBinaryAssignmentExpr s) throws EvalException {}
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ChainedFuncInvocationExpr)
-     */
-    @Override
-    public void visit(ChainedFuncInvocationExpr s) throws EvalException {}
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ChainedMemberAccessExpr)
-     */
-    @Override
-    public void visit(ChainedMemberAccessExpr s) throws EvalException {}
-
-    /* (non-Javadoc)
      * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ClassDeclStmt)
      */
     @Override
     public void visit(ClassDeclStmt s) throws EvalException {}
 
     /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.CompoundStmt)
+     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.BlockStmt)
      */
     @Override
-    public void visit(CompoundStmt s) throws EvalException {}
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.CompoundExpr)
-     */
-    @Override
-    public void visit(CompoundExpr s) throws EvalException {}
+    public void visit(BlockStmt s) throws EvalException {}
 
     /* (non-Javadoc)
      * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ContinueStmt)
@@ -147,12 +99,6 @@ public class ASTNodeVisitorAdapter implements ASTNodeVisitor {
      */
     @Override
     public void visit(NamespaceStmt s) throws EvalException {}
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.NamespaceAccessExpr)
-     */
-    @Override
-    public void visit(NamespaceAccessExpr s) throws EvalException {}
 
     /* (non-Javadoc)
      * @see leola.ast.ASTNodeVisitor#visit(leola.ast.NumberExpr)
@@ -217,10 +163,13 @@ public class ASTNodeVisitorAdapter implements ASTNodeVisitor {
 
     
     /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.MemberAccessExpr)
+     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.GetExpr)
      */
     @Override
-    public void visit(MemberAccessExpr s) throws EvalException {}
+    public void visit(GetExpr s) throws EvalException {}
+    
+    @Override
+    public void visit(SetExpr s) throws EvalException {}
 
     /* (non-Javadoc)
      * @see leola.ast.ASTNodeVisitor#visit(leola.ast.NewExpr)

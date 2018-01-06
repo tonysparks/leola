@@ -2,12 +2,11 @@ package leola.frontend.tokens;
 
 import static leola.frontend.Source.EOF;
 import static leola.frontend.tokens.LeolaErrorCode.UNEXPECTED_EOF;
-import static leola.frontend.tokens.LeolaTokenType.ERROR;
-import static leola.frontend.tokens.LeolaTokenType.STRING;
-
-import java.io.IOException;
+import static leola.frontend.tokens.TokenType.ERROR;
+import static leola.frontend.tokens.TokenType.STRING;
 
 import leola.frontend.Source;
+import leola.frontend.Token;
 
 
 /**
@@ -16,28 +15,23 @@ import leola.frontend.Source;
  * @author Tony
  *
  */
-public class LeolaStringToken extends LeolaToken
-{
+public class LeolaStringToken extends Token {
     public static final char STRING_CHAR = '"';
     public static final String MULTI_STRING = "\"\"\"";
     
     /**
      * Constructor.
      * @param source the source from where to fetch the token's characters.
-     * @throws Exception if an error occurred.
      */
-    public LeolaStringToken(Source source)
-        throws IOException {
+    public LeolaStringToken(Source source) {
         super(source);
     }
 
     /**
      * Extract a Leola string token from the source.
-     * @throws Exception if an error occurred.
      */
     @Override
-    protected void extract()
-        throws IOException {
+    protected void extract() {
         StringBuilder textBuffer = new StringBuilder();
         StringBuilder valueBuffer = new StringBuilder();
 
@@ -103,9 +97,8 @@ public class LeolaStringToken extends LeolaToken
      *
      * @param currentChar
      * @return
-     * @throws Exception
      */
-    private boolean isEscape(char currentChar) throws IOException {
+    private boolean isEscape(char currentChar) {
         boolean isEscape = false;
         if ( currentChar == '\\' ) {
             char nextChar = peekChar();
@@ -132,9 +125,8 @@ public class LeolaStringToken extends LeolaToken
      * Eat to the end of the escape
      * @param currentChar
      * @return
-     * @throws Exception
      */
-    private char applyEscape(char currentChar) throws IOException {
+    private char applyEscape(char currentChar) {
         char result = currentChar;
         char nextChar = nextChar();
         switch(nextChar) {

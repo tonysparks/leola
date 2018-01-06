@@ -5,12 +5,7 @@
 */
 package leola.ast;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import leola.frontend.EvalException;
+import leola.vm.EvalException;
 
 /**
  * Abstract Syntax tree node
@@ -20,16 +15,9 @@ import leola.frontend.EvalException;
  */
 public abstract class ASTNode {
 
-    /**
-     * Attributes
-     */
-    private Map<String, Object>  attributes;
-
-    /**
-     * Children
-     */
-    private List<ASTNode> children;
-
+    
+    public static final int MEMBER_PROPERTY = (1<<1);
+    
     /**
      * The line number
      */
@@ -39,11 +27,6 @@ public abstract class ASTNode {
      * Flags
      */
     private int flags;
-    
-    /**
-     * Member access flag
-     */
-    private boolean isMemberAccess;
     
     /**
      * The parent node
@@ -65,18 +48,7 @@ public abstract class ASTNode {
      */
     @Override
     public String toString() {
-        return (this.attributes != null) ? this.attributes.toString() : ""
-            + "[ " + this.children != null ? this.children.toString() : "" + " ]" + " @ line: " + this.lineNumber;
-    }
-    /**
-     * @return the attributes
-     */
-    public Map<String, Object> getAttributes() {
-        if ( this.attributes == null ) {
-            this.attributes = new HashMap<String, Object>();
-        }
-
-        return attributes;
+        return "[ " + this.source + " ]" + " @ line: " + this.lineNumber;
     }
 
     /**
@@ -99,23 +71,7 @@ public abstract class ASTNode {
     public void setParentNode(ASTNode parentNode) {
         this.parentNode = parentNode;
     }
-    
-    /**
-     * @return true if the parent of this node is a member access (foo.bar)
-     */
-    public boolean isMemberAccessChild() {
-        return this.isMemberAccess || 
-               this.parentNode instanceof MemberAccessExpr ||
-               this.parentNode instanceof NamespaceAccessExpr ||
-               this.parentNode instanceof ChainedMemberAccessExpr;
-    }
-    
-    /**
-     * @param isMemberAccess the isMemberAccess to set
-     */
-    public void setMemberAccess(boolean isMemberAccess) {
-        this.isMemberAccess = isMemberAccess;
-    }
+
     
     /**
      * Sets the parent of the supplied node to this node
@@ -178,80 +134,6 @@ public abstract class ASTNode {
     
     public boolean hasFlag(int flag) {
         return (this.flags & flag) != 0;
-    }
-    
-    /**
-     * @param attributes the attributes to set
-     */
-    public void setAttributes(Map<String, Object> attributes) {
-        this.attributes = attributes;
-    }
-
-    /**
-     * Adds an attribute
-     *
-     * @param key
-     * @param value
-     */
-    public void setAttribute(String key, Object value) {
-        getAttributes().put(key, value);
-    }
-
-    /**
-     * Tests to see if the attribute exists
-     *
-     * @param key
-     * @return true if the attribute is found;false otherwise
-     */
-    public boolean hasAttribute(String key) {
-        boolean result = false;
-        if ( this.attributes != null ) {
-            result = this.attributes.containsKey(key);
-        }
-
-        return result;
-    }
-
-    /**
-     * Gets an attribute
-     *
-     * @param key
-     * @return the attribute value
-     */
-    public Object getAttribute(String key) {
-        if ( this.attributes == null) return null;
-        return getAttributes().get(key);
-    }
-
-
-    /**
-     * @return the children
-     */
-    public List<ASTNode> getChildren() {
-        if ( this.children == null ) {
-            this.children = new ArrayList<ASTNode>();
-        }
-        return children;
-    }
-
-    /**
-     * @param node
-     */
-    public void addChild(ASTNode node) {
-        getChildren().add(node);
-        becomeParentOf(node);
-    }
-
-    /**
-     * @param children the children to set
-     */
-    public void setChildren(List<ASTNode> children) {
-        this.children = children;
-        if(this.children != null ) {
-            for(ASTNode node : children) {
-                becomeParentOf(node);
-            }
-        }
     }
 
     /**

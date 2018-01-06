@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
-import leola.frontend.EvalException;
+import leola.vm.EvalException;
 import leola.vm.Leola;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaLibrary;

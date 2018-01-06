@@ -4,15 +4,15 @@ import static leola.frontend.tokens.LeolaErrorCode.INVALID_NUMBER;
 import static leola.frontend.tokens.LeolaErrorCode.RANGE_INTEGER;
 import static leola.frontend.tokens.LeolaErrorCode.RANGE_LONG;
 import static leola.frontend.tokens.LeolaErrorCode.RANGE_REAL;
-import static leola.frontend.tokens.LeolaTokenType.ERROR;
-import static leola.frontend.tokens.LeolaTokenType.INTEGER;
-import static leola.frontend.tokens.LeolaTokenType.LONG;
-import static leola.frontend.tokens.LeolaTokenType.REAL;
+import static leola.frontend.tokens.TokenType.ERROR;
+import static leola.frontend.tokens.TokenType.INTEGER;
+import static leola.frontend.tokens.TokenType.LONG;
+import static leola.frontend.tokens.TokenType.REAL;
 
-import java.io.IOException;
 import java.math.BigInteger;
 
 import leola.frontend.Source;
+import leola.frontend.Token;
 
 /**
  * Number Token, parses number formats
@@ -20,32 +20,18 @@ import leola.frontend.Source;
  * @author Tony
  *
  */
-public class LeolaNumberToken extends LeolaToken {
+public class LeolaNumberToken extends Token {
     private static final int MAX_EXPONENT = 37;
 
-    /**
-     * Constructor.
-     * 
-     * @param source
-     *            the source from where to fetch the token's characters.
-     * @throws Exception
-     *             if an error occurred.
-     */
-    public LeolaNumberToken(Source source) throws IOException {
+    public LeolaNumberToken(Source source) {
         super(source);
     }
-
-    /**
-     * Extract a Leola number token from the source.
-     * 
-     * @throws Exception
-     *             if an error occurred.
-     */
+    
     @Override
-    protected void extract() throws IOException {
+    protected void extract() {    
         StringBuilder textBuffer = new StringBuilder(); // token's characters
         extractNumber(textBuffer);
-        text = textBuffer.toString();
+        text = textBuffer.toString();        
     }
 
     /**
@@ -53,10 +39,8 @@ public class LeolaNumberToken extends LeolaToken {
      * 
      * @param textBuffer
      *            the buffer to append the token's characters.
-     * @throws Exception
-     *             if an error occurred.
      */
-    protected void extractNumber(StringBuilder textBuffer) throws IOException {
+    protected void extractNumber(StringBuilder textBuffer) {
         String wholeDigits = null; // digits before the decimal point
         String fractionDigits = null; // digits after the decimal point
         String exponentDigits = null; // exponent digits
@@ -74,15 +58,15 @@ public class LeolaNumberToken extends LeolaToken {
 
         // Is there a . ?
         // It could be a decimal point or the start of a .. token.
-        currentChar = currentChar();
+        currentChar = this.source.currentChar();
         if (currentChar == '.') {
-            if (peekChar() == '.') {
+            if (this.source.peekChar() == '.') {
                 sawDotDot = true; // it's a ".." token, so don't consume it
             }
             else {
                 type = REAL; // decimal point, so token type is REAL
                 textBuffer.append(currentChar);
-                currentChar = nextChar(); // consume decimal point
+                currentChar = this.source.nextChar(); // consume decimal point
 
                 // Collect the digits of the fraction part of the number.
                 fractionDigits = unsignedIntegerDigits(textBuffer);
@@ -93,7 +77,7 @@ public class LeolaNumberToken extends LeolaToken {
         }
         else if (currentChar == 'L') {
             type = LONG;
-            nextChar();
+            this.source.nextChar();
 
             long longValue = computeLongValue(wholeDigits);
             value = new Long(longValue);
@@ -102,17 +86,17 @@ public class LeolaNumberToken extends LeolaToken {
 
         // Is there an exponent part?
         // There cannot be an exponent if we already saw a ".." token.
-        currentChar = currentChar();
+        currentChar = this.source.currentChar();
         if (!sawDotDot && ((currentChar == 'E') || (currentChar == 'e'))) {
             type = REAL; // exponent, so token type is REAL
             textBuffer.append(currentChar);
-            currentChar = nextChar(); // consume 'E' or 'e'
+            currentChar = this.source.nextChar(); // consume 'E' or 'e'
 
             // Exponent sign?
             if ((currentChar == '+') || (currentChar == '-')) {
                 textBuffer.append(currentChar);
                 exponentSign = currentChar;
-                currentChar = nextChar(); // consume '+' or '-'
+                currentChar = this.source.nextChar(); // consume '+' or '-'
             }
 
             // Extract the digits of the exponent.
@@ -151,11 +135,9 @@ public class LeolaNumberToken extends LeolaToken {
      * @param textBuffer
      *            the buffer to append the token's characters.
      * @return the string of digits.
-     * @throws Exception
-     *             if an error occurred.
      */
-    private String unsignedIntegerDigits(StringBuilder textBuffer) throws IOException {
-        char currentChar = currentChar();
+    private String unsignedIntegerDigits(StringBuilder textBuffer) {
+        char currentChar = this.source.currentChar();
 
         // Must have at least one digit.
         if (!Character.isDigit(currentChar)) {
@@ -168,7 +150,9 @@ public class LeolaNumberToken extends LeolaToken {
 
         // Extract the digits.
         StringBuilder digits = new StringBuilder();
-        while (Character.isDigit(currentChar) || ('x' == currentChar && !isHex) || (isHex && isHexDigit(currentChar))) {
+        while (Character.isDigit(currentChar) || 
+               ('x' == currentChar && !isHex) || 
+               (isHex && isHexDigit(currentChar))) {
 
             if ('x' == currentChar) {
                 isHex = true;
@@ -176,7 +160,7 @@ public class LeolaNumberToken extends LeolaToken {
 
             textBuffer.append(currentChar);
             digits.append(currentChar);
-            currentChar = nextChar(); // consume digit
+            currentChar = this.source.nextChar(); // consume digit
         }
 
         return digits.toString();
@@ -191,7 +175,7 @@ public class LeolaNumberToken extends LeolaToken {
     private boolean isHexDigit(char c) {
         return ((c >= 48 && c <= 57) || // 0 - 9
                 (c >= 65 && c <= 70) || // A - F
-                (c >= 97 && c <= 102) // a - f
+                (c >= 97 && c <= 102)   // a - f
         );
     }
 

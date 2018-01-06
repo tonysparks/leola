@@ -5,7 +5,9 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
+import java.util.List;
+
+import leola.vm.EvalException;
 
 /**
  * Array declaration expression.
@@ -22,27 +24,22 @@ public class ArrayDeclExpr extends Expr {
     /**
      * Elements
      */
-    private Expr[] elements;
+    private List<Expr> elements;
 
 
 
     /**
      * @param elements
      */
-    public ArrayDeclExpr(Expr[] elements) {
+    public ArrayDeclExpr(List<Expr> elements) {
         this.elements = elements;
         if(elements!=null) {
-            for(int i = 0; i < this.elements.length; i++) {
-                becomeParentOf( this.elements[i] );
+            for(int i = 0; i < this.elements.size(); i++) {
+                becomeParentOf( this.elements.get(i) );
             }
         }
     }
 
-
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-     */
     @Override
     public void visit(ASTNodeVisitor v) throws EvalException {
         v.visit(this);
@@ -51,7 +48,7 @@ public class ArrayDeclExpr extends Expr {
     /**
      * @return the elements
      */
-    public Expr[] getElements() {
+    public List<Expr> getElements() {
         return elements;
     }
 }

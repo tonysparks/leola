@@ -5,7 +5,7 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
+import leola.vm.EvalException;
 
 /**
  * Try statement

@@ -1,12 +1,11 @@
 package leola.frontend.tokens;
 
 import static leola.frontend.tokens.LeolaErrorCode.INVALID_CHARACTER;
-import static leola.frontend.tokens.LeolaTokenType.ERROR;
-import static leola.frontend.tokens.LeolaTokenType.SPECIAL_SYMBOLS;
-
-import java.io.IOException;
+import static leola.frontend.tokens.TokenType.ERROR;
+import static leola.frontend.tokens.TokenType.SPECIAL_SYMBOLS;
 
 import leola.frontend.Source;
+import leola.frontend.Token;
 
 /**
  * Special symbol tokens
@@ -14,24 +13,20 @@ import leola.frontend.Source;
  * @author Tony
  *
  */
-public class LeolaSpecialSymbolToken extends LeolaToken {
+public class LeolaSpecialSymbolToken extends Token {
+    
     /**
-     * Constructor.
      * @param source the source from where to fetch the token's characters.
-     * @throws Exception if an error occurred.
      */
-    public LeolaSpecialSymbolToken(Source source)
-        throws IOException {
+    public LeolaSpecialSymbolToken(Source source) {
         super(source);
     }
 
     /**
      * Extract a Leola special symbol token from the source.
-     * @throws Exception if an error occurred.
      */
     @Override
-    protected void extract()
-        throws IOException {
+    protected void extract() {
         char currentChar = currentChar();
 
         text = Character.toString(currentChar);

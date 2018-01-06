@@ -1,34 +1,17 @@
 package leola.frontend;
 
-import java.io.IOException;
-
-import leola.frontend.tokens.LeolaTokenType;
+import leola.frontend.tokens.TokenType;
 
 /**
- * <h1>EofToken</h1>
+ * End of File token
+ * 
+ * @author Tony
  *
- * <p>
- * The generic end-of-file token.
- * </p>
- *
- * <p>
- * Copyright (c) 2009 by Ronald Mak
- * </p>
- * <p>
- * For instructional purposes only. No warranties.
- * </p>
  */
 public class EofToken extends Token {
-    /**
-     * Constructor.
-     * 
-     * @param source
-     *            the source from where to fetch subsequent characters.
-     * @throws Exception
-     *             if an error occurred.
-     */
-    public EofToken(Source source) throws IOException {
+    
+    public EofToken(Source source) {
         super(source);
-        this.type = LeolaTokenType.END_OF_FILE;
+        this.type = TokenType.END_OF_FILE;
     }
 }

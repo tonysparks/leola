@@ -3,7 +3,7 @@
     Author: Tony Sparks
     See license.txt
 */
-package leola.frontend.parsers;
+package leola.ast;
 
 import java.util.ArrayList;
 import java.util.List;

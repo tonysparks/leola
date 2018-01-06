@@ -1,20 +1,12 @@
 package leola.frontend;
 
-import java.io.IOException;
+import leola.frontend.tokens.TokenType;
 
 /**
- * <h1>Token</h1>
+ * A Token represents a language token such as a symbol or identifier
+ * 
+ * @author Tony
  *
- * <p>
- * The framework class that represents a token returned by the scanner.
- * </p>
- *
- * <p>
- * Copyright (c) 2009 by Ronald Mak
- * </p>
- * <p>
- * For instructional purposes only. No warranties.
- * </p>
  */
 public class Token {
     protected TokenType type; // language-specific token type
@@ -29,10 +21,8 @@ public class Token {
      * 
      * @param source
      *            the source from where to fetch the token's characters.
-     * @throws Exception
-     *             if an error occurred.
      */
-    public Token(Source source) throws IOException {
+    public Token(Source source) {
         this.source = source;
         this.lineNum = source.getLineNum();
         this.position = source.getPosition();
@@ -54,10 +44,9 @@ public class Token {
      * Getter
      * 
      * @return the token type
-     */
-    @SuppressWarnings("unchecked")
-    public <T extends TokenType> T getType() {
-        return (T) type;
+     */    
+    public TokenType getType() {
+        return this.type;
     }
 
     /**
@@ -102,10 +91,8 @@ public class Token {
      * tokens. After extracting the token, the current source line position will
      * be one beyond the last token character.
      * 
-     * @throws Exception
-     *             if an error occurred.
      */
-    protected void extract() throws IOException {
+    protected void extract() {
         text = Character.toString(currentChar());
         value = null;
 
@@ -116,10 +103,8 @@ public class Token {
      * Call the source's currentChar() method.
      * 
      * @return the current character from the source.
-     * @throws Exception
-     *             if an error occurred.
      */
-    protected char currentChar() throws IOException {
+    protected char currentChar() {
         return source.currentChar();
     }
 
@@ -127,10 +112,8 @@ public class Token {
      * Call the source's nextChar() method.
      * 
      * @return the next character from the source after moving forward.
-     * @throws Exception
-     *             if an error occurred.
      */
-    protected char nextChar() throws IOException {
+    protected char nextChar() {
         return source.nextChar();
     }
 
@@ -138,10 +121,8 @@ public class Token {
      * Call the source's peekChar() method.
      * 
      * @return the next character from the source without moving forward.
-     * @throws Exception
-     *             if an error occurred.
      */
-    protected char peekChar() throws IOException {
+    protected char peekChar() {
         return source.peekChar();
     }
 
@@ -150,9 +131,8 @@ public class Token {
      * 
      * @param pos
      * @return the char at the current position + pos, or EOL/EOF if it reached the end of the line or file.
-     * @throws Exception
      */
-    protected char peekAhead(int pos) throws IOException {
+    protected char peekAhead(int pos) {
         return source.peekAhead(pos);
     }
 }

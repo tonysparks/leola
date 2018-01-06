@@ -5,41 +5,27 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
+import leola.vm.EvalException;
 
 /**
  * @author Tony
  *
  */
-public class VarExpr extends OwnableExpr {
+public class VarExpr extends Expr {
 
     /**
      * The variable name
      */
     private String varName;
 
-
-    /**
-     * @param varName
-     */
-    public VarExpr(String varName) {
-        this(varName, varName);
-    }
-
     /**
      * @param owner
      * @param varName
      */
-    public VarExpr(String owner, String varName) {
-        super(owner);
+    public VarExpr(String varName) {
         this.varName = varName;
     }
 
-
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-     */
     @Override
     public void visit(ASTNodeVisitor v) throws EvalException {
         v.visit(this);

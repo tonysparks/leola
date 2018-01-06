@@ -26,18 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import leola.ast.ASTNode;
-import leola.frontend.ExceptionHandler;
-import leola.frontend.LeolaParser;
-import leola.frontend.LeolaScanner;
 import leola.frontend.ParseException;
 import leola.frontend.Parser;
 import leola.frontend.Scanner;
 import leola.frontend.Source;
-import leola.frontend.Token;
-import leola.frontend.events.SyntaxErrorEvent;
-import leola.frontend.events.SyntaxErrorListener;
-import leola.frontend.listener.EventDispatcher;
-import leola.frontend.tokens.LeolaErrorCode;
 import leola.lang.ArrayLeolaLibrary;
 import leola.lang.CollectionsLeolaLibrary;
 import leola.lang.DateLeolaLibrary;
@@ -206,11 +198,6 @@ public class Leola {
     private List<File> includeDirectories;
 
     /**
-     * Event Dispatcher
-     */
-    private EventDispatcher eventDispatcher;
-
-    /**
      * Resource loader
      */
     private ResourceLoader resourceLoader;
@@ -230,11 +217,6 @@ public class Leola {
      * Local thread variable for the VM
      */    
     private VMReference vm;    
-
-    /**
-     * The exception handler
-     */
-    private ExceptionHandler exceptionHandler;
     
     /**
      * @throws Exception
@@ -249,11 +231,6 @@ public class Leola {
      */
     public Leola(Args args) throws LeolaRuntimeException {
         this.args = args;
-        this.eventDispatcher = new EventDispatcher();
-        this.exceptionHandler = new DefaultExceptionHandler();
-
-        ParserMessageListener parserListener = new ParserMessageListener();
-        this.eventDispatcher.addEventListener(SyntaxErrorEvent.class, parserListener);
         
         setIncludePath(args.getIncludeDirectories());
         this.resourceLoader = new ResourceLoader(this);
@@ -411,28 +388,7 @@ public class Leola {
     public DebugListener getDebugListener() {
         return debugListener;
     }
-
-    /**
-     * Sets the {@link ExceptionHandler}.
-     * @param handler
-     */
-    public void setExceptionHandler(ExceptionHandler handler) {
-        this.exceptionHandler = handler;
-    }
     
-    /**
-     * @return the {@link ExceptionHandler}
-     */
-    public ExceptionHandler getExceptionHandler() {
-        return this.exceptionHandler;
-    }
-    
-    /**
-     * @return the eventDispatcher
-     */
-    public EventDispatcher getEventDispatcher() {
-        return eventDispatcher;
-    }
     
     /**
      * @return the current working directory
@@ -917,7 +873,7 @@ public class Leola {
         }
         else {
             try(Reader reader = new BufferedReader(new FileReader(file))) {
-                Bytecode bytecode = compile(reader, this.exceptionHandler);
+                Bytecode bytecode = compile(reader);
                 bytecode.setSourceFile(file);
     
                 result = execute(ns, bytecode);
@@ -932,7 +888,7 @@ public class Leola {
     }
 
     public LeoObject eval(Reader reader, LeoNamespace namespace) throws Exception {
-        Bytecode bytecode = compile(reader, this.exceptionHandler);
+        Bytecode bytecode = compile(reader);
         LeoObject result = execute(namespace, bytecode);
         return result;
     }
@@ -1035,16 +991,6 @@ public class Leola {
         return code;
     }
     
-    /**
-     * Compiles the file.
-     *
-     * @param reader
-     * @return
-     * @throws Exception
-     */
-    public Bytecode compile(Reader reader) throws Exception {
-        return compile(reader, this.exceptionHandler);
-    }
 
     /**
      * Compiles the file.
@@ -1053,8 +999,8 @@ public class Leola {
      * @return
      * @throws Exception
      */
-    public Bytecode compile(Reader reader, ExceptionHandler exceptionHandler) throws Exception {
-        ASTNode program = generateAST(reader, exceptionHandler);
+    public Bytecode compile(Reader reader) throws Exception {
+        ASTNode program = generateAST(reader);
         //program.visit(new DeadcodeOptimizerVisitor());
         
         BytecodeGeneratorVisitor gen = new BytecodeGeneratorVisitor(this, new EmitterScopes());
@@ -1072,7 +1018,7 @@ public class Leola {
      * @throws Exception
      */
     public ASTNode generateAST(File file) throws Exception {
-        return generateAST(new BufferedReader(new FileReader(file)), this.exceptionHandler);
+        return generateAST(new BufferedReader(new FileReader(file)));
     }
 
     /**
@@ -1082,7 +1028,7 @@ public class Leola {
      * @throws Exception
      */
     public ASTNode generateAST(String inlineSource) throws Exception {
-        return generateAST(new BufferedReader(new StringReader(inlineSource)), this.exceptionHandler);
+        return generateAST(new BufferedReader(new StringReader(inlineSource)));
     }
 
     /**
@@ -1092,7 +1038,7 @@ public class Leola {
      * @throws Exception
      */
     public ASTNode generateAST(InputStream iStream) throws Exception {
-        return generateAST(new BufferedReader(new InputStreamReader(iStream)), this.exceptionHandler );
+        return generateAST(new BufferedReader(new InputStreamReader(iStream)));
     }
 
 
@@ -1103,11 +1049,11 @@ public class Leola {
      * @return the root node of the AST
      * @throws Exception
      */
-    public ASTNode generateAST(Reader reader, ExceptionHandler exceptionHandler) throws Exception {
-        final Source source = new Source(this.eventDispatcher, reader);
+    public ASTNode generateAST(Reader reader) throws Exception {
+        final Source source = new Source(reader);
 
-        Scanner scanner = new LeolaScanner(source);
-        Parser parser = new LeolaParser(scanner, exceptionHandler);
+        Scanner scanner = new Scanner(source);
+        Parser parser = new Parser(scanner);
 
         ASTNode program = null;
         try {
@@ -1120,73 +1066,6 @@ public class Leola {
         return program;
     }
 
-    /**
-     * Listener for parser messages.
-     */
-    private class ParserMessageListener implements SyntaxErrorListener {
-        
-        @Override
-        public void onEvent(SyntaxErrorEvent event) {
-            int lineNumber = event.getLineNumber();
-            int position = event.getPosition();
-            String tokenText = event.getTokenText();
-            String errorMessage = event.getErrorMessage();
-            Source source = event.getSourceCode();
-
-            int spaceCount = /*PREFIX_WIDTH + */position;
-            String currentLine = source.getCurrentLine();
-            StringBuilder flagBuffer = new StringBuilder(currentLine != null ? currentLine : "");
-            flagBuffer.append("\n");
-
-            // Spaces up to the error position.
-            for (int i = 1; i < spaceCount; ++i) {
-                flagBuffer.append(' ');
-            }
-
-            // A pointer to the error followed by the error message.
-            flagBuffer.append("^\n*** ").append(errorMessage);
-
-            // Text, if any, of the bad token.
-            if (tokenText != null) {
-                flagBuffer.append(" [at line: ")
-                          .append(lineNumber)
-                          .append(" '").append(tokenText).append("']");
-            }
-
-            System.err.println(flagBuffer.toString());
-        }
-    }
-
-    /**
-     * Default exception handler
-     *
-     * @author Tony
-     *
-     */
-    private class DefaultExceptionHandler implements ExceptionHandler {
-        private int errorCount;
-        
-        @Override
-        public int getErrorCount() {
-            return errorCount;
-        }
-        
-        @Override
-        public void errorToken(Token token, Parser parser, LeolaErrorCode errorCode) {
-            errorCount++;
-            
-            eventDispatcher.sendNow(new SyntaxErrorEvent(this, parser.getSource(), token, errorCode.toString()));
-            throw new ParseException(errorCode,
-                token.getText() + " errored because of : " + errorCode + " at line: " + token.getLineNumber() + " at " + token.getPosition());
-        }
-
-
-        @Override
-        public void onException(Exception e) {
-            errorCount++;
-            
-            throw new LeolaRuntimeException(e);
-        }
-    }
+   
 }
 
