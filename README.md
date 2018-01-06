@@ -87,6 +87,7 @@ println("The best QB of all time: " + bestQB(from->1970, to->2015))
 
 ````
 
+
 How about some calculus?
 
 ````javascript
@@ -114,7 +115,9 @@ println( dSin(1.2) ) // prints 0.36235770828341174
 
 ````
 
+
 Statements and Expressions
+=====
 
 ````javascript
 
@@ -192,6 +195,7 @@ var json = {
 println(json?header?data?text) // prints Hello
 println(json?header?does?not?exist) // prints null
 ````
+
 
 Exception Handling
 =====
@@ -388,7 +392,7 @@ You can download the latest version of Leola by using these Maven coordinates:
 <dependency>
   <groupId>leola</groupId>
   <artifactId>leola</artifactId>
-  <version>0.9.6</version>
+  <version>0.10.0</version>
 </dependency>
 ```
 
