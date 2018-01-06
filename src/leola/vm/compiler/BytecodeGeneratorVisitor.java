@@ -34,6 +34,7 @@ import leola.ast.IsExpr;
 import leola.ast.LongExpr;
 import leola.ast.MapDeclExpr;
 import leola.ast.NamedParameterExpr;
+import leola.ast.NamespaceGetExpr;
 import leola.ast.NamespaceStmt;
 import leola.ast.NewExpr;
 import leola.ast.NullExpr;
@@ -471,8 +472,9 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         asm.line(s.getLineNumber());
         
         List<Expr> existingParams = s.getArguments();
-        List<Expr> arguments = new ArrayList<>(existingParams);        
+        List<Expr> arguments = new ArrayList<>();        
         arguments.add(s.getDecoratedExpr());
+        arguments.addAll(existingParams);
         
         FuncInvocationExpr functionInvokeExpr = new FuncInvocationExpr(s.getDecoratorName(), arguments);
         functionInvokeExpr.setLineNumber(s.getLineNumber());
@@ -715,6 +717,14 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         asm.label(endif);
     }
 
+    @Override
+    public void visit(NamespaceGetExpr s) throws EvalException {
+        asm.line(s.getLineNumber());
+        
+        asm.getnamespace(s.getNamespace().getVarName());
+        asm.getk(s.getIdentifier());
+    }
+    
     /* (non-Javadoc)
      * @see leola.ast.ASTNodeVisitor#visit(leola.ast.GetExpr)
      */

@@ -60,7 +60,7 @@ public class Parser {
         source();
         
         match(SEMICOLON); // eat any optional semi-colons
-                
+        
         if(match(CLASS))     return classDeclaration();
         if(match(NAMESPACE)) return namespaceDeclaration();        
         if(match(VAR))       return varDeclaration();
@@ -74,7 +74,7 @@ public class Parser {
         if(match(YIELD))     return yieldStatement();
         if(match(BREAK))     return breakStatement();
         if(match(CONTINUE))  return continueStatement();
-                
+                        
         return expression();
     }
     
@@ -262,7 +262,9 @@ public class Parser {
         List<Stmt> statements = new ArrayList<>();
         while(!check(RIGHT_BRACE) && !isAtEnd()) {
             Stmt statement = statement();
-            statements.add(statement);            
+            statements.add(statement);
+            
+            match(SEMICOLON); // eat any optional semi-colons
         }
         
         consume(RIGHT_BRACE, ErrorCode.MISSING_RIGHT_BRACE);
@@ -400,9 +402,17 @@ public class Parser {
                 consume(RIGHT_BRACKET, ErrorCode.MISSING_RIGHT_BRACKET);                
                 expr = node(new SubscriptGetExpr(expr, indexExpr));
             }
-            else if(match(DOT, COLON)) {
+            else if(match(DOT)) {
                 Token name = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
                 expr = node(new GetExpr(expr, name.getText()));
+            }
+            else if(match(COLON)) {
+                if(!(expr instanceof VarExpr)) {
+                    throw error(previous(), ErrorCode.INVALID_NAMESPACE_ACCESS);
+                }
+                VarExpr varExpr = (VarExpr)expr;
+                Token name = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
+                expr = node(new NamespaceGetExpr(varExpr, name.getText()));
             }
             else if(match(IS)) {
                 Token name = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);

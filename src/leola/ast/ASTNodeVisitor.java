@@ -51,6 +51,7 @@ public interface ASTNodeVisitor {
     void visit(FuncInvocationExpr s) throws EvalException;
     void visit(IfStmt s) throws EvalException;
     
+    void visit(NamespaceGetExpr s) throws EvalException;
     void visit(GetExpr s) throws EvalException;
     void visit(SetExpr s) throws EvalException;
     void visit(NamedParameterExpr s) throws EvalException;

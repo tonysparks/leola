@@ -18,6 +18,7 @@ public enum ErrorCode {
     INVALID_MULTI_ARGS_EXPANSION("Invalid variable argument expansion; can only expand one argument"),
     INVALID_CONTINUE_STMT("Invalid 'continue' use, must be inside a while loop"),
     INVALID_BREAK_STMT("Invalid 'break' use, must be inside a while loop"),
+    INVALID_NAMESPACE_ACCESS("Invalid namespace access"),
     
     MISSING_ARROW("Missing ->"),
     MISSING_COMMA("Missing ,"),

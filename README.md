@@ -25,6 +25,7 @@ Leola currently supports these features:
 * higher order functions
 * tailcail optimization
 * named parameters
+* decorators
 
 Sample Code
 ====
@@ -166,6 +167,14 @@ var sum = def(elements ...) {
 var total = sum(1,53,2)
 println(total) // 56
 
+/* Use the 'explode' operator (*) to explode out an array to fill in function
+   arguments */
+var sub = def(a, b) {
+    return a - b
+}
+// The * will place make a=3, b=1
+println(sub(*[3, 1]) )   // prints 2
+
 ````
 
 Exception Handling
@@ -207,6 +216,44 @@ while true {
 }
 
 /* this will print: 0 1 2 3 4 5 6 7 8 9 */
+
+````
+
+Decorators
+=====
+
+Decorators in Leola are very similar to decorators in Python (I know I'm original).  Basically, what they are is a function that wraps another function.  Why is this useful? It allows for some interesting constructs such as:
+
+````javascript
+// Type check the arguments past to the function
+// are of the correct type
+var TypeCheck = def(func, args...) {    
+    return def(nargs...) {
+        var i = 0
+        foreach(nargs, def(arg) {
+            if i < args.size() {
+                if reflect:type(arg).toLower() != args[i].toLower() {
+                    throw arg + "(" + reflect:type(arg) + ") is not of type '" + args[i] + "'"
+                }
+            }
+        
+            i += 1
+        })
+        
+        // if all the types are OK, go
+        // ahead and execute the function
+        return func(*nargs)
+    }
+}
+
+
+
+var sub = @TypeCheck("integer", "integer") def(a, b) {
+    return a - b
+}
+
+println(sub(4,5) ) // -1
+println(sub("x", 5) ) // throws an error
 
 ````
 

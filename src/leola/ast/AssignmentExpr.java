@@ -36,6 +36,7 @@ public class AssignmentExpr extends Expr {
     public AssignmentExpr(VarExpr var, Expr value, Token operator) {
         this.var = var;
         this.value = value;
+        this.operator = operator;
     }
 
 
