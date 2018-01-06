@@ -119,6 +119,11 @@ public class LeoString extends LeoObject {
         return true;
     }
     
+    @Override
+    public boolean isAccessible() {     
+        return true;
+    }
+    
     /**
      * @return the value
      */

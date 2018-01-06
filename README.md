@@ -175,6 +175,22 @@ var sub = def(a, b) {
 // The * will place make a=3, b=1
 println(sub(*[3, 1]) )   // prints 2
 
+
+/* Elvis operator, allows for making deep object chains without worrying 
+   about always checking for null */
+   
+var json = {
+   header -> {
+      data -> {
+         text -> "Hello"
+     }
+   }
+}   
+
+// if any of the object to the left of the ? is null, it will
+// stop accessing the elements and return null
+println(json?header?data?text) // prints Hello
+println(json?header?does?not?exist) // prints null
 ````
 
 Exception Handling
@@ -289,17 +305,13 @@ import leola.vm.types.LeoArray;
 */
 public class MyFirstLeolaLibrary implements LeolaLibrary {
 
-   private Leola runtime;
-
    @Override
    @LeolaIgnore // does not import this method in Leola
-   public void init(Leola runtime, LeoNamespace namespace) throws Exception {
-      this.runtime = runtime;
-      
+   public void init(Leola runtime, LeoNamespace namespace) throws Exception {      
       // places all of this classes
       // public methods into the supplied namespace (with the exception of
       // the @LeolaIgnore methods)
-      this.runtime.putIntoNamespace( this, namespace); 
+      runtime.putIntoNamespace( this, namespace); 
    }
    
    public int add(int left, int right) {
@@ -310,7 +322,7 @@ public class MyFirstLeolaLibrary implements LeolaLibrary {
       int size = input.size();
       for(int i = 0; i < size; i++) {
          // execute the supplied functor object
-         LeoObject newValue = this.runtime.execute(functor, input.get(i));
+         LeoObject newValue = functor.call(input.get(i));
          
          // set the value back in the array
          input.set(i, newValue);

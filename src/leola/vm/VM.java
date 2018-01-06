@@ -5,80 +5,7 @@
 */
 package leola.vm;
 
-import static leola.vm.Opcodes.ADD;
-import static leola.vm.Opcodes.AND;
-import static leola.vm.Opcodes.ARG1;
-import static leola.vm.Opcodes.ARG2;
-import static leola.vm.Opcodes.ARGsx;
-import static leola.vm.Opcodes.ARGx;
-import static leola.vm.Opcodes.BNOT;
-import static leola.vm.Opcodes.BSL;
-import static leola.vm.Opcodes.BSR;
-import static leola.vm.Opcodes.CLASS_DEF;
-import static leola.vm.Opcodes.DIV;
-import static leola.vm.Opcodes.DUP;
-import static leola.vm.Opcodes.END_BLOCK;
-import static leola.vm.Opcodes.EQ;
-import static leola.vm.Opcodes.FUNC_DEF;
-import static leola.vm.Opcodes.GEN_DEF;
-import static leola.vm.Opcodes.GET;
-import static leola.vm.Opcodes.GETK;
-import static leola.vm.Opcodes.GET_GLOBAL;
-import static leola.vm.Opcodes.GET_NAMESPACE;
-import static leola.vm.Opcodes.GT;
-import static leola.vm.Opcodes.GTE;
-import static leola.vm.Opcodes.IDX;
-import static leola.vm.Opcodes.IFEQ;
-import static leola.vm.Opcodes.INIT_CATCH_BLOCK;
-import static leola.vm.Opcodes.INIT_FINALLY_BLOCK;
-import static leola.vm.Opcodes.INVOKE;
-import static leola.vm.Opcodes.IS_A;
-import static leola.vm.Opcodes.JMP;
-import static leola.vm.Opcodes.LAND;
-import static leola.vm.Opcodes.LINE;
-import static leola.vm.Opcodes.LOAD_CONST;
-import static leola.vm.Opcodes.LOAD_FALSE;
-import static leola.vm.Opcodes.LOAD_LOCAL;
-import static leola.vm.Opcodes.LOAD_NAME;
-import static leola.vm.Opcodes.LOAD_NULL;
-import static leola.vm.Opcodes.LOAD_OUTER;
-import static leola.vm.Opcodes.LOAD_TRUE;
-import static leola.vm.Opcodes.LOR;
-import static leola.vm.Opcodes.LT;
-import static leola.vm.Opcodes.LTE;
-import static leola.vm.Opcodes.MOD;
-import static leola.vm.Opcodes.MUL;
-import static leola.vm.Opcodes.NAMESPACE_DEF;
-import static leola.vm.Opcodes.NEG;
-import static leola.vm.Opcodes.NEQ;
-import static leola.vm.Opcodes.NEW_ARRAY;
-import static leola.vm.Opcodes.NEW_MAP;
-import static leola.vm.Opcodes.NEW_OBJ;
-import static leola.vm.Opcodes.NOT;
-import static leola.vm.Opcodes.OPPOP;
-import static leola.vm.Opcodes.OR;
-import static leola.vm.Opcodes.PARAM_END;
-import static leola.vm.Opcodes.POP;
-import static leola.vm.Opcodes.REQ;
-import static leola.vm.Opcodes.RNEQ;
-import static leola.vm.Opcodes.RET;
-import static leola.vm.Opcodes.ROTL;
-import static leola.vm.Opcodes.ROTR;
-import static leola.vm.Opcodes.SET;
-import static leola.vm.Opcodes.SETK;
-import static leola.vm.Opcodes.SET_GLOBAL;
-import static leola.vm.Opcodes.SIDX;
-import static leola.vm.Opcodes.STORE_LOCAL;
-import static leola.vm.Opcodes.STORE_OUTER;
-import static leola.vm.Opcodes.SUB;
-import static leola.vm.Opcodes.SWAP;
-import static leola.vm.Opcodes.SWAPN;
-import static leola.vm.Opcodes.TAIL_CALL;
-import static leola.vm.Opcodes.THROW;
-import static leola.vm.Opcodes.XOR;
-import static leola.vm.Opcodes.YIELD;
-import static leola.vm.Opcodes.xLOAD_LOCAL;
-import static leola.vm.Opcodes.xLOAD_OUTER;
+import static leola.vm.Opcodes.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -720,45 +647,7 @@ public class VM {
                                 result = stack[--top];
                             }
                             break;
-                        }
-                        case SWAP: {
-                            LeoObject t = stack[top-2];
-                            stack[top-2] = stack[top-1];
-                            stack[top-1] = t;
-                            continue;
-                        }
-                        case SWAPN: {
-                            int n = ARGx(i);
-                            for(int j = 1; j <= n; j++) {
-                                LeoObject t = stack[top-j];
-                                stack[top-j]     = stack[top-n-j];
-                                stack[top-n-j]     = t;
-                            }
-                            continue;
-                        }
-                        case ROTL: {
-                            int n = ARGx(i) + 1;
-    
-                            LeoObject t = stack[top-n];
-                            for(int j = n-1; j > 0; j--) {
-                                stack[top-j-1]     = stack[top-j];
-                            }
-    
-                            stack[top-1] = t;
-    
-                            continue;
-                        }
-                        case ROTR:  {
-                            int n = ARGx(i);
-    
-                            LeoObject t = stack[top-1];
-                            for(int j = 1; j < n; j++) {
-                                stack[top-j] = stack[top-j-1];
-                            }
-                            stack[top-n] = t;
-    
-                            continue;
-                        }                        
+                        }                                                
                         case JMP:    {
                             int pos = ARGsx(i);
                             pc += pos;
@@ -1169,6 +1058,16 @@ public class VM {
                             LeoObject value = obj.xgetObject(index);
                             stack[top++] = value;
     
+                            continue;
+                        }
+                        case EGETK: {
+                            int iname = ARGx(i);
+                            LeoObject obj = stack[--top];
+                            
+                            LeoObject value = obj.isAccessible() 
+                                    ? obj.getObject(constants[iname]) : LeoObject.NULL;
+                                                        
+                            stack[top++] = value;
                             continue;
                         }
                         case GETK: {

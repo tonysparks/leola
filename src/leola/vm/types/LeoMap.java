@@ -202,6 +202,11 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
     public boolean isMap() {
         return true;
     }
+    
+    @Override
+    public boolean isAccessible() {     
+        return true;
+    }
 
     /* (non-Javadoc)
      * @see leola.vm.types.LeoObject#hashCode()

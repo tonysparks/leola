@@ -120,6 +120,11 @@ public class LeoNativeClass extends LeoObject {
         return true;
     }
 
+    @Override
+    public boolean isAccessible() {     
+        return true;
+    }
+    
     /* (non-Javadoc)
      * @see leola.vm.types.LeoObject#isNativeClass()
      */

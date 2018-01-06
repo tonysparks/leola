@@ -164,6 +164,9 @@ public class ASTNodeVisitorAdapter implements ASTNodeVisitor {
     @Override
     public void visit(NamespaceGetExpr s) throws EvalException {}
     
+    @Override
+    public void visit(ElvisGetExpr s) throws EvalException {}
+    
     /* (non-Javadoc)
      * @see leola.ast.ASTNodeVisitor#visit(leola.ast.GetExpr)
      */

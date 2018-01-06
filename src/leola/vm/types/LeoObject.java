@@ -374,6 +374,14 @@ public abstract class LeoObject implements Comparable<LeoObject> {
     public boolean isScopedObject() {
         return false;
     }
+    
+    /**
+     * @return if this object implements {@link LeoObject#setObject(LeoObject, LeoObject)} and
+     * {@link LeoObject#getObject(LeoObject)} methods
+     */
+    public boolean isAccessible() {
+        return false;
+    }
 
     /**
      * Determines if its one of these types

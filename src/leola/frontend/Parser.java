@@ -406,6 +406,10 @@ public class Parser {
                 Token name = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
                 expr = node(new GetExpr(expr, name.getText()));
             }
+            else if(match(QUESTION_MARK)) {
+                Token name = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
+                expr = node(new ElvisGetExpr(expr, name.getText()));
+            }
             else if(match(COLON)) {
                 if(!(expr instanceof VarExpr)) {
                     throw error(previous(), ErrorCode.INVALID_NAMESPACE_ACCESS);

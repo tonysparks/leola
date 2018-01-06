@@ -22,6 +22,7 @@ import leola.ast.CatchStmt;
 import leola.ast.ClassDeclStmt;
 import leola.ast.ContinueStmt;
 import leola.ast.DecoratorExpr;
+import leola.ast.ElvisGetExpr;
 import leola.ast.EmptyStmt;
 import leola.ast.Expr;
 import leola.ast.FuncDefExpr;
@@ -725,9 +726,25 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         asm.getk(s.getIdentifier());
     }
     
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.GetExpr)
-     */
+    @Override
+    public void visit(ElvisGetExpr s) throws EvalException {
+        asm.line(s.getLineNumber());
+        
+        s.getObject().visit(this);
+        asm.dup();
+        asm.loadnull();
+        asm.neq();
+        
+        String elseLabel = asm.ifeq();
+        asm.egetk(s.getIdentifier());
+        String end = asm.jmp();
+        
+        asm.label(elseLabel);
+        asm.loadnull();
+        
+        asm.label(end);
+    }
+    
     @Override
     public void visit(GetExpr s) throws EvalException {
         asm.line(s.getLineNumber());

@@ -36,7 +36,7 @@ public class SpecialSymbolToken extends Token {
             // Single-character special symbols.
             case ',':  case ';':  case '(':  case ')': 
             case '[':  case ']':  case '{':  case '}': case ':':
-            case '@':  case '~':  
+            case '@':  case '~':  case '?':
             // case '^':
             {
                 nextChar();  // consume character
