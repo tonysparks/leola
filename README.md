@@ -227,11 +227,19 @@ Decorators in Leola are very similar to decorators in Python (I know I'm origina
 ````javascript
 // Type check the arguments past to the function
 // are of the correct type
-var TypeCheck = def(func, args...) {    
+var TypeCheck = def(func, args...) {
+    // returns the supplied function wrapped in a new one
+    // that when invoked, will check the arguments types and
+    // validate them    
     return def(nargs...) {
         var i = 0
+        
+        // check each argument, if they don't match
+        // the correct type, error out
         foreach(nargs, def(arg) {
             if i < args.size() {
+            
+                // let the user know what they did wrong
                 if reflect:type(arg).toLower() != args[i].toLower() {
                     throw arg + "(" + reflect:type(arg) + ") is not of type '" + args[i] + "'"
                 }
@@ -247,13 +255,14 @@ var TypeCheck = def(func, args...) {
 }
 
 
-
+// Add the decorator by using the '@' sign in front of the 
+// method definition
 var sub = @TypeCheck("integer", "integer") def(a, b) {
     return a - b
 }
 
-println(sub(4,5) ) // -1
-println(sub("x", 5) ) // throws an error
+println(sub(4,5)) // runs fine, because the arguments are Integers, prints -1
+println(sub("x", 5)) // throws an error because the arguments are not Integers
 
 ````
 
