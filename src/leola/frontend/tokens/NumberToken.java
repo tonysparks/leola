@@ -1,9 +1,9 @@
 package leola.frontend.tokens;
 
-import static leola.frontend.tokens.LeolaErrorCode.INVALID_NUMBER;
-import static leola.frontend.tokens.LeolaErrorCode.RANGE_INTEGER;
-import static leola.frontend.tokens.LeolaErrorCode.RANGE_LONG;
-import static leola.frontend.tokens.LeolaErrorCode.RANGE_REAL;
+import static leola.frontend.ErrorCode.INVALID_NUMBER;
+import static leola.frontend.ErrorCode.RANGE_INTEGER;
+import static leola.frontend.ErrorCode.RANGE_LONG;
+import static leola.frontend.ErrorCode.RANGE_REAL;
 import static leola.frontend.tokens.TokenType.ERROR;
 import static leola.frontend.tokens.TokenType.INTEGER;
 import static leola.frontend.tokens.TokenType.LONG;
@@ -12,7 +12,6 @@ import static leola.frontend.tokens.TokenType.REAL;
 import java.math.BigInteger;
 
 import leola.frontend.Source;
-import leola.frontend.Token;
 
 /**
  * Number Token, parses number formats
@@ -20,10 +19,10 @@ import leola.frontend.Token;
  * @author Tony
  *
  */
-public class LeolaNumberToken extends Token {
+public class NumberToken extends Token {
     private static final int MAX_EXPONENT = 37;
 
-    public LeolaNumberToken(Source source) {
+    public NumberToken(Source source) {
         super(source);
     }
     

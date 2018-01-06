@@ -5,7 +5,7 @@
 */
 package leola.ast;
 
-import leola.frontend.Token;
+import leola.frontend.tokens.Token;
 import leola.vm.EvalException;
 
 /**

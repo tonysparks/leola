@@ -1085,9 +1085,9 @@ public class BytecodeEmitter {
         newObjectScopeEmitter();
     }
     
-    public void classdef(int numberOfInterfaces, int numberOfParameters, boolean isVarargs) {
-        instrx(CLASS_DEF, numberOfInterfaces);
-        incrementMaxstackSize(numberOfInterfaces);        
+    public void classdef(int numberOfParameters, boolean isVarargs) {
+        instrx(CLASS_DEF, 0);
+        incrementMaxstackSize(0);        
         
         newObjectScopeEmitter(numberOfParameters, isVarargs);
     }

@@ -35,12 +35,7 @@ public class ClassDeclStmt extends Stmt {
     /**
      * Parent classes params
      */
-    private List<Expr> parentClassParams;
-
-    /**
-     * Interfaces names
-     */
-    private List<String> interfaceNames;
+    private List<Expr> parentClassArguments;
 
     /**
      * Class body
@@ -53,21 +48,18 @@ public class ClassDeclStmt extends Stmt {
      * @param classParams
      * @param classBodyStmt
      * @param parentClassName
-     * @param parentClassParams
      * @param interfaceNames
      */
     public ClassDeclStmt(String className
                       , ParameterList classParams
                       , Stmt classBodyStmt
                       , String parentClassName
-                      , List<Expr> parentClassParams
-                      , List<String> interfaceNames) {
+                      , List<Expr> parentClassArguments) {
         this.className = className;
         this.classParameters = classParams;
         this.classBodyStmt = becomeParentOf(classBodyStmt);
         this.parentClassName = parentClassName;
-        this.parentClassParams = parentClassParams;
-        this.interfaceNames = interfaceNames;
+        this.parentClassArguments = parentClassArguments;
     }
 
     /* (non-Javadoc)
@@ -94,13 +86,6 @@ public class ClassDeclStmt extends Stmt {
     }
 
     /**
-     * @return the interfaceNames
-     */
-    public List<String> getInterfaceNames() {
-        return interfaceNames;
-    }
-
-    /**
      * @return the classBodyStmt
      */
     public Stmt getClassBodyStmt() {
@@ -115,10 +100,10 @@ public class ClassDeclStmt extends Stmt {
     }
 
     /**
-     * @return the parentClassParams
+     * @return the parentClassArguments
      */
-    public List<Expr> getParentClassParams() {
-        return parentClassParams;
+    public List<Expr> getParentClassArguments() {
+        return parentClassArguments;
     }
 
 }

@@ -2,8 +2,8 @@ package leola.frontend.tokens;
 
 import static leola.frontend.tokens.TokenType.ERROR;
 
+import leola.frontend.ErrorCode;
 import leola.frontend.Source;
-import leola.frontend.Token;
 
 
 /**
@@ -12,7 +12,7 @@ import leola.frontend.Token;
  * @author Tony
  *
  */
-public class LeolaErrorToken extends Token {
+public class ErrorToken extends Token {
     
     /**
      * @param source
@@ -22,7 +22,7 @@ public class LeolaErrorToken extends Token {
      * @param tokenText
      *            the text of the erroneous token.
      */
-    public LeolaErrorToken(Source source, LeolaErrorCode errorCode, String tokenText) {
+    public ErrorToken(Source source, ErrorCode errorCode, String tokenText) {
         super(source);
 
         this.text = tokenText;

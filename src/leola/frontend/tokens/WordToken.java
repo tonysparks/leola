@@ -4,7 +4,6 @@ import static leola.frontend.tokens.TokenType.IDENTIFIER;
 import static leola.frontend.tokens.TokenType.RESERVED_WORDS;
 
 import leola.frontend.Source;
-import leola.frontend.Token;
 
 
 /**
@@ -13,7 +12,7 @@ import leola.frontend.Token;
  * @author Tony
  *
  */
-public class LeolaWordToken extends Token {
+public class WordToken extends Token {
 
     /**
      * Determines if the supplied character is valid inside the identifier
@@ -59,7 +58,7 @@ public class LeolaWordToken extends Token {
     /**
      * @param source the source from where to fetch the token's characters.
      */
-    public LeolaWordToken(Source source) {
+    public WordToken(Source source) {
         super(source);
     }
 

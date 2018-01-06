@@ -6,12 +6,13 @@ import static leola.frontend.Source.EOL;
 import java.util.ArrayList;
 import java.util.List;
 
-import leola.frontend.tokens.LeolaErrorCode;
-import leola.frontend.tokens.LeolaErrorToken;
-import leola.frontend.tokens.LeolaNumberToken;
-import leola.frontend.tokens.LeolaSpecialSymbolToken;
-import leola.frontend.tokens.LeolaStringToken;
-import leola.frontend.tokens.LeolaWordToken;
+import leola.frontend.tokens.EofToken;
+import leola.frontend.tokens.ErrorToken;
+import leola.frontend.tokens.NumberToken;
+import leola.frontend.tokens.SpecialSymbolToken;
+import leola.frontend.tokens.StringToken;
+import leola.frontend.tokens.Token;
+import leola.frontend.tokens.WordToken;
 import leola.frontend.tokens.TokenType;
 
 /**
@@ -81,21 +82,21 @@ public class Scanner {
         if (currentChar == EOF) {
             token = new EofToken(source);
         }
-        else if ( LeolaWordToken.isValidStartIdentifierCharacter(currentChar) ) {
-            token = new LeolaWordToken(source);
+        else if ( WordToken.isValidStartIdentifierCharacter(currentChar) ) {
+            token = new WordToken(source);
         }
         else if (Character.isDigit(currentChar)) {
-            token = new LeolaNumberToken(source);
+            token = new NumberToken(source);
         }
-        else if (currentChar == LeolaStringToken.STRING_CHAR) {
-            token = new LeolaStringToken(source);
+        else if (currentChar == StringToken.STRING_CHAR) {
+            token = new StringToken(source);
         }
         else if (TokenType.SPECIAL_SYMBOLS
                  .containsKey(Character.toString(currentChar))) {
-            token = new LeolaSpecialSymbolToken(source);
+            token = new SpecialSymbolToken(source);
         }
         else {
-            token = new LeolaErrorToken(source, LeolaErrorCode.INVALID_CHARACTER,
+            token = new ErrorToken(source, ErrorCode.INVALID_CHARACTER,
                                          Character.toString(currentChar));
             this.source.nextChar();  // consume character
         }

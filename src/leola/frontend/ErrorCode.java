@@ -1,4 +1,4 @@
-package leola.frontend.tokens;
+package leola.frontend;
 
 /**
  * Leola error codes
@@ -6,7 +6,7 @@ package leola.frontend.tokens;
  * @author Tony
  *
  */
-public enum LeolaErrorCode {
+public enum ErrorCode {
     INVALID_ASSIGNMENT("Invalid assignment statement"),
     INVALID_CHARACTER("Invalid character"),
     INVALID_NUMBER("Invalid number"),
@@ -54,7 +54,7 @@ public enum LeolaErrorCode {
      * Constructor.
      * @param message the error message.
      */
-    LeolaErrorCode(String message) {
+    ErrorCode(String message) {
         this.status = 0;
         this.message = message;
     }
@@ -64,7 +64,7 @@ public enum LeolaErrorCode {
      * @param status the exit status.
      * @param message the error message.
      */
-    LeolaErrorCode(int status, String message) {
+    ErrorCode(int status, String message) {
         this.status = status;
         this.message = message;
     }

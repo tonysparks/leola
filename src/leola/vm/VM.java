@@ -1092,10 +1092,7 @@ public class VM {
     
                             int nparams = stack[--top].asInt();
                             LeoObject[] paramNames = readArrayFromStack(nparams, stack);
-                                
-                            int numberOfInterfaces = ARGx(i);
-                            LeoObject[] interfaces = readArrayFromStack(numberOfInterfaces, stack);
-                                
+                                                                
                             LeoObject superClassname = stack[--top];
                             LeoObject className = stack[--top];
     
@@ -1110,7 +1107,6 @@ public class VM {
                             ClassDefinition classDefinition = new ClassDefinition(className
                                                                                 , superClassDefinition
                                                                                 , scope
-                                                                                , interfaces
                                                                                 , paramNames
                                                                                 , superParams
                                                                                 , body);

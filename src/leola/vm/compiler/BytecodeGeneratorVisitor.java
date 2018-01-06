@@ -54,7 +54,7 @@ import leola.ast.VarDeclStmt;
 import leola.ast.VarExpr;
 import leola.ast.WhileStmt;
 import leola.ast.YieldStmt;
-import leola.frontend.Token;
+import leola.frontend.tokens.Token;
 import leola.frontend.tokens.TokenType;
 import leola.vm.EvalException;
 import leola.vm.Leola;
@@ -374,23 +374,14 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         else {
             asm.loadnull();
         }
-        
-        // interfaces
-        List<String> interfaces = s.getInterfaceNames();
-        if(interfaces != null) {
-            for(String i : interfaces) {                
-                asm.addAndloadconst(i);
-            }
-        }
-        
+                
         // TODO - Determine how this will take advantage of varargs
-        ParameterList params = s.getClassParameters();
-        if(params != null) {
-            for(String ref:params.getParameters()) {                
-                asm.addAndloadconst(ref);
-            }
-        }                            
-        asm.addAndloadconst(params!=null?params.size():0);
+        ParameterList params = s.getClassParameters();        
+        for(String ref:params.getParameters()) {                
+            asm.addAndloadconst(ref);
+        }
+                                    
+        asm.addAndloadconst(params.size());
         
         /*
          * NOTE: this places Constants in the parameters and
@@ -400,9 +391,9 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
          * 
          * @see ClassDefinitions
          */
-        List<Expr> superParams = s.getParentClassParams();        
-        if(superParams != null) {
-            for(Expr e: superParams) {
+        List<Expr> superArguments = s.getParentClassArguments();        
+        if(superArguments != null) {
+            for(Expr e: superArguments) {
                 
                 /* may pass values from sibling class to parent class */
                 if(e instanceof VarExpr) {
@@ -412,10 +403,10 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
                 e.visit(this);
             }
         }
-        asm.addAndloadconst(superParams!=null?superParams.size():0);
+        asm.addAndloadconst(superArguments!=null?superArguments.size():0);
         
         asm.addAndloadconst(asm.getBytecodeIndex());        
-        asm.classdef(interfaces!=null?interfaces.size():0, params.size(), params.isVarargs());
+        asm.classdef(params.size(), params.isVarargs());
         {            
             Stmt body = s.getClassBodyStmt();
             body.visit(this);

@@ -521,7 +521,7 @@ public class Assembler {
         });
         opcodes.put("CLASS_DEF", new Opcode() {         
             public void invoke(BytecodeEmitter asm, String...  args) {
-                asm.classdef(Integer.parseInt(args[0]), 0, args.length > 1); // TODO: figure out parameters
+                asm.classdef(Integer.parseInt(args[0]), args.length > 1); 
                 indexStack.add(new Indexes());
             }
         });        

@@ -1,11 +1,10 @@
 package leola.frontend.tokens;
 
-import static leola.frontend.tokens.LeolaErrorCode.INVALID_CHARACTER;
+import static leola.frontend.ErrorCode.INVALID_CHARACTER;
 import static leola.frontend.tokens.TokenType.ERROR;
 import static leola.frontend.tokens.TokenType.SPECIAL_SYMBOLS;
 
 import leola.frontend.Source;
-import leola.frontend.Token;
 
 /**
  * Special symbol tokens
@@ -13,12 +12,12 @@ import leola.frontend.Token;
  * @author Tony
  *
  */
-public class LeolaSpecialSymbolToken extends Token {
+public class SpecialSymbolToken extends Token {
     
     /**
      * @param source the source from where to fetch the token's characters.
      */
-    public LeolaSpecialSymbolToken(Source source) {
+    public SpecialSymbolToken(Source source) {
         super(source);
     }
 

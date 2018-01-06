@@ -21,7 +21,6 @@ public class ClassDefinition {
 
     private LeoObject className;
     private ClassDefinition superClass;
-    private LeoObject[] interfaces;
     
     private LeoObject[] params;    
     private LeoObject[] superParams;
@@ -39,17 +38,15 @@ public class ClassDefinition {
      * @param className
      * @param superClass
      * @param declaredScope
-     * @param interfaces
      * @param numberOfParams
      * @param body
      */
     public ClassDefinition(LeoObject className, ClassDefinition superClass, Scope declaredScope,
-            LeoObject[] interfaces, LeoObject[] params, LeoObject[] superParams, Bytecode body) {
+            LeoObject[] params, LeoObject[] superParams, Bytecode body) {
         super();
         this.className = className;
         this.superClass = superClass;
         this.declaredScope = declaredScope;
-        this.interfaces = interfaces;
         this.params = params;
         this.superParams = superParams;
         this.body = body;
@@ -102,13 +99,6 @@ public class ClassDefinition {
      */
     public LeoObject[] getSuperParameterNames() {
         return superParams;
-    }
-    
-    /**
-     * @return the interfaces
-     */
-    public LeoObject[] getInterfaceNames() {
-        return interfaces;
     }
 
     /**

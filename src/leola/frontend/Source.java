@@ -186,6 +186,8 @@ public class Source implements AutoCloseable {
             if (line != null) {
                 ++lineNum;
             }
+            
+            lines.add(line);
         }
         catch(IOException e) {
             throw new ParseException(e);

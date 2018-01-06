@@ -1,6 +1,6 @@
-package leola.frontend;
+package leola.frontend.tokens;
 
-import leola.frontend.tokens.TokenType;
+import leola.frontend.Source;
 
 /**
  * A Token represents a language token such as a symbol or identifier

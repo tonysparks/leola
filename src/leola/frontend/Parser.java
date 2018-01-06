@@ -1,7 +1,7 @@
 package leola.frontend;
 
 import static leola.frontend.tokens.TokenType.*;
-import java.io.FileReader;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +19,7 @@ import leola.ast.ClassDeclStmt;
 import leola.ast.BlockStmt;
 import leola.ast.ContinueStmt;
 import leola.ast.DecoratorExpr;
+import leola.ast.EmptyStmt;
 import leola.ast.Expr;
 import leola.ast.FuncDefExpr;
 import leola.ast.FuncInvocationExpr;
@@ -48,7 +49,7 @@ import leola.ast.VarDeclStmt;
 import leola.ast.VarExpr;
 import leola.ast.WhileStmt;
 import leola.ast.YieldStmt;
-import leola.frontend.tokens.LeolaErrorCode;
+import leola.frontend.tokens.Token;
 import leola.frontend.tokens.TokenType;
 import leola.vm.util.Pair;
 
@@ -58,17 +59,7 @@ import leola.vm.util.Pair;
  * @author Tony
  *
  */
-public class Parser {
-   
-    
-    public static void main(String[] args) throws Exception {
-        Source source = new Source(new FileReader("C:/Users/Tony/Desktop/scripts/leola/statements.leola"));
-        Scanner scanner = new Scanner(source);
-        Parser parser = new Parser(scanner);
-        ASTNode node = parser.parse();
-        System.out.println(node);
-    }
-    
+public class Parser {   
     private final Scanner scanner;
     private final List<Token> tokens;
     private int current;
@@ -107,10 +98,22 @@ public class Parser {
         return new ProgramStmt(statements);
     }
     
+    
+    /**
+     * Mark the start of parsing a statement
+     * so that we can properly mark the AST node
+     * source line and number information
+     */
     private void source() {
         this.startToken = peek();
     }
     
+    /**
+     * Updates the AST node parsing information
+     * 
+     * @param node
+     * @return the supplied node
+     */
     private <T extends ASTNode> T node(T node) {
         if(this.startToken != null) {
             node.setSourceLine(this.startToken.getText());
@@ -120,36 +123,32 @@ public class Parser {
     }
     
     private ClassDeclStmt classDeclaration() {
-        Token className = consume(IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
+        Token className = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
                 
-        ParameterList parameters = parameters();
+        ParameterList parameters = check(LEFT_PAREN) 
+                ? parameters() : new ParameterList();
         
-        // Parse any parent class
         String parentClassName = null;
-        List<Expr> parentClassParams = null;
+        List<Expr> parentClassArguments = null;
         if(match(IS)) {
-            // TODO
+            parentClassName = className();
+            parentClassArguments = arguments();
         }
         
-        // Parse any interfaces
-        List<String> interfaceNames = null;
-        if(match(COLON)) {
-            // TODO
-        }
+        Stmt body = check(SEMICOLON) 
+                ? emptyStatement() : statement();
         
-        Stmt body = statement();
-        
-        return node(new ClassDeclStmt(className.getText(), parameters, body, parentClassName, parentClassParams, interfaceNames));
+        return node(new ClassDeclStmt(className.getText(), parameters, body, parentClassName, parentClassArguments));
     }
     
     private NamespaceStmt namespaceDeclaration() {
-        Token name = consume(IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
+        Token name = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
         Stmt body = statement();
         return node(new NamespaceStmt(body, name.getText()));
     }
     
     private VarDeclStmt varDeclaration() {
-        Token name = consume(IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
+        Token name = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
         
         Expr initializer = null;
         if(match(EQUALS)) {
@@ -172,7 +171,7 @@ public class Parser {
         if(match(SWITCH)) return switchStatement();
         if(match(TRY)) return tryStatement();
         if(match(THROW)) return throwStatement();
-        if(match(LEFT_BRACE)) return compoundStatement();
+        if(match(LEFT_BRACE)) return blockStatement();
         if(match(RETURN)) return returnStatement();
         if(match(YIELD)) return yieldStatement();
         if(match(BREAK)) return breakStatement();
@@ -186,7 +185,7 @@ public class Parser {
         Expr condition = expression();
         
         if(hasLeftParen) {
-            consume(RIGHT_PAREN, LeolaErrorCode.MISSING_RIGHT_PAREN);
+            consume(RIGHT_PAREN, ErrorCode.MISSING_RIGHT_PAREN);
         }
 
         Stmt thenBranch = statement();
@@ -203,7 +202,7 @@ public class Parser {
         Expr condition = expression();
         
         if(hasLeftParen) {
-            consume(RIGHT_PAREN, LeolaErrorCode.MISSING_RIGHT_PAREN);
+            consume(RIGHT_PAREN, ErrorCode.MISSING_RIGHT_PAREN);
         }
         
         try {
@@ -230,9 +229,9 @@ public class Parser {
         boolean hasBraces = match(LEFT_BRACE);
         
         do {
-            consume(WHEN, LeolaErrorCode.MISSING_WHEN);
+            consume(WHEN, ErrorCode.MISSING_WHEN);
             Expr whenCond = expression();
-            consume(ARROW, LeolaErrorCode.MISSING_ARROW);
+            consume(ARROW, ErrorCode.MISSING_ARROW);
             Stmt stmt = statement();
             
             whenStmts.add(new Pair<>(whenCond, stmt));            
@@ -245,7 +244,7 @@ public class Parser {
         }
         
         if(hasBraces) {
-            consume(RIGHT_BRACE, LeolaErrorCode.MISSING_RIGHT_BRACE);
+            consume(RIGHT_BRACE, ErrorCode.MISSING_RIGHT_BRACE);
         }
         
         return node(new SwitchStmt(condition, whenStmts, elseStmt));
@@ -267,7 +266,7 @@ public class Parser {
     }
     
     private CatchStmt catchStatement() {
-        Token exceptionName = consume(IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
+        Token exceptionName = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
         Stmt body = statement();
         return node(new CatchStmt(exceptionName.getText(), body));
     }
@@ -277,9 +276,9 @@ public class Parser {
         return node(new ThrowStmt(value));
     }
     
-//    private EmptyStmt emptyStatement() {
-//        return node(new EmptyStmt());
-//    }
+    private EmptyStmt emptyStatement() {
+        return node(new EmptyStmt());
+    }
     
     private ReturnStmt returnStatement() {        
         Expr value = null;
@@ -288,7 +287,7 @@ public class Parser {
         }
         
         if(value == null) {
-            consume(SEMICOLON, LeolaErrorCode.MISSING_SEMICOLON);
+            consume(SEMICOLON, ErrorCode.MISSING_SEMICOLON);
         }
         
         return node(new ReturnStmt(value));
@@ -301,7 +300,7 @@ public class Parser {
         }
         
         if(value == null) {
-            consume(SEMICOLON, LeolaErrorCode.MISSING_SEMICOLON);
+            consume(SEMICOLON, ErrorCode.MISSING_SEMICOLON);
         }
         
         return node(new YieldStmt(value));
@@ -309,7 +308,7 @@ public class Parser {
     
     private BreakStmt breakStatement() {
         if(this.loopLevel < 1) {
-            throw error(previous(), LeolaErrorCode.INVALID_BREAK_STMT);
+            throw error(previous(), ErrorCode.INVALID_BREAK_STMT);
         }
         
         match(SEMICOLON);
@@ -318,21 +317,21 @@ public class Parser {
     
     private ContinueStmt continueStatement() {
         if(this.loopLevel < 1) {
-            throw error(previous(), LeolaErrorCode.INVALID_CONTINUE_STMT);
+            throw error(previous(), ErrorCode.INVALID_CONTINUE_STMT);
         }
         
         match(SEMICOLON);
         return node(new ContinueStmt());
     }
     
-    private BlockStmt compoundStatement() {
+    private BlockStmt blockStatement() {
         List<Stmt> statements = new ArrayList<>();
         while(!check(RIGHT_BRACE) && !isAtEnd()) {
             Stmt statement = statement();
             statements.add(statement);            
         }
         
-        consume(RIGHT_BRACE, LeolaErrorCode.MISSING_RIGHT_BRACE);
+        consume(RIGHT_BRACE, ErrorCode.MISSING_RIGHT_BRACE);
         
         return node(new BlockStmt(statements));
     }
@@ -363,7 +362,7 @@ public class Parser {
                 return node(new SubscriptSetExpr(subscriptExpr.getObject(), subscriptExpr.getElementIndex(), value, operatorEquals));
             }
             
-            error(operatorEquals, LeolaErrorCode.INVALID_ASSIGNMENT);
+            error(operatorEquals, ErrorCode.INVALID_ASSIGNMENT);
         }
         
         return expr;
@@ -458,20 +457,20 @@ public class Parser {
             }
             else if(match(LEFT_BRACKET)) {
                 Expr indexExpr = expression();
-                consume(RIGHT_BRACKET, LeolaErrorCode.MISSING_RIGHT_BRACKET);                
+                consume(RIGHT_BRACKET, ErrorCode.MISSING_RIGHT_BRACKET);                
                 expr = node(new SubscriptGetExpr(expr, indexExpr));
             }
             else if(match(DOT, COLON)) {
-                Token name = consume(IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
+                Token name = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
                 expr = node(new GetExpr(expr, name.getText()));
             }
             else if(match(IS)) {
-                Token name = consume(IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
+                Token name = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
                 expr = node(new IsExpr(expr, name.getText()));
             }
             else if(this.argumentsLevel > 0 && match(ARROW)) {
                 if(!(expr instanceof VarExpr)) {
-                    throw error(previous(), LeolaErrorCode.INVALID_NAMED_PARAMETER);
+                    throw error(previous(), ErrorCode.INVALID_NAMED_PARAMETER);
                 }
                 VarExpr var = (VarExpr)expr;
                 Expr valueExpr = expression();
@@ -501,7 +500,7 @@ public class Parser {
         
         if(match(LEFT_PAREN)) {
             Expr expr = expression();
-            consume(RIGHT_PAREN, LeolaErrorCode.MISSING_RIGHT_PAREN);
+            consume(RIGHT_PAREN, ErrorCode.MISSING_RIGHT_PAREN);
             return expr;
         }
         
@@ -515,19 +514,19 @@ public class Parser {
         if(match(LEFT_BRACE)) return map();
         if(match(NEW)) return newInstance();
         
-        throw error(peek(), LeolaErrorCode.UNEXPECTED_TOKEN);
+        throw error(peek(), ErrorCode.UNEXPECTED_TOKEN);
     }
     
     private ParameterList parameters() {
-        consume(LEFT_PAREN, LeolaErrorCode.MISSING_LEFT_PAREN);
+        consume(LEFT_PAREN, ErrorCode.MISSING_LEFT_PAREN);
         
         ParameterList parameters = new ParameterList();        
         if(!check(RIGHT_PAREN)) {
             do {                
-                parameters.addParameter(consume(IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER).getText());
+                parameters.addParameter(consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER).getText());
                 if(check(VAR_ARGS)) {
                     if(parameters.isVarargs()) {
-                        throw error(previous(), LeolaErrorCode.INVALID_MULTI_VAR_ARGS);
+                        throw error(previous(), ErrorCode.INVALID_MULTI_VAR_ARGS);
                     }
                     
                     advance();
@@ -538,12 +537,12 @@ public class Parser {
             while(match(COMMA));
         }
         
-        consume(RIGHT_PAREN, LeolaErrorCode.MISSING_RIGHT_PAREN);
+        consume(RIGHT_PAREN, ErrorCode.MISSING_RIGHT_PAREN);
         return parameters;
     }
     
     private DecoratorExpr decorator() {
-        Token name = consume(IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
+        Token name = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
         
         List<Expr> arguments = new ArrayList<>();
         if(match(LEFT_PAREN)) {
@@ -583,7 +582,7 @@ public class Parser {
             }
         }
         
-        consume(RIGHT_PAREN, LeolaErrorCode.MISSING_RIGHT_PAREN);
+        consume(RIGHT_PAREN, ErrorCode.MISSING_RIGHT_PAREN);
         
         return arguments;
     }
@@ -604,9 +603,9 @@ public class Parser {
         boolean hasBraces = match(LEFT_BRACE);
         
         do {
-            consume(WHEN, LeolaErrorCode.MISSING_WHEN);
+            consume(WHEN, ErrorCode.MISSING_WHEN);
             Expr whenCond = expression();
-            consume(ARROW, LeolaErrorCode.MISSING_ARROW);
+            consume(ARROW, ErrorCode.MISSING_ARROW);
             Expr expr = expression();
             
             whenStmts.add(new Pair<>(whenCond, expr));            
@@ -619,17 +618,16 @@ public class Parser {
         }
         
         if(hasBraces) {
-            consume(RIGHT_BRACE, LeolaErrorCode.MISSING_RIGHT_BRACE);
+            consume(RIGHT_BRACE, ErrorCode.MISSING_RIGHT_BRACE);
         }
         
         return node(new CaseExpr(condition, whenStmts, elseExpr));
     }
     
-    private NewExpr newInstance() {
-        
+    private String className() {
         StringBuilder className = new StringBuilder();
         do {
-            Token classNamePart = consume(IDENTIFIER, LeolaErrorCode.MISSING_IDENTIFIER);
+            Token classNamePart = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
             className.append(classNamePart.getText());
             if(check(DOT)) {
                 advance();
@@ -642,8 +640,15 @@ public class Parser {
         }
         while(!match(LEFT_PAREN));
         
+        return className.toString();
+    }
+    
+    private NewExpr newInstance() {
+        
+        String className = className();
+        
         List<Expr> arguments = arguments();        
-        return node(new NewExpr(className.toString(), arguments));
+        return node(new NewExpr(className, arguments));
     }
     
     private ArrayDeclExpr array() {
@@ -656,7 +661,7 @@ public class Parser {
             while(match(COMMA));
         }
         
-        consume(RIGHT_BRACKET, LeolaErrorCode.MISSING_RIGHT_BRACKET);
+        consume(RIGHT_BRACKET, ErrorCode.MISSING_RIGHT_BRACKET);
         
         return new ArrayDeclExpr(elements);
     }
@@ -666,7 +671,7 @@ public class Parser {
         if(!check(RIGHT_BRACE)) {
             do {
                 Expr key = expression();
-                consume(ARROW, LeolaErrorCode.MISSING_ARROW);
+                consume(ARROW, ErrorCode.MISSING_ARROW);
                 Expr value = expression();
                 
                 elements.add(new Pair<>(key, value));
@@ -674,7 +679,7 @@ public class Parser {
             while(match(COMMA));
         }
         
-        consume(RIGHT_BRACE, LeolaErrorCode.MISSING_RIGHT_BRACE);
+        consume(RIGHT_BRACE, ErrorCode.MISSING_RIGHT_BRACE);
         
         return new MapDeclExpr(elements);
     }
@@ -699,7 +704,7 @@ public class Parser {
         return false;
     }
     
-    private Token consume(TokenType type, LeolaErrorCode errorCode) {
+    private Token consume(TokenType type, ErrorCode errorCode) {
         if(check(type)) {
             return advance();
         }
@@ -712,7 +717,7 @@ public class Parser {
             return false;
         }
         
-        return peek().type == type;
+        return peek().getType() == type;
     }
   
     
@@ -737,16 +742,16 @@ public class Parser {
      * @return true if we're at the end
      */
     private boolean isAtEnd() {
-        return peek().type == END_OF_FILE;
+        return peek().getType() == END_OF_FILE;
     }
     
-    private ParseException error(Token token, LeolaErrorCode errorCode) {
+    private ParseException error(Token token, ErrorCode errorCode) {
         int lineNumber = token.getLineNumber();
         int position = token.getPosition();
-        String tokenText = token.getText();
+        String tokenText = token.getType() != TokenType.END_OF_FILE ? token.getText() : null;
         String errorMessage = errorCode.toString(); 
         
-        int spaceCount = position;
+        int spaceCount = position + 1;
         String currentLine = this.scanner.getSourceLine(lineNumber);
         StringBuilder flagBuffer = new StringBuilder(currentLine != null ? currentLine : "");
         flagBuffer.append("\n");
@@ -759,12 +764,14 @@ public class Parser {
         // A pointer to the error followed by the error message.
         flagBuffer.append("^\n*** ").append(errorMessage);
 
+        flagBuffer.append(" [at line: ").append(lineNumber);
+        
         // Text, if any, of the bad token.
         if (tokenText != null) {
-            flagBuffer.append(" [at line: ")
-                      .append(lineNumber)
-                      .append(" '").append(tokenText).append("']");
+            flagBuffer.append(" '").append(tokenText).append("'");
         }
+        
+        flagBuffer.append("]");
 
         return new ParseException(errorCode, flagBuffer.toString());
     }

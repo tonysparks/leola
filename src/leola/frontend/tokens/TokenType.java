@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import leola.frontend.ErrorCode;
 import leola.frontend.ParseException;
 
 /**
@@ -96,7 +97,7 @@ public enum TokenType {
         }
         catch(Exception e) {
             throw new ParseException
-                (LeolaErrorCode.INVALID_NUMBER, "Unable to parse: " + this.text + " as a number.", e);
+                (ErrorCode.INVALID_NUMBER, "Unable to parse: " + this.text + " as a number.", e);
         }
     }
 

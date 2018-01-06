@@ -41,10 +41,9 @@ import leola.lang.StringLeolaLibrary;
 import leola.lang.SystemLeolaLibrary;
 import leola.lang.io.IOLeolaLibrary;
 import leola.lang.sql.SqlLeolaLibrary;
+import leola.vm.Args.ArgsBuilder;
 import leola.vm.compiler.Bytecode;
-import leola.vm.compiler.BytecodeEmitter;
-import leola.vm.compiler.BytecodeGeneratorVisitor;
-import leola.vm.compiler.EmitterScopes;
+import leola.vm.compiler.Compiler;
 import leola.vm.debug.DebugListener;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaLibrary;
@@ -75,6 +74,26 @@ public class Leola {
 
     public static final String GLOBAL_SCOPE_NAME = "$G";
 
+    /**
+     * Create new instances of a {@link Leola} runtime 
+     * via the {@link ArgsBuilder}
+     * 
+     * <pre>
+     *   Leola runtime = Leola.builder()
+     *                        .setAllowThreadLocals(false)
+     *                        .setIsDebugMode(true)
+     *                        .setBarebones(true)
+     *                        .setSandboxed(false) 
+     *                        .newRuntime();
+     * 
+     * </pre>
+     * 
+     * @return the {@link ArgsBuilder} to build a {@link Leola} runtime
+     */
+    public static ArgsBuilder builder() {
+        return Args.builder();
+    }
+    
     /**
      * Converts the supplied Java Object into a {@link LeoObject} equivalent
      * 
@@ -108,7 +127,7 @@ public class Leola {
                 }
             }
             catch(ParseException e) {
-                // the exception handlers will display this
+                System.err.println(e.getMessage());
             }            
             catch(LeolaRuntimeException e) {
                 System.err.println(e.getLeoError());    
@@ -1001,14 +1020,9 @@ public class Leola {
      */
     public Bytecode compile(Reader reader) throws Exception {
         ASTNode program = generateAST(reader);
-        //program.visit(new DeadcodeOptimizerVisitor());
         
-        BytecodeGeneratorVisitor gen = new BytecodeGeneratorVisitor(this, new EmitterScopes());
-        program.visit(gen);
-        BytecodeEmitter asm = gen.getAsm();
-        Bytecode bytecode = asm.compile();
-
-        return bytecode;
+        Compiler compiler = new Compiler(this);
+        return compiler.compile(program);                
     }
 
     /**

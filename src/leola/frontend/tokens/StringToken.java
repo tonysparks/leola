@@ -1,12 +1,11 @@
 package leola.frontend.tokens;
 
+import static leola.frontend.ErrorCode.UNEXPECTED_EOF;
 import static leola.frontend.Source.EOF;
-import static leola.frontend.tokens.LeolaErrorCode.UNEXPECTED_EOF;
 import static leola.frontend.tokens.TokenType.ERROR;
 import static leola.frontend.tokens.TokenType.STRING;
 
 import leola.frontend.Source;
-import leola.frontend.Token;
 
 
 /**
@@ -15,7 +14,7 @@ import leola.frontend.Token;
  * @author Tony
  *
  */
-public class LeolaStringToken extends Token {
+public class StringToken extends Token {
     public static final char STRING_CHAR = '"';
     public static final String MULTI_STRING = "\"\"\"";
     
@@ -23,7 +22,7 @@ public class LeolaStringToken extends Token {
      * Constructor.
      * @param source the source from where to fetch the token's characters.
      */
-    public LeolaStringToken(Source source) {
+    public StringToken(Source source) {
         super(source);
     }
 
