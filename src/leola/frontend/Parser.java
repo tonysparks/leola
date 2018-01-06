@@ -5,50 +5,7 @@ import static leola.frontend.tokens.TokenType.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import leola.ast.ASTNode;
-import leola.ast.SubscriptGetExpr;
-import leola.ast.SubscriptSetExpr;
-import leola.ast.ArrayDeclExpr;
-import leola.ast.AssignmentExpr;
-import leola.ast.BinaryExpr;
-import leola.ast.BooleanExpr;
-import leola.ast.BreakStmt;
-import leola.ast.CaseExpr;
-import leola.ast.CatchStmt;
-import leola.ast.ClassDeclStmt;
-import leola.ast.BlockStmt;
-import leola.ast.ContinueStmt;
-import leola.ast.DecoratorExpr;
-import leola.ast.EmptyStmt;
-import leola.ast.Expr;
-import leola.ast.FuncDefExpr;
-import leola.ast.FuncInvocationExpr;
-import leola.ast.GenDefExpr;
-import leola.ast.GetExpr;
-import leola.ast.IfStmt;
-import leola.ast.IntegerExpr;
-import leola.ast.IsExpr;
-import leola.ast.LongExpr;
-import leola.ast.MapDeclExpr;
-import leola.ast.NamedParameterExpr;
-import leola.ast.NamespaceStmt;
-import leola.ast.NewExpr;
-import leola.ast.NullExpr;
-import leola.ast.ParameterList;
-import leola.ast.ProgramStmt;
-import leola.ast.RealExpr;
-import leola.ast.ReturnStmt;
-import leola.ast.SetExpr;
-import leola.ast.Stmt;
-import leola.ast.StringExpr;
-import leola.ast.SwitchStmt;
-import leola.ast.ThrowStmt;
-import leola.ast.TryStmt;
-import leola.ast.UnaryExpr;
-import leola.ast.VarDeclStmt;
-import leola.ast.VarExpr;
-import leola.ast.WhileStmt;
-import leola.ast.YieldStmt;
+import leola.ast.*;
 import leola.frontend.tokens.Token;
 import leola.frontend.tokens.TokenType;
 import leola.vm.util.Pair;
@@ -99,27 +56,26 @@ public class Parser {
     }
     
     
-    /**
-     * Mark the start of parsing a statement
-     * so that we can properly mark the AST node
-     * source line and number information
-     */
-    private void source() {
-        this.startToken = peek();
-    }
-    
-    /**
-     * Updates the AST node parsing information
-     * 
-     * @param node
-     * @return the supplied node
-     */
-    private <T extends ASTNode> T node(T node) {
-        if(this.startToken != null) {
-            node.setSourceLine(this.startToken.getText());
-            node.setLineNumber(this.startToken.getLineNumber());
-        }
-        return node;
+    private Stmt statement() {
+        source();
+        
+        match(SEMICOLON); // eat any optional semi-colons
+                
+        if(match(CLASS))     return classDeclaration();
+        if(match(NAMESPACE)) return namespaceDeclaration();        
+        if(match(VAR))       return varDeclaration();
+        if(match(IF))        return ifStatement();        
+        if(match(WHILE))     return whileStatement();
+        if(match(SWITCH))    return switchStatement();
+        if(match(TRY))       return tryStatement();
+        if(match(THROW))     return throwStatement();
+        if(match(LEFT_BRACE))return blockStatement();
+        if(match(RETURN))    return returnStatement();
+        if(match(YIELD))     return yieldStatement();
+        if(match(BREAK))     return breakStatement();
+        if(match(CONTINUE))  return continueStatement();
+                
+        return expression();
     }
     
     private ClassDeclStmt classDeclaration() {
@@ -157,29 +113,7 @@ public class Parser {
         
         return node(new VarDeclStmt(name.getText(), initializer));
     }
-    
-    private Stmt statement() {
-        source();
-        
-        match(SEMICOLON); // eat any optional semi-colons
-                
-        if(match(CLASS)) return classDeclaration();
-        if(match(NAMESPACE)) return namespaceDeclaration();        
-        if(match(VAR)) return varDeclaration();
-        if(match(IF)) return ifStatement();        
-        if(match(WHILE)) return whileStatement();
-        if(match(SWITCH)) return switchStatement();
-        if(match(TRY)) return tryStatement();
-        if(match(THROW)) return throwStatement();
-        if(match(LEFT_BRACE)) return blockStatement();
-        if(match(RETURN)) return returnStatement();
-        if(match(YIELD)) return yieldStatement();
-        if(match(BREAK)) return breakStatement();
-        if(match(CONTINUE)) return continueStatement();
-                
-        return expression();
-    }
-        
+            
     private IfStmt ifStatement() {
         boolean hasLeftParen = match(LEFT_PAREN);
         Expr condition = expression();
@@ -336,6 +270,12 @@ public class Parser {
         return node(new BlockStmt(statements));
     }
     
+    
+    /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     *                      Expression parsing
+     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+    
+    
     private Expr expression() {
         return assignment();
     }
@@ -487,14 +427,14 @@ public class Parser {
     private Expr primary() {
         source();
         
-        if(match(TRUE)) return node(new BooleanExpr(true));
+        if(match(TRUE))  return node(new BooleanExpr(true));
         if(match(FALSE)) return node(new BooleanExpr(false));
-        if(match(NULL)) return node(new NullExpr());
+        if(match(NULL))  return node(new NullExpr());
         
         if(match(INTEGER)) return node(new IntegerExpr((int)previous().getValue()));
-        if(match(LONG)) return node(new LongExpr((long)previous().getValue()));
-        if(match(REAL)) return node(new RealExpr((double)previous().getValue()));
-        if(match(STRING)) return node(new StringExpr(previous().getValue().toString()));
+        if(match(LONG))    return node(new LongExpr((long)previous().getValue()));
+        if(match(REAL))    return node(new RealExpr((double)previous().getValue()));
+        if(match(STRING))  return node(new StringExpr(previous().getValue().toString()));
         
         if(match(IDENTIFIER)) return node(new VarExpr(previous().getText()));
         
@@ -505,40 +445,17 @@ public class Parser {
         }
         
         if(match(CASE)) return caseExpression();
-        if(match(DEF)) return function();
-        if(match(GEN)) return generator();
+        if(match(DEF))  return function();
+        if(match(GEN))  return generator();
         
         if(match(AT)) return decorator();
         
         if(match(LEFT_BRACKET)) return array();
-        if(match(LEFT_BRACE)) return map();
+        if(match(LEFT_BRACE))   return map();
+        
         if(match(NEW)) return newInstance();
         
         throw error(peek(), ErrorCode.UNEXPECTED_TOKEN);
-    }
-    
-    private ParameterList parameters() {
-        consume(LEFT_PAREN, ErrorCode.MISSING_LEFT_PAREN);
-        
-        ParameterList parameters = new ParameterList();        
-        if(!check(RIGHT_PAREN)) {
-            do {                
-                parameters.addParameter(consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER).getText());
-                if(check(VAR_ARGS)) {
-                    if(parameters.isVarargs()) {
-                        throw error(previous(), ErrorCode.INVALID_MULTI_VAR_ARGS);
-                    }
-                    
-                    advance();
-                    parameters.setVarargs(true);
-                    
-                }
-            }
-            while(match(COMMA));
-        }
-        
-        consume(RIGHT_PAREN, ErrorCode.MISSING_RIGHT_PAREN);
-        return parameters;
     }
     
     private DecoratorExpr decorator() {
@@ -565,27 +482,7 @@ public class Parser {
         Stmt body = statement();        
         return node(new GenDefExpr(body, parameters));
     }
-    
-    private List<Expr> arguments() {
-        List<Expr> arguments = new ArrayList<>();
-        if(!check(RIGHT_PAREN)) {
-            try {
-                this.argumentsLevel++;
-            
-                do {
-                    arguments.add(assignment());
-                } 
-                while(match(COMMA));
-            }
-            finally {
-                this.argumentsLevel--;
-            }
-        }
-        
-        consume(RIGHT_PAREN, ErrorCode.MISSING_RIGHT_PAREN);
-        
-        return arguments;
-    }
+
     
     private Expr finishFunctionCall(Expr callee) {
         List<Expr> arguments = arguments();        
@@ -622,25 +519,6 @@ public class Parser {
         }
         
         return node(new CaseExpr(condition, whenStmts, elseExpr));
-    }
-    
-    private String className() {
-        StringBuilder className = new StringBuilder();
-        do {
-            Token classNamePart = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
-            className.append(classNamePart.getText());
-            if(check(DOT)) {
-                advance();
-                className.append(".");
-            }
-            else if(check(COLON)) {
-                advance();
-                className.append(":");
-            }            
-        }
-        while(!match(LEFT_PAREN));
-        
-        return className.toString();
     }
     
     private NewExpr newInstance() {
@@ -684,6 +562,131 @@ public class Parser {
         return new MapDeclExpr(elements);
     }
 
+    
+    /**
+     * Parses parameters:
+     * 
+     * def(x,y,z) {
+     * }
+     * 
+     * The (x,y,z) part
+     * 
+     * @return the parsed {@link ParameterList}
+     */
+    private ParameterList parameters() {
+        consume(LEFT_PAREN, ErrorCode.MISSING_LEFT_PAREN);
+        
+        ParameterList parameters = new ParameterList();        
+        if(!check(RIGHT_PAREN)) {
+            do {                
+                parameters.addParameter(consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER).getText());
+                if(check(VAR_ARGS)) {
+                    if(parameters.isVarargs()) {
+                        throw error(previous(), ErrorCode.INVALID_MULTI_VAR_ARGS);
+                    }
+                    
+                    advance();
+                    parameters.setVarargs(true);
+                    
+                }
+            }
+            while(match(COMMA));
+        }
+        
+        consume(RIGHT_PAREN, ErrorCode.MISSING_RIGHT_PAREN);
+        return parameters;
+    }
+    
+    /**
+     * Parses arguments:
+     * 
+     * someFunction( 1.0, x );
+     * 
+     * Parses the ( 1.0, x ) into a {@link List} of {@link Expr}
+     * 
+     * @return the {@link List} of {@link Expr}
+     */
+    private List<Expr> arguments() {
+        List<Expr> arguments = new ArrayList<>();
+        if(!check(RIGHT_PAREN)) {
+            try {
+                this.argumentsLevel++;
+            
+                do {
+                    arguments.add(assignment());
+                } 
+                while(match(COMMA));
+            }
+            finally {
+                this.argumentsLevel--;
+            }
+        }
+        
+        consume(RIGHT_PAREN, ErrorCode.MISSING_RIGHT_PAREN);
+        
+        return arguments;
+    }
+    
+    /**
+     * Parses a class name, in leola a class name may be:
+     * 
+     * identifier [(.|:) identifier]*
+     * 
+     * @return the class name
+     */
+    private String className() {
+        StringBuilder className = new StringBuilder();
+        do {
+            Token classNamePart = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
+            className.append(classNamePart.getText());
+            if(check(DOT)) {
+                advance();
+                className.append(".");
+            }
+            else if(check(COLON)) {
+                advance();
+                className.append(":");
+            }            
+        }
+        while(!match(LEFT_PAREN));
+        
+        return className.toString();
+    }
+    
+
+    
+    /**
+     * Mark the start of parsing a statement
+     * so that we can properly mark the AST node
+     * source line and number information
+     */
+    private void source() {
+        this.startToken = peek();
+    }
+    
+    /**
+     * Updates the AST node parsing information
+     * 
+     * @param node
+     * @return the supplied node
+     */
+    private <T extends ASTNode> T node(T node) {
+        if(this.startToken != null) {
+            node.setSourceLine(this.startToken.getText());
+            node.setLineNumber(this.startToken.getLineNumber());
+        }
+        return node;
+    }
+    
+    /**
+     * Determines if the supplied {@link TokenType} is
+     * the current {@link Token}, if it is it will advance
+     * over it.
+     * 
+     * @param type
+     * @return true if we've advanced (i.e., the supplied token type was
+     * the current one).
+     */
     private boolean match(TokenType type) {        
         if(check(type)) {
             advance();
@@ -692,7 +695,15 @@ public class Parser {
         
         return false;
     }
-    
+
+    /**
+     * Determines if any of the supplied {@link TokenType}'s are
+     * the current {@link Token}, if it is it will advance.
+     * 
+     * @param type
+     * @return true if we've advanced (i.e., the supplied token type was
+     * the current one).
+     */
     private boolean match(TokenType ...types) {
         for(TokenType type : types) {
             if(check(type)) {
@@ -704,6 +715,15 @@ public class Parser {
         return false;
     }
     
+    /**
+     * Ensures the supplied {@link TokenType} is the current one and 
+     * advances.  If the {@link TokenType} does not match, this will
+     * throw a {@link ParseException}
+     * 
+     * @param type
+     * @param errorCode
+     * @return the skipped {@link Token}
+     */
     private Token consume(TokenType type, ErrorCode errorCode) {
         if(check(type)) {
             return advance();
@@ -712,6 +732,14 @@ public class Parser {
         throw error(peek(), errorCode);
     }
     
+    
+    /**
+     * Checks to see if the current {@link Token} is of the supplied
+     * {@link TokenType}
+     * 
+     * @param type
+     * @return true if it is
+     */
     private boolean check(TokenType type) {
         if(isAtEnd()) {
             return false;
@@ -720,7 +748,12 @@ public class Parser {
         return peek().getType() == type;
     }
   
-    
+    /**
+     * Advances to the next Token.  If we've reached
+     * the END_OF_FILE token, this stop advancing.
+     * 
+     * @return the previous token.
+     */
     private Token advance() {
         if(!isAtEnd()) {
             this.current++;
@@ -728,10 +761,19 @@ public class Parser {
         return previous();
     }
     
+    
+    /**
+     * The previous token
+     * @return The previous token
+     */
     private Token previous() {
         return this.tokens.get(current - 1);
     }
-    
+        
+    /**
+     * The current token
+     * @return The current token
+     */
     private Token peek() {
         return this.tokens.get(current);
     }
@@ -745,6 +787,14 @@ public class Parser {
         return peek().getType() == END_OF_FILE;
     }
     
+    
+    /**
+     * Constructs an error message into a {@link ParseException}
+     * 
+     * @param token
+     * @param errorCode
+     * @return the {@link ParseException} to be thrown
+     */
     private ParseException error(Token token, ErrorCode errorCode) {
         int lineNumber = token.getLineNumber();
         int position = token.getPosition();
