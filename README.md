@@ -26,6 +26,7 @@ Leola currently supports these features:
 * tailcail optimization
 * named parameters
 * decorators
+* elvis operator
 
 Sample Code
 ====
@@ -175,7 +176,7 @@ println(total) // 56
 var sub = def(a, b) {
     return a - b
 }
-// The * will place make a=3, b=1
+// The * will make a=3, b=1
 println(sub(*[3, 1]) )   // prints 2
 
 
