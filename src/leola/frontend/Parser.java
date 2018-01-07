@@ -307,7 +307,7 @@ public class Parser {
                 return node(new SubscriptSetExpr(subscriptExpr.getObject(), subscriptExpr.getElementIndex(), value, operatorEquals));
             }
             
-            error(operatorEquals, ErrorCode.INVALID_ASSIGNMENT);
+            throw error(operatorEquals, ErrorCode.INVALID_ASSIGNMENT);
         }
         
         return expr;

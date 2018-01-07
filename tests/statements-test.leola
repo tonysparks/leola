@@ -1,5 +1,9 @@
 debug:enableAssert(true)
 
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	If Statement
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/	
+
 var x = 0
 if true {
 	x += 1
@@ -16,6 +20,11 @@ else {
 }
 
 debug:assertEq(x, 0)
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	While Statement
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/	
 
 x = 0
 var i = 2
@@ -54,6 +63,10 @@ while i > 0 {
 
 debug:assertEq(x, 2)
 
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Switch Expression
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/	
 
 x = 3
 switch x
@@ -103,6 +116,10 @@ switch {
 	when x==4 -> debug:assertEq(x, 4)	
 }
 	
+	
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Case Expression
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/		
 
 	
 var y = 0	
@@ -163,7 +180,9 @@ y = case {
 debug:assertEq(x, y)
 	
 	
-	
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	IS operator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/		
 	
 debug:assertTrue(x is INTEGER)
 debug:assertTrue(x is Integer)
@@ -172,6 +191,10 @@ debug:assertTrue(1.0 is Real)
 debug:assertTrue("x" is String)
 debug:assertTrue({} is Map)
 debug:assertTrue([] is Array)
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/	
 
 class X();
 debug:assertTrue(new X() is X)	
@@ -198,6 +221,9 @@ var b = new B("yy")
 debug:assertEq(b.x, "xx")	
 debug:assertEq(b.y, "yy")	
 	
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Elvis Operator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/		
 	
 var json = {
    header -> {
@@ -242,25 +268,99 @@ debug:assertNull(json?header?nil?not)
 var not = null
 debug:assertNull(not?json) 
 
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Subscript/Member Access
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/		
+	
+var array = def() return [4]
+debug:assertEq(array()[0], 4)
+
+var map   = def() return {x->4}
+debug:assertEq(map().x, 4)	
+debug:assertEq(map()?x, 4)	
+debug:assertNull(map()?y)	
+	
+namespace ns {
+	var x = 4
+}	
+
+debug:assertEq(ns:x, 4)		
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Named Args
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/		
+	
+var named = def(x,y) {
+	debug:assertEq(x, "xx")	
+	debug:assertEq(y, "yy")	
+}	
+
+named(x=>"xx", y=>"yy")
+named(y=>"yy", x=>"xx")
+named("xx", y=>"yy")
+named(x=>"xx", "yy")
+	
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Var Args
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/	
+var varArgs = def(x, args...) {
+	debug:assertEq(x, "xx")	
+	debug:assertTrue(args is Array)	
+	debug:assertEq(args.size(), 2)
+	debug:assertEq(args[0], "yy")
+	debug:assertEq(args[1], "zz")
+}	
+	
+varArgs("xx", "yy", "zz")
+varArgs( *["xx", "yy", "zz"] )	
 	
 	
+debug:assertTrue(true)
+debug:assertTrue(!false)
+	
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Decorator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/		
+	
+var decorator = def(func, args...) {
+	debug:assertTrue(func is Function)	
+	debug:assertTrue(args is Array)	
+	debug:assertEq(args.size(), 2)
+	debug:assertEq(args[0], "yy")
+	debug:assertEq(args[1], "zz")
+	
+	return def(xargs...) {
+		return func(*xargs)
+	}
+}	
+
+var f = @decorator("yy", "zz") def(x,y) {
+	debug:assertEq(x, "xxx")
+	debug:assertEq(y, "yyy")
+}
+
+f("xxx", "yyy")
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Generator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/		
+
+var inc = def(n) {
+	return gen() {
+		while n > 0 {
+			yield n
+			n -= 1
+		}
+	}
+}
+
+var g = inc(3)
+debug:assertTrue(g is Generator)
+debug:assertEq(g(), 3)
+debug:assertEq(g(), 2)
+debug:assertEq(g(), 1)
+debug:assertNull(g())
 	
 	

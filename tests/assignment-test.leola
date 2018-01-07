@@ -38,3 +38,74 @@ debug:assertEq(x, 0)
 
 global = "tony"
 debug:assertEq(global, "tony")
+
+
+var array = [1]
+array[0] += 1
+debug:assertEq(array[0], 2)
+
+array[0] -= 1
+debug:assertEq(array[0], 1)
+
+array[0] *= 10
+debug:assertEq(array[0], 10)
+
+array[0] /= 10
+debug:assertEq(array[0], 1)
+
+array[0] = 5
+array[0] %= 2
+debug:assertEq(array[0], 1)
+
+array[0] = 1
+array[0] <<= 1
+debug:assertEq(array[0], 2)
+
+array[0] >>= 1
+debug:assertEq(array[0], 1)
+
+array[0] |= 2
+debug:assertEq(array[0], 3)
+
+array[0] &= 2
+debug:assertEq(array[0], 2)
+
+array[0] ^= 2
+debug:assertEq(array[0], 0)
+
+
+var map = { "x" -> 1 }
+map.x += 1
+debug:assertEq(map.x, 2)
+
+map.x -= 1
+debug:assertEq(map.x, 1)
+
+map.x *= 10
+debug:assertEq(map.x, 10)
+
+map.x /= 10
+debug:assertEq(map.x, 1)
+
+map.x = 5
+map.x %= 2
+debug:assertEq(map.x, 1)
+
+map.x = 1
+map.x <<= 1
+debug:assertEq(map.x, 2)
+
+map.x >>= 1
+debug:assertEq(map.x, 1)
+
+map.x |= 2
+debug:assertEq(map.x, 3)
+
+map.x &= 2
+debug:assertEq(map.x, 2)
+
+map.x ^= 2
+debug:assertEq(map.x, 0)
+
+
+
