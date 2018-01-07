@@ -555,8 +555,8 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     public void visit(IsExpr s) throws EvalException {    
         asm.line(s.getLineNumber());
         
-        s.getObject().visit(this);
         asm.addAndloadconst(s.getClassName());
+        s.getObject().visit(this);
         asm.isa();
     }
 
@@ -839,8 +839,9 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     public void visit(SwitchStmt s) throws EvalException {
         asm.line(s.getLineNumber());
         
-        Expr condExpr = s.getCondition();
+        Expr condExpr = s.getCondition();        
         condExpr.visit(this);
+        
         
         String endCase = asm.nextLabelName();
         String nextWhenLabel = null;

@@ -1,0 +1,266 @@
+debug:enableAssert(true)
+
+var x = 0
+if true {
+	x += 1
+}
+
+debug:assertEq(x, 1)
+
+
+if false {
+	x += 1
+}
+else {
+	x -= 1
+}
+
+debug:assertEq(x, 0)
+
+x = 0
+var i = 2
+while i > 0 {
+	x += 1
+	i -= 1	
+} 
+
+debug:assertEq(x, 2)
+
+
+x = 0
+i = 2
+while i > 0 {
+	x += 1		
+	i -= 1	
+	
+	if i == 1 {
+		break
+	}
+} 
+
+debug:assertEq(x, 1)
+
+
+x = 0
+i = 3
+while i > 0 {
+	i -= 1	
+	
+	if i == 1 {
+		continue
+	}
+	x += 1			
+} 
+
+debug:assertEq(x, 2)
+
+
+x = 3
+switch x
+	when 0 -> debug:assertFail()
+	when 1 -> debug:assertFail()
+	when 2 -> debug:assertFail()
+	when 3 -> debug:assertEq(x, 3)
+	
+x = 3
+switch x
+	when 0 -> debug:assertFail()
+	when 3 -> debug:assertEq(x, 3)	
+	else debug:assertFail()
+	
+x = 4
+switch x
+	when 0 -> debug:assertFail()
+	when 3 -> debug:assertFail()
+	else debug:assertEq(x, 4)
+	
+x = 4
+switch x {
+	when 0 -> debug:assertFail()
+	when 3 -> debug:assertFail()
+	else debug:assertEq(x, 4)	
+}	
+
+x = 4	
+switch 
+	when x==3 -> debug:assertFail()	
+	when x==4 -> debug:assertEq(x, 4)
+	else debug:assertFail()
+	
+x = 4	
+switch {
+	when x==3 -> debug:assertFail()	
+	when x==4 -> debug:assertEq(x, 4)
+	else debug:assertFail()	
+}	
+
+x = 4	
+switch 
+	when x==4 -> debug:assertEq(x, 4)	
+	
+x = 4	
+switch {	
+	when x==4 -> debug:assertEq(x, 4)	
+}
+	
+
+	
+var y = 0	
+x = 3
+y = case x
+	when 0 -> debug:assertFail()
+	when 1 -> debug:assertFail()
+	when 2 -> debug:assertFail()
+	when 3 -> x
+debug:assertEq(x, y)
+	
+x = 3
+y = case x
+	when 0 -> debug:assertFail()
+	when 3 -> x
+	else debug:assertFail()
+debug:assertEq(x, y)
+	
+x = 4
+y = case x
+	when 0 -> debug:assertFail()
+	when 3 -> debug:assertFail()
+	else x
+debug:assertEq(x, y)	
+	
+x = 4
+y = case x {
+	when 0 -> debug:assertFail()
+	when 3 -> debug:assertFail()
+	else x
+}	
+debug:assertEq(x, y)
+
+x = 4	
+y = case
+	when x==3 -> debug:assertFail()	
+	when x==4 -> x
+	else debug:assertFail()
+debug:assertEq(x, y)	
+	
+x = 4	
+y = case {
+	when x==3 -> debug:assertFail()	
+	when x==4 -> x
+	else debug:assertFail()	
+}	
+debug:assertEq(x, y)
+
+x = 4	
+y = case 
+	when x==4 -> x
+debug:assertEq(x, y)	
+	
+x = 4	
+y = case {	
+	when x==4 -> x
+}	
+debug:assertEq(x, y)
+	
+	
+	
+	
+debug:assertTrue(x is INTEGER)
+debug:assertTrue(x is Integer)
+debug:assertTrue(1L is Long)
+debug:assertTrue(1.0 is Real)
+debug:assertTrue("x" is String)
+debug:assertTrue({} is Map)
+debug:assertTrue([] is Array)
+
+class X();
+debug:assertTrue(new X() is X)	
+	
+	
+class Y;
+debug:assertTrue(new Y() is Y)	
+
+class W is Y();
+debug:assertTrue(new W() is Y)
+debug:assertTrue(new W() is W)
+	
+class Z(x);
+class A(x) is Z(x);
+debug:assertTrue(new A("x") is A)
+debug:assertTrue(new A("x") is Z)
+var a = new A("x")
+debug:assertEq(a.x, "x")
+	
+class B(y) is Z("xx");	
+debug:assertTrue(new B("x") is B)
+debug:assertTrue(new B("x") is Z)	
+var b = new B("yy")
+debug:assertEq(b.x, "xx")	
+debug:assertEq(b.y, "yy")	
+	
+	
+var json = {
+   header -> {
+      data -> {
+         array -> [],
+		 map   -> {},
+		 bool  -> true,
+		 int   -> 1,
+		 long  -> 1L,
+		 real  -> 1.0,
+		 string -> "string",
+		 nil   -> null,
+     },
+	 
+	 nil -> null
+   }
+}   	
+	
+println(json)	
+	
+debug:assertEq(json?header?data?array, []) 
+debug:assertEq(json?header?data?map, {}) 
+debug:assertEq(json?header?data?bool, true) 
+debug:assertEq(json?header?data?int, 1) 
+debug:assertEq(json?header?data?long, 1L) 
+debug:assertEq(json?header?data?real, 1.0) 
+debug:assertEq(json?header?data?string, "string") 
+debug:assertEq(json?header?data?nil, null) 
+
+debug:assertNull(json?not?not)
+debug:assertNull(json?header?data?array?not) 
+debug:assertNull(json?header?data?map?not) 
+debug:assertNull(json?header?data?bool?not)  
+debug:assertNull(json?header?data?int?not) 
+debug:assertNull(json?header?data?long?not)  
+debug:assertNull(json?header?data?real?not)  
+debug:assertNull(json?header?data?string?not) 
+debug:assertNull(json?header?data?nil?not) 
+debug:assertNull(json?header?nil) 
+debug:assertNull(json?header?nil?not) 
+
+var not = null
+debug:assertNull(not?json) 
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

@@ -154,8 +154,11 @@ public class Parser {
     
     private SwitchStmt switchStatement() {
         Expr condition = null;
-        if(!match(WHEN)) {
+        if(!check(WHEN) && !check(LEFT_BRACE)) {
             condition = expression();
+        }
+        else {
+            condition = new BooleanExpr(true);
         }
         
         List<Pair<Expr, Stmt>> whenStmts = new ArrayList<>();
@@ -170,7 +173,7 @@ public class Parser {
             
             whenStmts.add(new Pair<>(whenCond, stmt));            
         }
-        while(match(WHEN));
+        while(check(WHEN));
         
         Stmt elseStmt = null;
         if(match(ELSE)) {
@@ -373,7 +376,7 @@ public class Parser {
     private Expr factor() {
         Expr expr = unary();
         
-        while(match(SLASH, STAR)) {
+        while(match(SLASH, STAR, MOD)) {
             Token operator = previous();
             Expr right = unary();
             expr = node(new BinaryExpr(expr, right, operator));
@@ -505,8 +508,11 @@ public class Parser {
     
     private CaseExpr caseExpression() {
         Expr condition = null;
-        if(!match(WHEN)) {
+        if(!check(WHEN) && !check(LEFT_BRACE)) {
             condition = expression();
+        }
+        else {
+            condition = new BooleanExpr(true);
         }
         
         List<Pair<Expr, Expr>> whenStmts = new ArrayList<>();
@@ -521,7 +527,7 @@ public class Parser {
             
             whenStmts.add(new Pair<>(whenCond, expr));            
         }
-        while(match(WHEN));
+        while(check(WHEN));
         
         Expr elseExpr = null;
         if(match(ELSE)) {

@@ -453,7 +453,29 @@ public class LeoMap extends LeoObject implements Map<LeoObject, LeoObject> {
         if ( val.getType() != LeoType.MAP ) return false;
     
         LeoMap t = (LeoMap)val;
-        return  t.hashEntries==hashEntries && t.hashKeys.equals(hashKeys) && t.hashValues.equals(hashValues);
+        if (t.size() != this.size()) return false;
+        
+        for(int i = 0; i < this.hashKeys.length; i++) {
+            LeoObject key = this.hashKeys[i];
+            if(key != null) {
+                LeoObject myValue = hashget(key);
+                LeoObject otherValue = t.get(key);
+                
+                if(myValue != null && otherValue == null) {
+                    return false;
+                }
+                
+                if(myValue == null && otherValue != null) {
+                    return false;
+                }
+                
+                if(!myValue.equals(otherValue)) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
         
     }
     

@@ -1,0 +1,40 @@
+debug:enableAssert(true)
+
+var x = 1
+debug:assertEq(x, 1)
+
+x += 1
+debug:assertEq(x, 2)
+
+x -= 1
+debug:assertEq(x, 1)
+
+x *= 10
+debug:assertEq(x, 10)
+
+x /= 10
+debug:assertEq(x, 1)
+
+x = 5
+x %= 2
+debug:assertEq(x, 1)
+
+x = 1
+x <<= 1
+debug:assertEq(x, 2)
+
+x >>= 1
+debug:assertEq(x, 1)
+
+x |= 2
+debug:assertEq(x, 3)
+
+x &= 2
+debug:assertEq(x, 2)
+
+x ^= 2
+debug:assertEq(x, 0)
+
+
+global = "tony"
+debug:assertEq(global, "tony")
