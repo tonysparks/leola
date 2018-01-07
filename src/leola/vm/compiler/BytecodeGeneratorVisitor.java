@@ -218,11 +218,17 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         VarExpr var = s.getVar();
         String varName = var.getVarName();
         
-        s.getVar().visit(this);
-        s.getValue().visit(this);
-        
-        visitAssignmentOperator(s.getOperator());        
-        asm.store(varName);
+        if(s.getOperator().getType() == TokenType.EQUALS) {
+            s.getValue().visit(this);
+            asm.store(varName);
+        }
+        else {
+            s.getVar().visit(this);
+            s.getValue().visit(this);
+            
+            visitAssignmentOperator(s.getOperator());
+            asm.store(varName);
+        }
     }
 
     private void visitAssignmentOperator(Token operator) {        
