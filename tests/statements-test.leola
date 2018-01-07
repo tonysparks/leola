@@ -241,9 +241,7 @@ var json = {
 	 nil -> null
    }
 }   	
-	
-println(json)	
-	
+		
 debug:assertEq(json?header?data?array, []) 
 debug:assertEq(json?header?data?map, {}) 
 debug:assertEq(json?header?data?bool, true) 
