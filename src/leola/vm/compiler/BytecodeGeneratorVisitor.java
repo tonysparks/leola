@@ -5,67 +5,60 @@
 */
 package leola.vm.compiler;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import leola.ast.ASTAttributes;
 import leola.ast.ASTNode;
 import leola.ast.ASTNodeVisitor;
-import leola.ast.ArrayAccessExpr;
-import leola.ast.ArrayAccessSetExpr;
 import leola.ast.ArrayDeclExpr;
 import leola.ast.AssignmentExpr;
-import leola.ast.BinaryAssignmentExpr;
 import leola.ast.BinaryExpr;
-import leola.ast.BinaryExpr.BinaryOp;
+import leola.ast.BlockStmt;
 import leola.ast.BooleanExpr;
 import leola.ast.BreakStmt;
 import leola.ast.CaseExpr;
 import leola.ast.CatchStmt;
-import leola.ast.ChainedArrayAccessExpr;
-import leola.ast.ChainedArrayAccessSetExpr;
-import leola.ast.ChainedAssignmentExpr;
-import leola.ast.ChainedBinaryAssignmentExpr;
-import leola.ast.ChainedFuncInvocationExpr;
-import leola.ast.ChainedMemberAccessExpr;
 import leola.ast.ClassDeclStmt;
-import leola.ast.CompoundExpr;
-import leola.ast.CompoundStmt;
 import leola.ast.ContinueStmt;
 import leola.ast.DecoratorExpr;
+import leola.ast.ElvisGetExpr;
 import leola.ast.EmptyStmt;
 import leola.ast.Expr;
 import leola.ast.FuncDefExpr;
 import leola.ast.FuncInvocationExpr;
 import leola.ast.GenDefExpr;
+import leola.ast.GetExpr;
 import leola.ast.IfStmt;
 import leola.ast.IntegerExpr;
 import leola.ast.IsExpr;
 import leola.ast.LongExpr;
 import leola.ast.MapDeclExpr;
-import leola.ast.MemberAccessExpr;
 import leola.ast.NamedParameterExpr;
-import leola.ast.NamespaceAccessExpr;
+import leola.ast.NamespaceGetExpr;
 import leola.ast.NamespaceStmt;
 import leola.ast.NewExpr;
 import leola.ast.NullExpr;
-import leola.ast.OwnableExpr;
+import leola.ast.ParameterList;
 import leola.ast.ProgramStmt;
 import leola.ast.RealExpr;
 import leola.ast.ReturnStmt;
+import leola.ast.SetExpr;
 import leola.ast.Stmt;
 import leola.ast.StringExpr;
+import leola.ast.SubscriptGetExpr;
+import leola.ast.SubscriptSetExpr;
 import leola.ast.SwitchStmt;
 import leola.ast.ThrowStmt;
 import leola.ast.TryStmt;
 import leola.ast.UnaryExpr;
-import leola.ast.UnaryExpr.UnaryOp;
 import leola.ast.VarDeclStmt;
 import leola.ast.VarExpr;
 import leola.ast.WhileStmt;
 import leola.ast.YieldStmt;
-import leola.frontend.EvalException;
-import leola.frontend.parsers.ParameterList;
+import leola.frontend.tokens.Token;
+import leola.frontend.tokens.TokenType;
+import leola.vm.EvalException;
 import leola.vm.Leola;
 import leola.vm.compiler.EmitterScope.ScopeType;
 import leola.vm.types.LeoString;
@@ -122,52 +115,59 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     public BytecodeEmitter getAsm() {
         return asm;
     }
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ArrayAccessExpr)
-     */
+    
     @Override
-    public void visit(ArrayAccessExpr s) throws EvalException {
+    public void visit(SetExpr s) throws EvalException {
         asm.line(s.getLineNumber());
         
-        if(s.isMemberAccessChild()) {
-            Expr indexExpr = s.getElementIndex();    
+        
+        if(s.getOperator().getType() != TokenType.EQUALS) {
+            s.getObject().visit(this);            
+            asm.getk(s.getIdentifier());
+            s.getValue().visit(this);
             
-            String reference = s.getVariableName();                    
-            asm.getk(reference);
-                        
-            indexExpr.visit(this);
-            asm.idx();
-            
+            visitAssignmentOperator(s.getOperator());
         }
-        else {                    
-            String reference = s.getVariableName();
-            loadglobalmember(reference);
-
-            Expr indexExpr = s.getElementIndex();
-            indexExpr.visit(this);
-            asm.idx();
+        else {
+            s.getValue().visit(this);    
         }
-
+        
+        s.getObject().visit(this);
+        asm.setk(s.getIdentifier());
     }
 
     /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ArrayAccessSetExpr)
+     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.SubscriptGetExpr)
      */
     @Override
-    public void visit(ArrayAccessSetExpr s) throws EvalException {
+    public void visit(SubscriptGetExpr s) throws EvalException {
         asm.line(s.getLineNumber());
-        if(s.isMemberAccessChild()) {                        
-            String reference = s.getVariableName();
-            asm.getk(reference);                
+        
+        s.getObject().visit(this);
+        s.getElementIndex().visit(this);
+        asm.idx();        
+    }
+
+    /* (non-Javadoc)
+     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.SubscriptSetExpr)
+     */
+    @Override
+    public void visit(SubscriptSetExpr s) throws EvalException {
+        asm.line(s.getLineNumber());
+        if(s.getOperator().getType() != TokenType.EQUALS) {
+            s.getObject().visit(this);
+            s.getElementIndex().visit(this);
+            asm.idx();
+            s.getValue().visit(this);
+            
+            visitAssignmentOperator(s.getOperator());
         }
-        else {                        
-            String reference = s.getVariableName();
-            loadglobalmember(reference);
+        else {
+            s.getValue().visit(this);    
         }
         
-        Expr indexExpr = s.getElementIndex();
-        indexExpr.visit(this);        
+        s.getObject().visit(this);
+        s.getElementIndex().visit(this);
         asm.sidx();
     }
 
@@ -178,12 +178,12 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     public void visit(ArrayDeclExpr s) throws EvalException {
         asm.line(s.getLineNumber());
         
-        Expr exprs[] = s.getElements();
+        List<Expr> exprs = s.getElements();
         for(Expr expr : exprs) {
             expr.visit(this);
         }
         
-        asm.newarray(exprs.length);        
+        asm.newarray(exprs.size());        
     }
 
     /* (non-Javadoc)
@@ -197,7 +197,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         for(int i = 0; i < elements.size(); i++) {
             Pair<Expr, Expr> element = elements.get(i);
             Expr key = element.getFirst();
-            key.appendFlag(ASTAttributes.IS_PROPERTY);  /* Let VarExpr be converted to strings */
+            key.appendFlag(ASTNode.MEMBER_PROPERTY);  /* Let VarExpr be converted to strings */
             key.visit(this);
             
             Expr value = element.getSecond();
@@ -215,40 +215,39 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     public void visit(AssignmentExpr s) throws EvalException {
         asm.line(s.getLineNumber());
         
-        Expr e = s.getExpr();
-        e.visit(this);
+        VarExpr var = s.getVar();
+        String varName = var.getVarName();
         
-        if(s.isMemberAccessChild()) {
-            asm.swap();
-            
-            Expr lhs = s.getLhsExpr();
-            if ( lhs != null ) {                                                                
-                lhs.setMemberAccess(true);
-                lhs.appendFlag(s.getFlags()); 
-                lhs.visit(this);                                                
-                
-            }
-            else {                
-                asm.setk(s.getVarName());
-            }            
+        if(s.getOperator().getType() == TokenType.EQUALS) {
+            s.getValue().visit(this);
+            asm.store(varName);
         }
-        else {                        
-            Expr l = s.getLhsExpr();
-            if ( l != null ) {
-                l.visit(this);
-            }
-            else {
-                asm.dup(); /* account for Expr OPPOP */
-                
-                String ref = s.getVarName();
-                asm.store(ref);                                
-            }
+        else {
+            s.getVar().visit(this);
+            s.getValue().visit(this);
             
+            visitAssignmentOperator(s.getOperator());
+            asm.store(varName);
         }
-        
-//        asm.dup(); /* account for Expr OPPOP */
     }
 
+    private void visitAssignmentOperator(Token operator) {        
+        switch(operator.getType()) {
+            case EQUALS:              break;            
+            case PLUS_EQ:  asm.add(); break;
+            case MINUS_EQ: asm.sub(); break;
+            case STAR_EQ:  asm.mul(); break;
+            case SLASH_EQ: asm.div(); break;
+            case MOD_EQ:   asm.mod(); break;
+            case BSL_EQ:   asm.bsl(); break;
+            case BSR_EQ:   asm.bsr(); break;
+            case BOR_EQ:   asm.lor(); break;
+            case BAND_EQ:  asm.land();break;
+            case BXOR_EQ:  asm.xor(); break;
+            default: 
+                throw new EvalException("Invalid operator: '" + operator.getText() + "'");
+        }
+    }
     
     /**
      * Visits a Binary Expression
@@ -256,98 +255,35 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
      * @param op
      * @throws EvalException
      */
-    private void visitBinaryExpression(BinaryOp op) throws EvalException {
+    private void visitBinaryExpression(TokenType op) throws EvalException {
         switch(op) {
-            case ADD: {
-                asm.add();
-                break;
-            }
-            case SUB: {
-                asm.sub();
-                break;
-            }
-            case MUL: {
-                asm.mul();
-                break;
-            }
-            case DIV: {
-                asm.div();
-                break;
-            }
-            case MOD: {
-                asm.mod();
-                break;
-            }
-                        
-            // comparisons
+            case PLUS:  asm.add(); break;
+            case MINUS: asm.sub(); break;
+            case STAR:  asm.mul(); break;
+            case SLASH: asm.div(); break;
+            case MOD:   asm.mod(); break;
             
-            case AND: {
-                asm.and();
-                break;
-            }
-            case OR: {
-                asm.or();
-                break;
-            }
-            case REQ: {
-                asm.req();
-                break;
-            }
-            case RNEQ: {
-                asm.rneq();
-                break;
-            }
-            case EQ: {
-                asm.eq();
-                break;
-            }
-            case NEQ: {
-                asm.neq();
-                break;
-            }
-            case GT: {
-                asm.gt();
-                break;
-            }
-            case GTE: {
-                asm.gte();
-                break;
-            }
-            case LT: {
-                asm.lt();
-                break;
-            }
-            case LTE: {
-                asm.lte();
-                break;
-            }
+            // comparisons
+            case LOGICAL_AND:     asm.and();  break;
+            case LOGICAL_OR:      asm.or();   break;
+            case REF_EQUALS:      asm.req();  break;
+            case REF_NOT_EQUALS:  asm.rneq(); break;
+            case D_EQUALS:        asm.eq();   break;
+            case NOT_EQUALS:      asm.neq();  break;
+            case GREATER_THAN:    asm.gt();   break;
+            case GREATER_EQUALS:  asm.gte();  break;
+            case LESS_THAN:       asm.lt();   break;
+            case LESS_EQUALS:     asm.lte();  break;
             
             // bit ops
+            case BITWISE_AND:     asm.land(); break;
+            case BITWISE_OR:      asm.lor();  break;
+            case BIT_SHIFT_LEFT:  asm.bsl();  break;
+            case BIT_SHIFT_RIGHT: asm.bsr();  break;
+            case BITWISE_XOR:     asm.xor();  break;
             
-            case BIT_AND: {
-                asm.land();
-                break;
-                
-            }
-            case BIT_OR: {
-                asm.lor();
-                break;
-            }
-            case BIT_SHIFT_LEFT: {
-                asm.bsl();
-                break;
-            }
-            case BIT_SHIFT_RIGHT: {
-                asm.bsr();
-                break;
-            }
-            case BIT_XOR: {
-                asm.xor();
-                break;
-            }
-            default: {
-                throw new EvalException("Unknown BinaryOperator: " + op);
-            }
+            default: 
+                throw new EvalException("Unknown BinaryOperator: " + op);            
         }
         
     }
@@ -358,9 +294,9 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     @Override
     public void visit(BinaryExpr s) throws EvalException {
         asm.line(s.getLineNumber());
-        BinaryOp op = s.getOp();
-        switch(op) {
-            case AND: {
+        Token operator = s.getOp();
+        switch(operator.getType()) {
+            case LOGICAL_AND: {
                 s.getLeft().visit(this);
                 String escape = asm.ifeq();
                 
@@ -371,7 +307,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
                 asm.label(endif);
                 break;
             }
-            case OR: {
+            case LOGICAL_OR: {
                 s.getLeft().visit(this);
                 String secondConditional = asm.ifeq();
                 String skip = asm.jmp();
@@ -390,104 +326,11 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
                 s.getLeft().visit(this);
                 s.getRight().visit(this);
                 
-                
-                visitBinaryExpression(op);        
+                visitBinaryExpression(operator.getType());        
             }
         }                        
     }
 
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.BinaryAssignmentExpr)
-     */
-    @Override
-    public void visit(BinaryAssignmentExpr s) throws EvalException {    
-        asm.line(s.getLineNumber());
-        
-        if(s.isMemberAccessChild()) {
-            /* left hand side == access to an object */
-            Expr lhs = s.getLhsExpr();
-            if ( lhs != null ) {        
-                lhs.setMemberAccess(true);
-                if ( lhs instanceof ArrayAccessSetExpr) {
-                    asm.dup();
-                    
-                    ArrayAccessSetExpr setExpr = (ArrayAccessSetExpr)lhs;
-                    
-                    String reference = setExpr.getVariableName();
-                    asm.getk(reference);
-                    
-                    Expr indexExpr = setExpr.getElementIndex();
-                    indexExpr.visit(this);
-                    
-                    asm.idx();
-                }
-                                
-                Expr expr = s.getExpr();
-                expr.visit(this);
-        
-                BinaryOp op = s.getBinaryOp();
-                visitBinaryExpression(op);
-                
-                asm.swap();
-                lhs.visit(this);        
-        
-            }
-            else {            
-
-                asm.dup();
-                
-                String ref = s.getVarName();
-                asm.getk(ref);
-                                
-                Expr e = s.getExpr();
-                e.visit(this);
-                
-                visitBinaryExpression(s.getBinaryOp());
-                asm.swap();                                                
-                asm.setk(ref);            
-                
-                //asm.dup(); /* account for OPPOP */
-            }    
-        }
-        else {                        
-            /* left hand side == access to an object */
-            Expr lhs = s.getLhsExpr();
-            if ( lhs != null ) {        
-                if ( lhs instanceof ArrayAccessSetExpr) {
-                    ArrayAccessSetExpr setExpr = (ArrayAccessSetExpr)lhs;
-                    
-                    String reference = setExpr.getVariableName();
-                    loadglobalmember(reference);
-                                        
-                    Expr indexExpr = setExpr.getElementIndex();
-                    indexExpr.visit(this);                    
-                    asm.idx();
-                }
-                                            
-                Expr expr = s.getExpr();
-                expr.visit(this);
-                
-                BinaryOp op = s.getBinaryOp();
-                visitBinaryExpression(op);
-                
-                lhs.visit(this);        
-                    
-                
-            }
-            else {             
-                String ref = s.getVarName();                
-                loadglobalmember(ref);
-                
-                Expr expr = s.getExpr();
-                expr.visit(this);
-                
-                visitBinaryExpression(s.getBinaryOp());
-                
-                asm.dup(); /* account for OPPOP */
-                asm.store(ref);                                                
-            }
-        }
-    }
 
     /* (non-Javadoc)
      * @see leola.ast.ASTNodeVisitor#visit(leola.ast.BooleanExpr)
@@ -496,7 +339,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     public void visit(BooleanExpr s) throws EvalException {
         asm.line(s.getLineNumber());
         
-        if ( s.getValue() ) {
+        if(s.getValue()) {
             asm.loadtrue();
         }
         else {
@@ -511,164 +354,12 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     public void visit(BreakStmt s) throws EvalException {
         asm.line(s.getLineNumber());
         
-        if ( ! this.breakLabelStack.isEmpty() ) {
+        if(!this.breakLabelStack.isEmpty()) {
             String label = this.breakLabelStack.peek();
             asm.brk(label);
         }
     }
-
-
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ChainedArrayAccessExpr)
-     */
-    @Override
-    public void visit(ChainedArrayAccessExpr s) throws EvalException {
-        asm.line(s.getLineNumber());
-        
-        s.getElementIndex().visit(this);
-        asm.idx();
-    }
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ChainedArrayAccessSetExpr)
-     */
-    @Override
-    public void visit(ChainedArrayAccessSetExpr s) throws EvalException {
-        asm.line(s.getLineNumber());
-        
-        s.getElementIndex().visit(this);
-        asm.sidx();
-    }
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ChainedAssignmentExpr)
-     */
-    @Override
-    public void visit(ChainedAssignmentExpr s) throws EvalException {
-        asm.line(s.getLineNumber());
-        
-        Expr valueExpr = s.getExpr();
-        valueExpr.visit(this);
-        
-        Expr lhs = s.getLhsExpr();
-        if ( lhs != null ) {
-            asm.swap();
-            lhs.visit(this);
-        }        
-    }
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ChainedBinaryAssignmentExpr)
-     */
-    @Override
-    public void visit(ChainedBinaryAssignmentExpr s) throws EvalException {
-        asm.line(s.getLineNumber());
-        
-        asm.dup();
-
-        Expr valueExpr = s.getExpr();
-        valueExpr.visit(this);
-        
-        Expr lhs = s.getLhsExpr();
-        if ( lhs != null ) {
-            // TODO -- This seems extremely whonkie!
-            // Had to create new OPCODE (shift) to support
-            // this.  Revisit to fix so that: 
-            // a) we don't need this chained* non-sense
-            // b) we don't need a 'shift' opcode
-            if ( lhs instanceof ChainedArrayAccessSetExpr) {                                
-                asm.swap();
-                
-                ChainedArrayAccessSetExpr e = (ChainedArrayAccessSetExpr)lhs;
-                e.getElementIndex().visit(this);                
-                asm.dup();
-                asm.rotr(4);
-                asm.idx();
-                
-                asm.swap();
-                visitBinaryExpression(s.getBinaryOp());
-                asm.rotr(3);                   
-                asm.sidx();
-            }
-        }
-        else {                        
-            visitBinaryExpression(s.getBinaryOp());
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ChainedFuncInvocationExpr)
-     */
-    @Override
-    public void visit(ChainedFuncInvocationExpr s) throws EvalException {
-        asm.line(s.getLineNumber());
-        
-        int expandedArgsIndex = 0;
-        int nargs = 0;
-        
-        Expr[] params = s.getParameters();
-        if ( params != null ) {
-            boolean hasNamedParameters = false;
-            /* check to see if there are any NamedParameters,
-             * if so, we need to add some additional instructions
-             * that effect performance
-             */
-            int index = 0;
-            for(Expr param : params) {
-                if(param instanceof NamedParameterExpr) {
-                    hasNamedParameters = true;  
-                    NamedParameterExpr nExpr = (NamedParameterExpr)param;
-                    if(nExpr.getValueExpr().hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {                       
-                        expandedArgsIndex=index+1;    
-                    }
-                }
-                else if(param.hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {
-                    expandedArgsIndex=index+1;
-                }
-                
-                index++;
-            }
-            
-            
-            for(Expr param : params) {
-                param.visit(this);
-                
-                /* mark the end of the parameter,
-                 * so that we can properly index
-                 * the named parameters
-                 */
-                if(hasNamedParameters) {
-                    asm.paramend();
-                }
-            }
-            
-            nargs = params.length;
-        }
-        
-        asm.rotl(nargs);
-        asm.invoke(nargs,expandedArgsIndex);
-    }
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ChainedMemberAccessExpr)
-     */
-    @Override
-    public void visit(ChainedMemberAccessExpr s) throws EvalException {
-        asm.line(s.getLineNumber());
-        
-        Expr expr = s.getAccess();
-        expr.appendFlag(ASTAttributes.IS_PROPERTY);
-
-        // account for x[0].y.C
-        if(expr instanceof MemberAccessExpr) {
-            loadmember(s, s.getOwner(), true, true);
-            asm.get();
-        }
-        
-        expr.visit(this);        
-    }
-
+    
     /* (non-Javadoc)
      * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ClassDeclStmt)
      */
@@ -685,29 +376,20 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         
         // parent class name
         String parentClassNAme = s.getParentClassName();
-        if ( parentClassNAme != null ) {            
+        if(parentClassNAme != null) {            
             asm.addAndloadconst(parentClassNAme);
         }
         else {
             asm.loadnull();
         }
-        
-        // interfaces
-        String[] interfaces = s.getInterfaceNames();
-        if ( interfaces != null ) {
-            for(String i : interfaces) {                
-                asm.addAndloadconst(i);
-            }
-        }
-        
+                
         // TODO - Determine how this will take advantage of varargs
-        ParameterList params = s.getClassParameters();
-        if ( params != null ) {
-            for(String ref:params.getParameters()) {                
-                asm.addAndloadconst(ref);
-            }
-        }                            
-        asm.addAndloadconst(params!=null?params.size():0);
+        ParameterList params = s.getClassParameters();        
+        for(String ref:params.getParameters()) {                
+            asm.addAndloadconst(ref);
+        }
+                                    
+        asm.addAndloadconst(params.size());
         
         /*
          * NOTE: this places Constants in the parameters and
@@ -717,22 +399,22 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
          * 
          * @see ClassDefinitions
          */
-        Expr[] superParams = s.getParentClassParams();        
-        if( superParams != null) {
-            for(Expr e: superParams) {
+        List<Expr> superArguments = s.getParentClassArguments();        
+        if(superArguments != null) {
+            for(Expr e: superArguments) {
                 
                 /* may pass values from sibling class to parent class */
                 if(e instanceof VarExpr) {
-                    e.appendFlag(ASTAttributes.IS_PROPERTY);
+                    e.appendFlag(ASTNode.MEMBER_PROPERTY);
                 }
                 
                 e.visit(this);
             }
         }
-        asm.addAndloadconst(superParams!=null?superParams.length:0);
+        asm.addAndloadconst(superArguments!=null?superArguments.size():0);
         
         asm.addAndloadconst(asm.getBytecodeIndex());        
-        asm.classdef(interfaces!=null?interfaces.length:0, params.size(), params.isVarargs());
+        asm.classdef(params.size(), params.isVarargs());
         {            
             Stmt body = s.getClassBodyStmt();
             body.visit(this);
@@ -743,10 +425,10 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     }
 
     /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.CompoundStmt)
+     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.BlockStmt)
      */
     @Override
-    public void visit(CompoundStmt s) throws EvalException {
+    public void visit(BlockStmt s) throws EvalException {
         asm.line(s.getLineNumber());
             
         /* if the parent has already created a new scope, we don't
@@ -762,7 +444,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
             asm.markLexicalScope();
         }
         
-        List<ASTNode> nodes = s.getChildren();
+        List<Stmt> nodes = s.getStatements();
         int numNodes = nodes.size();
         for(int i = 0; i < numNodes; i++) {
             ASTNode n = nodes.get(i);
@@ -775,18 +457,6 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         
         if(!newLexicalScope) {
             asm.unmarkLexicalScope();
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.CompoundExpr)
-     */
-    @Override
-    public void visit(CompoundExpr s) throws EvalException {    
-        asm.line(s.getLineNumber());
-        
-        for(ASTNode n : s.getChildren()) {
-            n.visit(this);
         }
     }
 
@@ -808,16 +478,12 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     public void visit(DecoratorExpr s) throws EvalException {
         asm.line(s.getLineNumber());
         
-        Expr[] existingParams = s.getParameters();
-        Expr[] parameters = new Expr[(existingParams != null ? existingParams.length : 0) + 1];
-        if(existingParams != null) {
-            for(int i = 0; i < existingParams.length;i++) {
-                parameters[i] = existingParams[i];
-            }            
-        }
-        parameters[parameters.length-1] = s.getFollowingExpr();
+        List<Expr> existingParams = s.getArguments();
+        List<Expr> arguments = new ArrayList<>();        
+        arguments.add(s.getDecoratedExpr());
+        arguments.addAll(existingParams);
         
-        FuncInvocationExpr functionInvokeExpr = new FuncInvocationExpr(s.getDecoratorName(), parameters);
+        FuncInvocationExpr functionInvokeExpr = new FuncInvocationExpr(s.getDecoratorName(), arguments);
         functionInvokeExpr.setLineNumber(s.getLineNumber());
         
         visit(functionInvokeExpr);
@@ -839,16 +505,6 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         }
         asm.end();
         asm.addAndstorelocal(name);                        
-    }
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.NamespaceAccessExpr)
-     */
-    @Override
-    public void visit(NamespaceAccessExpr s) throws EvalException {
-        s.appendFlag(ASTAttributes.NAMESPACE_PROPERTY);
-        
-        visit( (MemberAccessExpr) s);                        
     }
 
     /* (non-Javadoc)
@@ -885,7 +541,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     public void visit(ProgramStmt s) throws EvalException {                    
         asm.start(ScopeType.GLOBAL_SCOPE);
         {
-            for(ASTNode n : s.getChildren()) {            
+            for(Stmt n : s.getStatements()) {            
                 n.visit(this);        
             }
         }
@@ -898,25 +554,9 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     @Override
     public void visit(IsExpr s) throws EvalException {    
         asm.line(s.getLineNumber());
-        if (s.isMemberAccessChild()){
-            Expr lhs = s.getLhsExpr();
-            lhs.setMemberAccess(true);        
-            lhs.visit(this);
-            
-            String type = s.getClassName();            
-            asm.addAndloadconst(type);
-            
-            asm.swap();
-        }
-        else {
-
-            String type = s.getClassName();            
-            asm.addAndloadconst(type);
-            
-            Expr lhs = s.getLhsExpr();        
-            lhs.visit(this);
-            
-        }
+        
+        asm.addAndloadconst(s.getClassName());
+        s.getObject().visit(this);
         asm.isa();
     }
 
@@ -980,19 +620,16 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         asm.end();         
     }
     
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.FuncInvocationExpr)
+    /**
+     * Checks to see if there are Named Parameters or any
+     * Expandable variable arguments
+     * 
+     * @param arguments
+     * @return the number of expanded argument index (if any, otherwise 0);
      */
-    @Override
-    public void visit(FuncInvocationExpr s) throws EvalException {        
-        asm.line(s.getLineNumber());
-        
+    private int checkArguments(List<Expr> arguments) {
         int expandedArgsIndex = 0;
-        
-        int nargs = 0;
-        Expr[] params = s.getParameters();
-        if ( params != null ) {
-            
+        if(arguments != null && !arguments.isEmpty()) {            
             boolean hasNamedParameters = false;
             
             /* check to see if there are any NamedParameters,
@@ -1000,23 +637,28 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
              * that effect performance
              */
             int index = 0;
-            for(Expr param : params) {
+            for(Expr param : arguments) {
+                
+                // Check if there are named parameters
                 if(param instanceof NamedParameterExpr) {
                     hasNamedParameters = true;    
                     NamedParameterExpr nExpr = (NamedParameterExpr)param;
-                    if(nExpr.getValueExpr().hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {                        
-                        expandedArgsIndex=index+1;    
-                    }
+                    param = nExpr.getValueExpr();
                 }
-                else if(param.hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {
-                    expandedArgsIndex=index+1;
+                
+                // check if the parameters need an Array Expansion (*array)
+                if(param instanceof UnaryExpr) {
+                    UnaryExpr unaryExpr = (UnaryExpr)param;
+                    if(unaryExpr.getOp().getType() == TokenType.STAR) {
+                        expandedArgsIndex=index+1;
+                    }
                 }
                 
                 index++;
             }
             
             
-            for(Expr param : params) {
+            for(Expr param : arguments) {
                 param.visit(this);
                 
                 /* mark the end of the parameter,
@@ -1026,36 +668,35 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
                 if(hasNamedParameters) {
                     asm.paramend();
                 }
-            }
-            
-            nargs = params.length;
+            }            
         }
-                
-        if ( s.isMemberAccessChild() ) {
-            /* Member access */
-            
-            asm.rotl(nargs);
-            
-            String functionName = s.getFunctionName();
-            asm.getk(functionName);
-        }
-        else {
-            /* global/free function */
-            
-            String functionName = s.getFunctionName();
-            loadglobalmember(functionName);
-        }
+        
+        return expandedArgsIndex;
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.FuncInvocationExpr)
+     */
+    @Override
+    public void visit(FuncInvocationExpr s) throws EvalException {        
+        asm.line(s.getLineNumber());
+        
+        List<Expr> arguments = s.getArguments();
+        int nargs = arguments.size();
+        int expandedArgsIndex = checkArguments(arguments);
+        
+        s.getCallee().visit(this);
             
         boolean isTailcall = false;
-        if ( ! this.tailCallStack.isEmpty() ) {
+        if(!this.tailCallStack.isEmpty()) {
             Tailcall tc = this.tailCallStack.peek();
-            if ( tc.tailcallExpr == s) {
+            if(tc.tailcallExpr == s) {
                 asm.tailcall(nargs, expandedArgsIndex);
                 isTailcall = true;
             }
         }
         
-        if ( !isTailcall ) {
+        if(!isTailcall) {
             asm.invoke(nargs, expandedArgsIndex);
         }                
     }
@@ -1077,40 +718,45 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         
         asm.label(elseLabel);
         Stmt elseStmt = s.getElseStmt();
-        if ( elseStmt != null ) {
+        if(elseStmt != null) {
             elseStmt.visit(this);            
         }
         asm.label(endif);
     }
 
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.MemberAccessExpr)
-     */
     @Override
-    public void visit(MemberAccessExpr s) throws EvalException {
+    public void visit(NamespaceGetExpr s) throws EvalException {
         asm.line(s.getLineNumber());
-                
-        OwnableExpr expr = s.getAccess();
-        expr.appendFlag(ASTAttributes.IS_PROPERTY);
         
-        if (s.isParent()) {
-            String owner = s.getOwner();
-            
-            /* request for a namespace only */
-            if(s.hasFlag(ASTAttributes.NAMESPACE_PROPERTY)) {
-                asm.getnamespace(owner);
-            }
-            else {
-                loadglobalmember(owner);
-            }
-        }
-                
-        String identifier = s.getIdentifier();
-        if ( identifier != null && (expr instanceof MemberAccessExpr && !(expr instanceof NamespaceAccessExpr))) {
-            asm.getk(identifier);
-        }
-            
-        expr.visit(this);                            
+        asm.getnamespace(s.getNamespace().getVarName());
+        asm.getk(s.getIdentifier());
+    }
+    
+    @Override
+    public void visit(ElvisGetExpr s) throws EvalException {
+        asm.line(s.getLineNumber());
+        
+        s.getObject().visit(this);
+        asm.dup();
+        asm.loadnull();
+        asm.neq();
+        
+        String elseLabel = asm.ifeq();
+        asm.egetk(s.getIdentifier());
+        String end = asm.jmp();
+        
+        asm.label(elseLabel);
+        asm.loadnull();
+        
+        asm.label(end);
+    }
+    
+    @Override
+    public void visit(GetExpr s) throws EvalException {
+        asm.line(s.getLineNumber());
+        
+        s.getObject().visit(this);
+        asm.getk(s.getIdentifier());
     }
 
     /* (non-Javadoc)
@@ -1120,48 +766,10 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     public void visit(NewExpr s) throws EvalException {
         asm.line(s.getLineNumber());
         
-        int expandedArgsIndex = 0;
-        int nargs = 0;
-        
-        Expr[] params = s.getParameters();
-        if(params != null) {
-            boolean hasNamedParameters = false;
-            /* check to see if there are any NamedParameters,
-             * if so, we need to add some additional instructions
-             * that effect performance
-             */
-            int index = 0;
-            for(Expr param : params) {
-                if(param instanceof NamedParameterExpr) {
-                    hasNamedParameters = true;  
-                    NamedParameterExpr nExpr = (NamedParameterExpr)param;
-                    if(nExpr.getValueExpr().hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {                       
-                        expandedArgsIndex=index+1;    
-                    }
-                }
-                else if(param.hasFlag(ASTAttributes.IS_ARG_ARRAY_EXPAND)) {
-                    expandedArgsIndex=index+1;
-                }
+        List<Expr> arguments = s.getArguments();
+        int nargs = arguments.size();
+        int expandedArgsIndex = checkArguments(arguments);
                 
-                index++;
-            }
-            
-            
-            for(Expr param : params) {
-                param.visit(this);
-                
-                /* mark the end of the parameter,
-                 * so that we can properly index
-                 * the named parameters
-                 */
-                if(hasNamedParameters) {
-                    asm.paramend();
-                }
-            }
-            
-            nargs = params.length;
-        }
-        
         String className = s.getClassName();        
         asm.addAndloadconst(className);
         
@@ -1231,8 +839,9 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     public void visit(SwitchStmt s) throws EvalException {
         asm.line(s.getLineNumber());
         
-        Expr condExpr = s.getCondition();
+        Expr condExpr = s.getCondition();        
         condExpr.visit(this);
+        
         
         String endCase = asm.nextLabelName();
         String nextWhenLabel = null;
@@ -1240,7 +849,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         List<Pair<Expr, Stmt>> whenStmts = s.getWhenStmts();
         boolean isSingle = whenStmts.size() < 2;
         for(Pair<Expr, Stmt> whenExpr : whenStmts) {
-            if ( !isSingle ) {
+            if(!isSingle) {
                 asm.dup();
             }
             
@@ -1294,8 +903,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         List<Pair<Expr, Expr>> whenExprs = s.getWhenExprs();
         boolean isSingle = whenExprs.size() < 2;        
         for(Pair<Expr, Expr> whenExpr : whenExprs) {
-            if ( !isSingle ) 
-            {
+            if(!isSingle) {
                 asm.dup();
             }                    
             
@@ -1443,22 +1051,17 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     @Override
     public void visit(UnaryExpr s) throws EvalException {
         asm.line(s.getLineNumber());
-        
+                
         s.getExpr().visit(this);
-        UnaryOp op = s.getOp();
-        switch(op) {
-            case BIT_NOT: {
-                asm.bnot();
-                break;
-            }
-            case NEGATE: {
-                asm.neg();
-                break;
-            }
-            case NOT: {
-                asm.not();
-                break;
-            }            
+        
+        TokenType operator = s.getOp().getType();
+        switch(operator) {
+            case BITWISE_NOT: asm.bnot(); break;
+            case MINUS:       asm.neg();  break;
+            case NOT:         asm.not();  break;
+            case STAR:                    break;
+            default:
+                throw new EvalException("Unknown UnaryOperator: " + operator);
         }
     }
 
@@ -1512,18 +1115,6 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     }
     
     /**
-     * Attempts to load from either local or scope, if not found it will
-     * do a Scope lookup
-     * @param ref
-     * @throws EvalException
-     */
-    private void loadglobalmember(String ref) throws EvalException {
-        if ( ! asm.load(ref) ) {
-            asm.getglobal(ref);
-        }
-    }
-    
-    /**
      * Determines if the supplied "ref" is a constant, local, global or an
      * "outstanding" global.
      * 
@@ -1546,7 +1137,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
      * @throws EvalException
      */
     private void loadmember(ASTNode s, String ref, boolean checkConstantFirst, boolean loadconst) throws EvalException {                
-        if ( checkConstantFirst && s.hasFlag(ASTAttributes.IS_PROPERTY) ) {                    
+        if ( checkConstantFirst && s.hasFlag(ASTNode.MEMBER_PROPERTY) ) {                    
             asm.addAndloadconst(ref);
         }
         else if ( ! asm.load(ref) ) {        
@@ -1557,7 +1148,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
             if ( index < 0) {
                 
                 /* inline string definition */
-                if ( s.hasFlag(ASTAttributes.IS_PROPERTY) || loadconst ) {                    
+                if ( s.hasFlag(ASTNode.MEMBER_PROPERTY) || loadconst ) {                    
                     index = constants.store(member);
                     asm.loadconst(index);
                 }
@@ -1585,14 +1176,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     @Override
     public void visit(VarExpr s) throws EvalException {            
         asm.line(s.getLineNumber());
-        if( s.isMemberAccessChild() ) {
-            asm.getk(s.getVarName());
-        }
-        else {
-            String ref = s.getVarName();
-            //loadglobalmember(ref);
-            loadmember(s, ref, true);
-        }
+        loadmember(s, s.getVarName(), true);
     }
 
     /* (non-Javadoc)

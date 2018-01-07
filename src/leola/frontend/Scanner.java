@@ -1,32 +1,37 @@
 package leola.frontend;
 
-import java.io.IOException;
+import static leola.frontend.Source.EOF;
+import static leola.frontend.Source.EOL;
 
-import leola.frontend.listener.EventDispatcher;
+import java.util.ArrayList;
+import java.util.List;
+
+import leola.frontend.tokens.EofToken;
+import leola.frontend.tokens.ErrorToken;
+import leola.frontend.tokens.NumberToken;
+import leola.frontend.tokens.SpecialSymbolToken;
+import leola.frontend.tokens.StringToken;
+import leola.frontend.tokens.Token;
+import leola.frontend.tokens.WordToken;
+import leola.frontend.tokens.TokenType;
 
 /**
- * <h1>Scanner</h1>
+ * A {@link Scanner} for the Leola programming language.  This will break up
+ * the leola source code into {@link Token} that will be used by the {@link Parser}
+ * to make sense of.
+ * 
+ * @author Tony
  *
- * <p>
- * A language-independent framework class. This abstract scanner class will be
- * implemented by language-specific subclasses.
- * </p>
- *
- * <p>
- * Copyright (c) 2009 by Ronald Mak
- * </p>
- * <p>
- * For instructional purposes only. No warranties.
- * </p>
  */
-public abstract class Scanner {
+public class Scanner {
     
-    protected Source source; // source
-    private Token currentToken; // current token
-    private Token prevToken;
+    public static final String START_COMMENT = "/*";
+    public static final String END_COMMENT = "*/";
+    public static final String SINGLE_COMMENT = "//";
 
-    private EventDispatcher eventDispatcher;
-
+    private List<Token> tokens;
+    private Source source;
+    
     /**
      * Constructor
      * 
@@ -35,121 +40,134 @@ public abstract class Scanner {
      */
     public Scanner(Source source) {
         this.source = source;
-        this.eventDispatcher = source.getEventDispatcher();
+        this.tokens = new ArrayList<>();
+        while(!source.atEof()) {
+            this.tokens.add(this.extractToken());
+        }
     }
-
+    
     /**
-     * @return the source
-     */
-    public Source getSource() {
-        return source;
-    }
-
-    /**
-     * @return the eventDispatcher
-     */
-    public EventDispatcher getEventDispatcher() {
-        return eventDispatcher;
-    }
-
-    /**
-     * @return the prevToken
-     */
-    public Token previousToken() {
-        return prevToken;
-    }
-
-    /**
-     * @return the current token.
-     */
-    public Token currentToken() {
-        return currentToken;
-    }
-
-    /**
-     * Return next token from the source.
+     * Get a line of raw source code
      * 
-     * @return the next token.
-     * @throws Exception
-     *             if an error occurred.
+     * @param lineNumber
+     * @return the line of raw source code
      */
-    public Token nextToken() throws IOException {
-        prevToken = currentToken;
-        currentToken = extractToken();
-        return currentToken;
+    public String getSourceLine(int lineNumber) {
+        return this.source.getLine(lineNumber);
     }
+
+    /**
+     * The scanned {@link Token}s
+     * 
+     * @return The scanned {@link Token}s
+     */
+    public List<Token> getTokens() {
+        return tokens;
+    }
+    
 
     /**
      * Do the actual work of extracting and returning the next token from the
      * source. Implemented by scanner subclasses.
      * 
      * @return the next token.
-     * @throws Exception
-     *             if an error occurred.
-     */
-    protected abstract Token extractToken() throws IOException;
+     */   
+    private Token extractToken() {
+        skipWhiteSpace();
+        Token token;
+        char currentChar = this.source.currentChar();
 
-    /**
-     * Call the source's currentChar() method.
-     * 
-     * @return the current character from the source.
-     * @throws Exception
-     *             if an error occurred.
-     */
-    public char currentChar() throws IOException {
-        return source.currentChar();
+        // Construct the next token.  The current character determines the
+        // token type.
+        if (currentChar == EOF) {
+            token = new EofToken(source);
+        }
+        else if ( WordToken.isValidStartIdentifierCharacter(currentChar) ) {
+            token = new WordToken(source);
+        }
+        else if (Character.isDigit(currentChar)) {
+            token = new NumberToken(source);
+        }
+        else if (currentChar == StringToken.STRING_CHAR) {
+            token = new StringToken(source);
+        }
+        else if (TokenType.SPECIAL_SYMBOLS
+                 .containsKey(Character.toString(currentChar))) {
+            token = new SpecialSymbolToken(source);
+        }
+        else {
+            token = new ErrorToken(source, ErrorCode.INVALID_CHARACTER,
+                                         Character.toString(currentChar));
+            this.source.nextChar();  // consume character
+        }
+
+        return token;
     }
 
     /**
-     * Call the source's nextChar() method.
-     * 
-     * @return the next character from the source.
-     * @throws Exception
-     *             if an error occurred.
+     * Skip whitespace characters by consuming them.  A comment is whitespace.
      */
-    public char nextChar() throws IOException {
-        return source.nextChar();
+    private void skipWhiteSpace() {
+        char currentChar = this.source.currentChar();
+
+        while (Character.isWhitespace(currentChar)
+                || checkSequence(START_COMMENT)
+                || checkSequence(SINGLE_COMMENT) ) {
+
+            // Start of a comment?
+            if ( checkSequence(START_COMMENT) ) {
+                do {
+                    currentChar = this.source.nextChar();  // consume comment characters
+                }
+                while ((!checkSequence(END_COMMENT)) && (currentChar != EOF));
+
+                // Found closing '*/'?
+                if ( checkSequence(END_COMMENT) ) {
+                    for(int i = 0; i < END_COMMENT.length(); i++) {
+                        currentChar = this.source.nextChar();  // consume the comment
+                    }
+                }
+            }
+            else if ( checkSequence(SINGLE_COMMENT) ) {
+                do {
+                    currentChar = this.source.nextChar();  // consume comment characters
+                }
+                while (currentChar != EOL);
+            }
+            // Not a comment.
+            else {
+                currentChar = this.source.nextChar();  // consume whitespace character
+            }
+        }
     }
 
     /**
-     * Peeks at the next char
-     * 
-     * @return the peeked character
-     * @throws Exception
+     * Check the sequence matches the input (2 chars).
+     *
+     * @param seq
+     * @return
      */
-    public char peekChar() throws IOException {
-        return this.source.peekChar();
-    }
+    private boolean checkSequence(String seq) {
+        boolean result = true;
+        char currentChar = this.source.currentChar();
 
-    /**
-     * Call the source's atEol() method.
-     * 
-     * @return true if at the end of the source line, else return false.
-     * @throws Exception
-     *             if an error occurred.
-     */
-    public boolean atEol() throws IOException {
-        return source.atEol();
-    }
+        for(int i = 0; i < 2; i++) {
+            if (currentChar == EOF ) {
+                result = false;
+                break;
+            }
 
-    /**
-     * Call the source's atEof() method.
-     * 
-     * @return true if at the end of the source file, else return false.
-     * @throws Exception
-     *             if an error occurred.
-     */
-    public boolean atEof() throws IOException {
-        return source.atEof();
-    }
+            if (currentChar != seq.charAt(i)) {
+                result = false;
+                break;
+            }
 
-    /**
-     * Call the source's skipToNextLine() method.
-     * 
-     * @throws Exception
-     *             if an error occurred.
-     */
-    public void skipToNextLine() throws IOException {
-        source.skipToNextLine();
+            currentChar = this.source.peekChar();
+        }
+        /*if ( result ) {
+            nextChar(); // eat the char
+        }*/
+
+        return result;
     }
 }

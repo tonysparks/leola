@@ -5,8 +5,7 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
-import leola.frontend.parsers.ParameterList;
+import leola.vm.EvalException;
 
 /**
  * @author Tony

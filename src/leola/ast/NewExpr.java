@@ -5,7 +5,9 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
+import java.util.List;
+
+import leola.vm.EvalException;
 
 /**
  * Instantiates a new Object
@@ -23,34 +25,23 @@ public class NewExpr extends Expr {
     /**
      * The parameters for the constructor
      */
-    private Expr[] parameters;
+    private List<Expr> arguments;
 
 
 
     /**
      * @param className
-     * @param parameters
+     * @param arguments
      */
-    public NewExpr(String className, Expr[] parameters) {
+    public NewExpr(String className, List<Expr> arguments) {
         this.className = className;
-        this.parameters = parameters;
-        if(this.parameters != null) {
-            for(int i = 0; i < this.parameters.length; i++) {
-                becomeParentOf(this.parameters[i]);
-            }
-        }
+        this.arguments = arguments;        
     }
 
-
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-     */
     @Override
     public void visit(ASTNodeVisitor v) throws EvalException {
         v.visit(this);
     }
-
 
 
     /**
@@ -63,10 +54,10 @@ public class NewExpr extends Expr {
 
 
     /**
-     * @return the parameters
+     * @return the arguments
      */
-    public Expr[] getParameters() {
-        return parameters;
+    public List<Expr> getArguments() {
+        return arguments;
     }
 
 }

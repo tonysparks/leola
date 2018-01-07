@@ -130,8 +130,7 @@ public class DebugLeolaLibrary implements LeolaLibrary {
      */
     public final void assertFail(String message) throws Exception {
         if (assertEnabled.get()) {
-            System.err.println(message);
-            System.exit(0);
+            throw new AssertionError(message);
         }
     }
 
@@ -146,7 +145,7 @@ public class DebugLeolaLibrary implements LeolaLibrary {
      */
     public final void assertTrue(LeoObject obj, String message) throws Exception {
         if (assertEnabled.get()) {
-            if ( LeoObject.isTrue(obj)) {
+            if (!LeoObject.isTrue(obj)) {
                 assertFail("ASSERT FAIL: The object is not equal to true. " + message);
             }
         }
@@ -165,11 +164,11 @@ public class DebugLeolaLibrary implements LeolaLibrary {
         if (assertEnabled.get()) {
             if (l != null ) {
                 if ( ! l.$eq(r) ) {
-                    assertFail("ASSERT FAIL: Left object is not equal to the Right object. " + message);
+                    assertFail("ASSERT FAIL: Left object (" + l + ") is not equal to the Right object (" + r + ") " + message);
                 }
             }
             else if ( r != null ) {
-                assertFail("ASSERT FAIL: Left object is not equal to the Right object. " + message);
+                assertFail("ASSERT FAIL: Left object (null) is not equal to the Right object " + r + ") " + message);
             }
         }
     }

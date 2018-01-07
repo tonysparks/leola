@@ -5,72 +5,55 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
+import java.util.List;
+
+import leola.vm.EvalException;
 
 /**
- * A Function invokation
+ * A Function invocation
  *
  * @author Tony
  *
  */
-public class FuncInvocationExpr extends OwnableExpr {
+public class FuncInvocationExpr extends Expr {
+
+    private Expr callee;
+    private List<Expr> arguments;
+
+
+    
 
     /**
-     * Function name
+     * @param callee
+     * @param arguments
      */
-    private String functionName;
-
-    /**
-     * Parameters
-     */
-    private Expr[] parameters;
-
-
-    /**
-     * @param functionName
-     * @param parameters
-     */
-    public FuncInvocationExpr(String functionName, Expr ... parameters) {
-        this(null, functionName, parameters);
+    public FuncInvocationExpr(Expr callee, List<Expr> arguments) {
+        super();
+        this.callee = callee;
+        this.arguments = arguments;
     }
 
-    /**
-     * @param owner
-     * @param functionName
-     * @param parameters
-     */
-    public FuncInvocationExpr(String owner, String functionName, Expr ... parameters) {
-        super(owner);
-        this.functionName = functionName;
-        this.parameters = parameters;
-        if(this.parameters != null) {
-            for(int i = 0; i < this.parameters.length; i++) {
-                becomeParentOf(this.parameters[i]);
-            }
-        }
-    }
 
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-     */
     @Override
     public void visit(ASTNodeVisitor v) throws EvalException {
         v.visit(this);
     }
 
-    /**
-     * @return the functionName
-     */
-    public String getFunctionName() {
-        return functionName;
+    public Expr getCallee() {
+        return callee;
     }
-
-    /**
-     * @return the parameters
-     */
-    public Expr[] getParameters() {
-        return parameters;
+    
+    public List<Expr> getArguments() {
+        return arguments;
     }
-
+    
+    public String getFunctionName()  {
+        if(this.callee instanceof VarExpr) {
+            return ((VarExpr)this.callee).getVarName();
+        }
+        
+        return "";
+    }
+    
 }
 

@@ -5,7 +5,7 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
+import leola.vm.EvalException;
 
 /**
  * IS Expression
@@ -13,41 +13,31 @@ import leola.frontend.EvalException;
  * @author Tony
  *
  */
-public class IsExpr extends OwnableExpr {
+public class IsExpr extends Expr {
 
     /**
      * Expression
      */
-    private Expr lhsExpr;
+    private Expr object;
 
     private String className;
 
     /**
-     * @param owner
-     * @param lhsExpr
+     * @param object
      * @param className
      */
-    public IsExpr(String owner, Expr lhsExpr, String className) {
-        super(owner);
-        this.lhsExpr = becomeParentOf(lhsExpr);
+    public IsExpr(Expr object, String className) {        
+        this.object = object;
         this.className = className;
     }
 
-
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-     */
     @Override
     public void visit(ASTNodeVisitor v) throws EvalException {
         v.visit(this);
     }
 
-    /**
-     * @return the lhsExpr
-     */
-    public Expr getLhsExpr() {
-        return lhsExpr;
+    public Expr getObject() {
+        return object;
     }
 
     /**

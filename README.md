@@ -25,6 +25,8 @@ Leola currently supports these features:
 * higher order functions
 * tailcail optimization
 * named parameters
+* decorators
+* elvis operator
 
 Sample Code
 ====
@@ -82,9 +84,10 @@ var bestQB = def(from, to) {
 }
 
 // use named parameters by nameOfParameter->Value
-println("The best QB of all time: " + bestQB(from->1970, to->2015))
+println("The best QB of all time: " + bestQB(from=>1970, to=>2015))
 
 ````
+
 
 How about some calculus?
 
@@ -113,7 +116,9 @@ println( dSin(1.2) ) // prints 0.36235770828341174
 
 ````
 
+
 Statements and Expressions
+=====
 
 ````javascript
 
@@ -166,7 +171,32 @@ var sum = def(elements ...) {
 var total = sum(1,53,2)
 println(total) // 56
 
+/* Use the 'explode' operator (*) to explode out an array to fill in function
+   arguments */
+var sub = def(a, b) {
+    return a - b
+}
+// The * will make a=3, b=1
+println(sub(*[3, 1]) )   // prints 2
+
+
+/* Elvis operator, allows for making deep object chains without worrying 
+   about always checking for null */
+   
+var json = {
+   header -> {
+      data -> {
+         text -> "Hello"
+     }
+   }
+}   
+
+// if any of the object to the left of the ? is null, it will
+// stop accessing the elements and return null
+println(json?header?data?text) // prints Hello
+println(json?header?does?not?exist) // prints null
 ````
+
 
 Exception Handling
 =====
@@ -210,6 +240,53 @@ while true {
 
 ````
 
+Decorators
+=====
+
+Decorators in Leola are very similar to decorators in Python (I know I'm original).  Basically, what they are is a function that wraps another function.  Why is this useful? It allows for some interesting constructs such as:
+
+````javascript
+// Type check the arguments past to the function
+// are of the correct type
+var TypeCheck = def(func, args...) {
+    // returns the supplied function wrapped in a new one
+    // that when invoked, will check the arguments types and
+    // validate them    
+    return def(nargs...) {
+        var i = 0
+        
+        // check each argument, if they don't match
+        // the correct type, error out
+        foreach(nargs, def(arg) {
+            if i < args.size() {
+            
+                // let the user know what they did wrong
+                if reflect:type(arg).toLower() != args[i].toLower() {
+                    throw arg + "(" + reflect:type(arg) + ") is not of type '" + args[i] + "'"
+                }
+            }
+        
+            i += 1
+        })
+        
+        // if all the types are OK, go
+        // ahead and execute the function
+        return func(*nargs)
+    }
+}
+
+
+// Add the decorator by using the '@' sign in front of the 
+// method definition
+var sub = @TypeCheck("integer", "integer") def(a, b) {
+    return a - b
+}
+
+println(sub(4,5)) // runs fine, because the arguments are Integers, prints -1
+println(sub("x", 5)) // throws an error because the arguments are not Integers
+
+````
+
 Interfacing with Java
 =====
 
@@ -233,17 +310,13 @@ import leola.vm.types.LeoArray;
 */
 public class MyFirstLeolaLibrary implements LeolaLibrary {
 
-   private Leola runtime;
-
    @Override
    @LeolaIgnore // does not import this method in Leola
-   public void init(Leola runtime, LeoNamespace namespace) throws Exception {
-      this.runtime = runtime;
-      
+   public void init(Leola runtime, LeoNamespace namespace) throws Exception {      
       // places all of this classes
       // public methods into the supplied namespace (with the exception of
       // the @LeolaIgnore methods)
-      this.runtime.putIntoNamespace( this, namespace); 
+      runtime.putIntoNamespace( this, namespace); 
    }
    
    public int add(int left, int right) {
@@ -254,7 +327,7 @@ public class MyFirstLeolaLibrary implements LeolaLibrary {
       int size = input.size();
       for(int i = 0; i < size; i++) {
          // execute the supplied functor object
-         LeoObject newValue = this.runtime.execute(functor, input.get(i));
+         LeoObject newValue = functor.call(input.get(i));
          
          // set the value back in the array
          input.set(i, newValue);
@@ -320,7 +393,7 @@ You can download the latest version of Leola by using these Maven coordinates:
 <dependency>
   <groupId>leola</groupId>
   <artifactId>leola</artifactId>
-  <version>0.9.6</version>
+  <version>0.10.0</version>
 </dependency>
 ```
 

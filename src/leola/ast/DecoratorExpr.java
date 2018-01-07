@@ -5,7 +5,9 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
+import java.util.List;
+
+import leola.vm.EvalException;
 
 /**
  * Decorator expression
@@ -15,28 +17,23 @@ import leola.frontend.EvalException;
  */
 public class DecoratorExpr extends Expr {
 
-    private String decoratorName;
-    private Expr[] parameters;
-    private Expr followingExpr;
+    private VarExpr decoratorName;
+    private List<Expr> arguments;
+    private Expr decoratedExpr;
 
     
     
     /**
      * @param decoratorName
-     * @param parameters
-     * @param followingExpr
+     * @param arguments
+     * @param decoratedExpr
      */
-    public DecoratorExpr(String decoratorName, Expr[] parameters, Expr followingExpr) {
+    public DecoratorExpr(VarExpr decoratorName, List<Expr> arguments, Expr decoratedExpr) {
         this.decoratorName = decoratorName;
-        this.parameters = parameters;
-        this.followingExpr = becomeParentOf(followingExpr);
+        this.arguments = arguments;
+        this.decoratedExpr = becomeParentOf(decoratedExpr);
     }
 
-
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-     */
     @Override
     public void visit(ASTNodeVisitor v) throws EvalException {
         v.visit(this);
@@ -45,22 +42,17 @@ public class DecoratorExpr extends Expr {
     /**
      * @return the decoratorName
      */
-    public String getDecoratorName() {
+    public VarExpr getDecoratorName() {
         return decoratorName;
     }
-    
-    /**
-     * @return the followingExpr
-     */
-    public Expr getFollowingExpr() {
-        return followingExpr;
+
+    public Expr getDecoratedExpr() {
+        return decoratedExpr;
     }
+
     
-    /**
-     * @return the parameters
-     */
-    public Expr[] getParameters() {
-        return parameters;
+    public List<Expr> getArguments() {
+        return arguments;
     }
 
 }

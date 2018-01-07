@@ -5,59 +5,25 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
-import leola.frontend.parsers.ParameterList;
+import leola.vm.EvalException;
 
 /**
  * @author Tony
  *
  */
-public class GenDefExpr extends Expr {
-
-    /**
-     * Body
-     */
-    private Stmt body;
-
-    /**
-     * Parameters
-     */
-    private ParameterList parameters;
-
-
+public class GenDefExpr extends FuncDefExpr {
 
     /**
      * @param body
      * @param parameters
      */
     public GenDefExpr(Stmt body, ParameterList parameters) {
-        this.body = becomeParentOf(body);
-        this.parameters = parameters;        
+        super(body, parameters);    
     }
 
-
-
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNode#visit(leola.ast.ASTNodeVisitor)
-     */
     @Override
     public void visit(ASTNodeVisitor v) throws EvalException {
         v.visit(this);
     }
-
-    /**
-     * @return the body
-     */
-    public Stmt getBody() {
-        return body;
-    }
-
-    /**
-     * @return the parameters
-     */
-    public ParameterList getParameters() {
-        return parameters;
-    }
-
 }
 

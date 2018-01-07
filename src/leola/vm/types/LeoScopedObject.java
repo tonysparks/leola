@@ -51,6 +51,11 @@ public abstract class LeoScopedObject extends LeoOuterObject {
         return true;
     }
     
+    @Override
+    public boolean isAccessible() {     
+        return true;
+    }
+    
     /* (non-Javadoc)
      * @see leola.vm.types.LeoObject#eq(leola.vm.types.LeoObject)
      */

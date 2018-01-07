@@ -173,6 +173,11 @@ public class LeoClass extends LeoScopedObject {
     public boolean isClass() {
         return true;
     }
+    
+    @Override
+    public boolean isAccessible() {     
+        return true;
+    }
 
     private LeoObject override(LeoString name) {                    
         LeoObject function = xgetProperty(name);

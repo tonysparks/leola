@@ -1,0 +1,32 @@
+debug:enableAssert(true)
+
+var x = 5 - 4
+debug:assertEq(x, 1)
+
+
+x = 5 - 4 * 2
+debug:assertEq(x, -3)
+
+
+x = 5 - 4 / 2
+debug:assertEq(x, 3)
+
+
+x = 5 - 4 % 2
+debug:assertEq(x, 5)
+
+x = 5 - 4 / 2 * (3-1)
+debug:assertEq(x, 1)
+
+x = -5 + 4
+debug:assertEq(x, -1)
+
+x = 5 * (2+2) / 2
+debug:assertEq(x, 10)
+
+debug:assertTrue( x == 10 )
+debug:assertTrue( x != -10 )
+debug:assertTrue( x > 1 )
+debug:assertTrue( x >= 10 )
+debug:assertTrue( x < 100 )
+debug:assertTrue( x <= 10 )

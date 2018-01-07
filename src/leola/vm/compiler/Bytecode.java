@@ -343,8 +343,7 @@ public class Bytecode {
                 case Opcodes.POP:
                 case Opcodes.DUP:
                 case Opcodes.OPPOP:
-                case Opcodes.SWAP:
-                
+                                
                 case Opcodes.LOAD_NULL:
                 case Opcodes.LOAD_TRUE:
                 case Opcodes.LOAD_FALSE:
@@ -402,6 +401,7 @@ public class Bytecode {
                     }
                     break;
                 }
+                case Opcodes.EGETK:
                 case Opcodes.GETK:
                 case Opcodes.SETK:
                 case Opcodes.LOAD_CONST:

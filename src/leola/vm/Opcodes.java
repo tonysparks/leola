@@ -180,24 +180,7 @@ public class Opcodes {
             case OPPOP: {
                 op = "OPPOP";                   
                 break;
-            }                           
-            case ROTL: {
-                op = "ROTL";
-                break;
-            }
-            case ROTR: {   
-                op = "ROTR";
-                break;
-            }
-            case SWAP: {
-                op = "SWAP";
-                break;
-            }
-            case SWAPN: {
-                op = "SWAPN";
-                break;
             }        
-        
         
             /* Store operations */
             case LOAD_CONST: {
@@ -323,6 +306,10 @@ public class Opcodes {
             }
             case SET: {
                 op = "SET";
+                break;
+            }
+            case EGETK: {
+                op = "EGETK";
                 break;
             }
             case GETK: {
@@ -489,108 +476,104 @@ public class Opcodes {
         POP = 1,                      /*      */
         DUP = 2,                      /*      */
         OPPOP = 3,                    /*      */        
-        ROTL = 4,                     /* ARGx */
-        ROTR = 5,                     /* ARGx */
-        SWAP = 6,                     /*      */
-        SWAPN = 7,                    /* ARGx */
-        
+                
         /* loading of values */
-        LOAD_CONST = 8,               /* ARGx */
-        LOAD_LOCAL = 9,               /* ARGx */
-        LOAD_OUTER = 10,              /* ARGx */
+        LOAD_CONST = 4,               /* ARGx */
+        LOAD_LOCAL = 5,               /* ARGx */
+        LOAD_OUTER = 6,               /* ARGx */
         
-        LOAD_NULL = 11,               /*      */
-        LOAD_TRUE = 12,               /*      */
-        LOAD_FALSE = 13,              /*      */
+        LOAD_NULL = 7,                /*      */
+        LOAD_TRUE = 8,                /*      */
+        LOAD_FALSE = 9,               /*      */
         
         /* named parameters */
-        LOAD_NAME = 14,               /* ARGx */
-        PARAM_END = 15,               /*      */
+        LOAD_NAME = 10,               /* ARGx */
+        PARAM_END = 11,               /*      */
                         
         /* storage of values */
-        STORE_LOCAL = 16,             /* ARGx */
-        STORE_OUTER = 17,              /* ARGx */
+        STORE_LOCAL = 12,             /* ARGx */
+        STORE_OUTER = 13,             /* ARGx */
         
         /* pseudo bytecodes */
-        xLOAD_OUTER = 18,             /* ARGx */
-        xLOAD_LOCAL = 19,              /* ARGx */
+        xLOAD_OUTER = 14,             /* ARGx */
+        xLOAD_LOCAL = 15,             /* ARGx */
                 
         /* jump instructions */
-        JMP = 20,                      /* ARGsx */
-        IFEQ = 21,                    /* ARGsx */
+        JMP = 16,                     /* ARGsx */
+        IFEQ = 17,                    /* ARGsx */
         
-        IS_A = 22,                    /*      */
+        IS_A = 18,                    /*      */
         
         /* value creation */
-        NEW_ARRAY = 23,               /* ARGx */
-        NEW_MAP = 24,                 /* ARGx */
-        NEW_OBJ = 25,                 /* ARGx */        
+        NEW_ARRAY = 19,               /* ARGx */
+        NEW_MAP = 20,                 /* ARGx */
+        NEW_OBJ = 21,                 /* ARGx */        
         
         /* type declarations */
-        FUNC_DEF = 26,                /* ARGx */
-        GEN_DEF = 27,                 /* ARGx */
-        CLASS_DEF = 28,               /* ARGx */
-        NAMESPACE_DEF = 29,           /* ARGx */
+        FUNC_DEF = 22,                /* ARGx */
+        GEN_DEF = 23,                 /* ARGx */
+        CLASS_DEF = 24,               /* ARGx */
+        NAMESPACE_DEF = 25,           /* ARGx */
                 
         /* statement branching */
-        YIELD = 30,                   /*      */
-        RET = 31,                     /*      */
+        YIELD = 26,                   /*      */
+        RET = 27,                     /*      */
                 
         /* method invocation */
-        INVOKE = 32,                  /* ARG1, ARG2 */          
-        TAIL_CALL = 33,                  /* ARG1, ARG2 */
+        INVOKE = 28,                  /* ARG1, ARG2 */          
+        TAIL_CALL = 29,               /* ARG1, ARG2 */
         
         /* member access */
-        GET = 34,                     /*      */
-        SET = 35,                     /*      */
-        GETK = 79,                    /* ARGx */
-        SETK = 80,                    /* ARGx */
+        GET = 30,                     /*      */
+        SET = 31,                     /*      */
+        EGETK = 32,                   /* ARGx */
+        GETK = 33,                    /* ARGx */
+        SETK = 34,                    /* ARGx */
         
-        GET_GLOBAL = 36,              /* ARGx */
-        SET_GLOBAL = 37,              /* ARGx */
+        GET_GLOBAL = 35,              /* ARGx */
+        SET_GLOBAL = 36,              /* ARGx */
         
-        GET_NAMESPACE = 38,           /* ARGx */
+        GET_NAMESPACE = 37,           /* ARGx */
+
+        IDX = 38,                     /*      */
+        SIDX = 39,                    /*      */
         
         /* Exception handling */        
-        INIT_CATCH_BLOCK = 39,        /* ARGsx*/    
-        INIT_FINALLY_BLOCK = 40,      /* ARGsx*/
-        END_BLOCK = 41,               /* ARG1 (0=pop index;1=clear error;2=exit if error)*/
-        THROW = 42,                   /*      */
+        INIT_CATCH_BLOCK = 40,        /* ARGsx*/    
+        INIT_FINALLY_BLOCK = 41,      /* ARGsx*/
+        END_BLOCK = 42,               /* ARG1 (0=pop index;1=clear error;2=exit if error)*/
+        THROW = 43,                   /*      */
                         
         /* arithmetic operators */
-        ADD = 43,                     /*      */
-        SUB = 44,                     /*      */
-        MUL = 45,                     /*      */
-        DIV = 46,                     /*      */
-        MOD = 47,                     /*      */
-        NEG = 48,                     /*      */
+        ADD = 44,                     /*      */
+        SUB = 45,                     /*      */
+        MUL = 46,                     /*      */
+        DIV = 47,                     /*      */
+        MOD = 48,                     /*      */
+        NEG = 49,                     /*      */
     
-        BSL = 49,                     /*      */
-        BSR = 50,                     /*      */
-        BNOT = 51,                    /*      */
-        XOR = 52,                     /*      */
-        LOR = 53,                     /*      */
-        LAND = 54,                    /*      */
+        BSL = 50,                     /*      */
+        BSR = 51,                     /*      */
+        BNOT = 52,                    /*      */
+        XOR = 53,                     /*      */
+        LOR = 54,                     /*      */
+        LAND = 55,                    /*      */
         
-        OR = 55,                      /*      */
-        AND = 56,                     /*      */
-        NOT = 57,                     /*      */
+        OR = 56,                      /*      */
+        AND = 57,                     /*      */
+        NOT = 58,                     /*      */
         
-        REQ = 58,                     /*      */
-        RNEQ = 59,                    /*      */
-        EQ = 60,                      /*      */
-        NEQ = 61,                     /*      */
-        GT = 62,                      /*      */
-        GTE = 63,                     /*      */
-        LT = 64,                      /*      */
-        LTE = 65,                     /*      */
-                
-        IDX = 66,                     /*      */
-        SIDX = 67,                    /*      */
-                
+        REQ = 59,                     /*      */
+        RNEQ = 60,                    /*      */
+        EQ = 61,                      /*      */
+        NEQ = 62,                     /*      */
+        GT = 63,                      /*      */
+        GTE = 64,                     /*      */
+        LT = 65,                      /*      */
+        LTE = 66,                     /*      */
         
         /* debug */
-        LINE = 68                     /* ARGx */
+        LINE = 67                     /* ARGx */
         ;
     
     
@@ -600,11 +583,7 @@ public class Opcodes {
         /* stack operators */
         opcodes.put("POP", POP);        
         opcodes.put("DUP", DUP);
-        opcodes.put("OPPOP", OPPOP);                
-        opcodes.put("ROTL", ROTL);
-        opcodes.put("ROTR", ROTR);
-        opcodes.put("SWAP", SWAP);
-        opcodes.put("SWAPN", SWAPN);
+        opcodes.put("OPPOP", OPPOP);
                 
         opcodes.put("LOAD_CONST", LOAD_CONST);
         opcodes.put("LOAD_LOCAL", LOAD_LOCAL);
@@ -647,6 +626,7 @@ public class Opcodes {
         /* object access */
         opcodes.put("GET", GET);
         opcodes.put("SET", SET);
+        opcodes.put("EGETK", EGETK);
         opcodes.put("GETK", GETK);
         opcodes.put("SETK", SETK);
         opcodes.put("GET_GLOBAL", GET_GLOBAL);

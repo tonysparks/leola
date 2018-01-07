@@ -3,22 +3,14 @@ package leola.frontend;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-
-import leola.frontend.listener.EventDispatcher;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * <h1>Source</h1>
+ * Handles reading a source code file
+ * 
+ * @author Tony
  *
- * <p>
- * The framework class that represents the source program.
- * </p>
- *
- * <p>
- * Copyright (c) 2009 by Ronald Mak
- * </p>
- * <p>
- * For instructional purposes only. No warranties.
- * </p>
  */
 public class Source implements AutoCloseable {
     
@@ -29,29 +21,30 @@ public class Source implements AutoCloseable {
     private String line; // source line
     private int lineNum; // current source line number
     private int currentPos; // current source line position
-
-    private EventDispatcher eventDispatcher;
+    
+    private List<String> lines;
 
     /**
-     * Constructor.
      * 
      * @param reader
      *            the reader for the source program
      * @throws IOException
      *             if an I/O error occurred
      */
-    public Source(EventDispatcher eventDispatcher, Reader reader) {
+    public Source(Reader reader) {
         this.lineNum = 0;
         this.currentPos = -2; // set to -2 to read the first source line
-        this.reader = (reader instanceof BufferedReader) ? (BufferedReader)reader : new BufferedReader(reader);
-        this.eventDispatcher = eventDispatcher;
+        this.lines = new ArrayList<>();
+        this.reader = (reader instanceof BufferedReader) ? 
+                (BufferedReader)reader : new BufferedReader(reader);
     }
 
-    /**
-     * @return the eventDispatcher
-     */
-    public EventDispatcher getEventDispatcher() {
-        return eventDispatcher;
+    public String getLine(int lineNumber) {
+        if(lineNumber < 1 || lineNumber > this.lines.size()) {
+            throw new ParseException("Invalid line number: " + lineNumber);
+        }
+        
+        return this.lines.get(lineNumber - 1);
     }
 
     /**
@@ -80,7 +73,7 @@ public class Source implements AutoCloseable {
      * @throws Exception
      *             if an error occurred.
      */
-    public char currentChar() throws IOException {
+    public char currentChar() {
         // First time?
         if (currentPos == -2) {
             readLine();
@@ -113,10 +106,8 @@ public class Source implements AutoCloseable {
      * Consume the current source character and return the next character.
      * 
      * @return the next source character.
-     * @throws Exception
-     *             if an error occurred.
      */
-    public char nextChar() throws IOException {
+    public char nextChar() {
         ++currentPos;
         return currentChar();
     }
@@ -126,10 +117,8 @@ public class Source implements AutoCloseable {
      * consuming the current character.
      * 
      * @return the following character.
-     * @throws Exception
-     *             if an error occurred.
      */
-    public char peekChar() throws IOException {
+    public char peekChar() {
         return peekAhead(1);
     }
 
@@ -138,9 +127,8 @@ public class Source implements AutoCloseable {
      * 
      * @param pos
      * @return the peeked character
-     * @throws Excepion
      */
-    public char peekAhead(int pos) throws IOException {
+    public char peekAhead(int pos) {
         currentChar();
         if (line == null) {
             return EOF;
@@ -152,19 +140,15 @@ public class Source implements AutoCloseable {
 
     /**
      * @return true if at the end of the line, else return false.
-     * @throws Exception
-     *             if an error occurred.
      */
-    public boolean atEol() throws IOException {
+    public boolean atEol() {
         return (line != null) && (currentPos == line.length());
     }
 
     /**
      * @return true if at the end of the file, else return false.
-     * @throws Exception
-     *             if an error occurred.
      */
-    public boolean atEof() throws IOException {
+    public boolean atEof() {
         // First time?
         if (currentPos == -2) {
             readLine();
@@ -177,10 +161,8 @@ public class Source implements AutoCloseable {
      * Skip the rest of the current input line by forcing the next read to read
      * a new line.
      * 
-     * @throws IOException
-     *             if an error occurred.
      */
-    public void skipToNextLine() throws IOException {
+    public void skipToNextLine() {
         if (line != null) {
             currentPos = line.length() + 1;
         }
@@ -196,25 +178,36 @@ public class Source implements AutoCloseable {
      * @throws IOException
      *             if an I/O error occurred.
      */
-    private void readLine() throws IOException {
-        line = reader.readLine(); // null when at the end of the source
-        currentPos = -1;
-
-        if (line != null) {
-            ++lineNum;
+    private void readLine() {
+        try {
+            line = reader.readLine(); // null when at the end of the source
+            currentPos = -1;
+    
+            if (line != null) {
+                ++lineNum;
+            }
+            
+            lines.add(line);
+        }
+        catch(IOException e) {
+            throw new ParseException(e);
         }
     }
 
     /**
      * Close the source.
-     * 
-     * @throws Exception
-     *             if an error occurred.
      */
     @Override
-    public void close() throws IOException {
+    public void close() {
+        this.lines.clear();
+        
         if (reader != null) {
-            reader.close();
+            try {
+                reader.close();
+            }
+            catch(IOException e) {
+                throw new ParseException(e);    
+            }
         }
     }
 

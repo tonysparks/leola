@@ -5,7 +5,8 @@
 */
 package leola.ast;
 
-import leola.frontend.EvalException;
+import leola.frontend.tokens.Token;
+import leola.vm.EvalException;
 
 /**
  * A Binary expression.
@@ -16,51 +17,17 @@ import leola.frontend.EvalException;
 public class BinaryExpr extends Expr {
 
     /**
-     * Binary operator
-     *
-     * @author Tony
-     *
-     */
-    public enum BinaryOp {
-          ADD
-        , SUB
-        , MUL
-        , DIV
-        , MOD
-
-        , BIT_SHIFT_LEFT
-        , BIT_SHIFT_RIGHT
-
-        , OR
-        , AND
-        , EQ
-        , REQ
-        , RNEQ
-        , LT
-        , LTE
-        , GT
-        , GTE
-        , NEQ
-
-        , BIT_AND
-        , BIT_OR
-        , BIT_XOR
-        , BIT_NOT
-
-    }
-
-    /**
      * Expressions
      */
     private Expr left, right;
 
-    private BinaryOp op;
+    private Token op;
 
     /**
      * @param left
      * @param right
      */
-    public BinaryExpr(Expr left, Expr right, BinaryOp op) {
+    public BinaryExpr(Expr left, Expr right, Token op) {
         this.left = becomeParentOf(left);
         this.right = becomeParentOf(right);
         this.op =op;
@@ -84,7 +51,7 @@ public class BinaryExpr extends Expr {
     /**
      * @return the op
      */
-    public BinaryOp getOp() {
+    public Token getOp() {
         return op;
     }
 
