@@ -545,13 +545,14 @@ public class Parser {
     
     private ArrayDeclExpr array() {
         List<Expr> elements = new ArrayList<>();
-        if(!check(RIGHT_BRACKET)) {
-            do {
-                Expr element = expression();
-                elements.add(element);
+        do {
+            if(check(RIGHT_BRACKET)) {
+                break;
             }
-            while(match(COMMA));
+            Expr element = expression();
+            elements.add(element);
         }
+        while(match(COMMA));
         
         consume(RIGHT_BRACKET, ErrorCode.MISSING_RIGHT_BRACKET);
         
@@ -560,16 +561,18 @@ public class Parser {
     
     private MapDeclExpr map() {
         List<Pair<Expr, Expr>> elements = new ArrayList<>();
-        if(!check(RIGHT_BRACE)) {
-            do {
-                Expr key = expression();
-                consume(ARROW, ErrorCode.MISSING_ARROW);
-                Expr value = expression();
-                
-                elements.add(new Pair<>(key, value));
+        do {
+            if(check(RIGHT_BRACE)) {
+                break;
             }
-            while(match(COMMA));
+            
+            Expr key = expression();
+            consume(ARROW, ErrorCode.MISSING_ARROW);
+            Expr value = expression();
+            
+            elements.add(new Pair<>(key, value));
         }
+        while(match(COMMA));
         
         consume(RIGHT_BRACE, ErrorCode.MISSING_RIGHT_BRACE);
         
