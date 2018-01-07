@@ -229,6 +229,8 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
             visitAssignmentOperator(s.getOperator());
             asm.store(varName);
         }
+        
+        asm.dup();
     }
 
     private void visitAssignmentOperator(Token operator) {        

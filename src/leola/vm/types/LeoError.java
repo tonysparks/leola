@@ -167,7 +167,19 @@ public class LeoError extends LeoObject {
      */
     @Override
     public boolean $eq(LeoObject other) {
-        return this==other;
+        if(this == other) {
+            return true;
+        }
+        
+        if(other == null) {
+            return false;
+        }
+        
+        if(getMessage().equals(other)) {
+            return true;
+        }
+        
+        return false;
     }
 
     /* (non-Javadoc)

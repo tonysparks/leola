@@ -361,4 +361,180 @@ debug:assertEq(g(), 2)
 debug:assertEq(g(), 1)
 debug:assertNull(g())
 	
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Semi-colon handling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/		
+;;;	
+
+var t = def();
+debug:assertTrue(t is Function)
+debug:assertNull(t())
+{};
+;{};
+;;[];;[];
+t = def() {
+	;
+}
+
+debug:assertTrue(t is Function)
+debug:assertNull(t())
+
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Return Statement
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/		
+
+var r = def(x) {
+	if x == 0 {
+		return x
+		debug:assertFail()	
+	}
 	
+	if x == 1 {
+		return x
+		debug:assertFail()	
+	}
+	
+	return;
+	debug:assertFail()	
+}
+
+debug:assertEq(r(0), 0)
+debug:assertEq(r(1), 1)
+debug:assertNull(r(2))
+
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Try/Catch/Finally Statement
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/		
+
+var t = def() {
+	var x = 0
+	try {
+		throw "error"
+		debug:assertFail()		
+	}
+	catch e {
+		debug:assertTrue(e is Error)		
+		debug:assertEq(e, "error")
+		x += 1
+	}
+	finally {		
+		x += 1
+	}
+	
+	debug:assertEq(x, 2)
+}
+
+t()
+
+
+var t = def() {
+	var x = 0
+	try {
+		throw "error"
+		debug:assertFail()		
+	}	
+	finally {		
+		return 2
+	}
+	
+	debug:assertFail()
+}
+
+debug:assertEq(t(), 2)
+
+
+var t = def() {	
+	try {
+		throw "error"
+		debug:assertFail()		
+	}	
+	finally {				
+	}
+	
+	debug:assertFail()
+}
+
+try {
+	t()
+	debug:assertFail()		
+}
+catch ee {
+	debug:assertTrue(ee is Error)		
+	debug:assertEq(ee, "error")
+}
+
+var t = def() {
+	var x = 0
+	try {
+		throw "error"
+		debug:assertFail()		
+	}	
+	catch e {
+		debug:assertTrue(e is Error)		
+		debug:assertEq(e, "error")
+		x += 2
+	}
+	
+	x += 1
+	
+	debug:assertEq(x, 3)
+}
+
+t()
+
+
+var t = def() {
+	var x = 0
+	try {
+		try {
+			throw "error"
+			debug:assertFail()		
+		}		
+		finally {		
+			x += 1
+		}
+	}
+	catch e {	
+		debug:assertTrue(e is Error)		
+		debug:assertEq(e, "error")
+		x += 1
+	}
+	
+	debug:assertEq(x, 2)
+}
+
+t()
+
+
+
+var t = def() {
+	var x = 0
+	try {
+		try {
+			throw "error"
+			debug:assertFail()		
+		}		
+		catch e {	
+			debug:assertTrue(e is Error)		
+			debug:assertEq(e, "error")
+			x += 1
+		}
+		
+		x += 2
+
+	}
+	catch e {	
+		debug:assertFail()
+	}
+	finally {		
+		x += 5
+	}
+	
+	debug:assertEq(x, 8)
+}
+
+t()

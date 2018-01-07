@@ -1,6 +1,7 @@
 /*
 	Counts lines of code
 */
+var enabled = false
 
 class CodeCount(
 	total,
@@ -13,12 +14,15 @@ var counts = new CodeCount(0,0,0,0);
 
 var files = io:listFiles(io:pwd() + "/src")
 
-
 var countLines = def(file) {
-	var source = io:readFully(file)
+	//if file.endsWith("LeoObject.java") {
+
+	var source = io:readFully(file)	
 	var withComments = source.split("\n")
 	
-	var commentlessSource = source.replaceAll("/\\*(?:.|[\\n\\r])*?\\*/","")
+	// TODO: Blows up for LeoObject :(
+	//"/\\*(?:.|[\\n\\r])*?\\*/"
+	var commentlessSource = source //.replaceAll("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?://.*)","")
 	var withoutComments = commentlessSource.split("\n")
 				
 	counts.total += withComments.size()
@@ -26,6 +30,7 @@ var countLines = def(file) {
 	counts.semicolons += commentlessSource.indexesOf(";").size()
 	counts.comments += withComments.size() - withoutComments.size()
 	
+	//}
 }
 
 var removeWhitespace = def(lines) {
@@ -59,9 +64,11 @@ var iterate = def(files) {
 }
 
 
-iterate(files)
-
-println("")
-println("                Total            Code     Semi-Colons        Comments")
-println("=====================================================================")
-printf(" %20s %15s %15s %15s\n", counts.total, counts.code, counts.semicolons, counts.comments);
+if enabled {
+	iterate(files)
+	
+	println("")
+	println("                Total            Code     Semi-Colons        Comments")
+	println("=====================================================================")
+	printf(" %20s %15s %15s %15s\n", counts.total, counts.code, counts.semicolons, counts.comments);
+}

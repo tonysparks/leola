@@ -61,8 +61,6 @@ public class Parser {
     private Stmt statement() {
         source();
         
-        match(SEMICOLON); // eat any optional semi-colons
-        
         if(match(CLASS))     return classDeclaration();
         if(match(NAMESPACE)) return namespaceDeclaration();        
         if(match(VAR))       return varDeclaration();
@@ -76,6 +74,7 @@ public class Parser {
         if(match(YIELD))     return yieldStatement();
         if(match(BREAK))     return breakStatement();
         if(match(CONTINUE))  return continueStatement();
+        if(match(SEMICOLON)) return emptyStatement(); 
                         
         return expression();
     }
