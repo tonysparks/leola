@@ -84,7 +84,7 @@ var bestQB = def(from, to) {
 }
 
 // use named parameters by nameOfParameter->Value
-println("The best QB of all time: " + bestQB(from->1970, to->2015))
+println("The best QB of all time: " + bestQB(from=>1970, to=>2015))
 
 ````
 

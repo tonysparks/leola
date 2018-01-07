@@ -31,7 +31,7 @@ public enum TokenType {
         EQUALS("="), NOT_EQUALS("!="), LESS_THAN("<"), LESS_EQUALS("<="),
         GREATER_EQUALS(">="), GREATER_THAN(">"), LEFT_PAREN("("), RIGHT_PAREN(")"),
         LEFT_BRACKET("["), RIGHT_BRACKET("]"), LEFT_BRACE("{"), RIGHT_BRACE("}"),
-        LOGICAL_OR("||"), LOGICAL_AND("&&"), NOT("!"), DQUOTE("\""), ARROW("->"),
+        LOGICAL_OR("||"), LOGICAL_AND("&&"), NOT("!"), DQUOTE("\""), ARROW("->"), FAT_ARROW("=>"),
         BIT_SHIFT_LEFT("<<"), BIT_SHIFT_RIGHT(">>"),
 
         // Binary Assignment operators

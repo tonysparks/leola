@@ -422,7 +422,7 @@ public class Parser {
                 Token name = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
                 expr = node(new IsExpr(expr, name.getText()));
             }
-            else if(this.argumentsLevel > 0 && match(ARROW)) {
+            else if(this.argumentsLevel > 0 && match(FAT_ARROW)) {
                 if(!(expr instanceof VarExpr)) {
                     throw error(previous(), ErrorCode.INVALID_NAMED_PARAMETER);
                 }

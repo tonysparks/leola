@@ -122,7 +122,7 @@ public class SpecialSymbolToken extends Token {
                 break;
             }
 
-            // = or ==
+            // = or == or =>
             case '=': {
                 currentChar = nextChar();  // consume '=';
 
@@ -134,6 +134,10 @@ public class SpecialSymbolToken extends Token {
                         text += currentChar;
                         nextChar();
                     }
+                }
+                else if(currentChar == '>') {
+                    text += currentChar;
+                    currentChar = nextChar();  // consume '>' 
                 }
 
                 break;
