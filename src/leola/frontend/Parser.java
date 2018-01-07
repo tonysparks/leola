@@ -50,6 +50,8 @@ public class Parser {
         while(!isAtEnd()) {
             Stmt statement = statement();
             statements.add(statement);
+            
+            match(SEMICOLON); // eat any optional semi-colons
         }
         
         return new ProgramStmt(statements);

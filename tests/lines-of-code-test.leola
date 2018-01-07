@@ -1,0 +1,67 @@
+/*
+	Counts lines of code
+*/
+
+class CodeCount(
+	total,
+	code,
+	semicolons,
+	comments
+);
+
+var counts = new CodeCount(0,0,0,0);
+
+var files = io:listFiles(io:pwd() + "/src")
+
+
+var countLines = def(file) {
+	var source = io:readFully(file)
+	var withComments = source.split("\n")
+	
+	var commentlessSource = source.replaceAll("/\\*(?:.|[\\n\\r])*?\\*/","")
+	var withoutComments = commentlessSource.split("\n")
+				
+	counts.total += withComments.size()
+	counts.code  += removeWhitespace(withoutComments).size()
+	counts.semicolons += commentlessSource.indexesOf(";").size()
+	counts.comments += withComments.size() - withoutComments.size()
+	
+}
+
+var removeWhitespace = def(lines) {
+	var code = []
+	
+	foreach(lines, def(line) {
+		line = line.trim()
+		if line.length() > 0 {	
+			code += line	
+		}
+	})
+	
+	return code
+}
+
+var iterate = def(files) {
+		
+
+	var visit = def(file) {
+		if io:isDirectory(file) {
+			iterate(io:listFiles(file))
+		}
+		else if file.endsWith(".java") {
+			countLines(file)			
+		}
+	}
+	
+	foreach(files, def(file) {
+		visit(file)
+	})
+}
+
+
+iterate(files)
+
+println("")
+println("                Total            Code     Semi-Colons        Comments")
+println("=====================================================================")
+printf(" %20s %15s %15s %15s\n", counts.total, counts.code, counts.semicolons, counts.comments);
