@@ -538,3 +538,27 @@ var t = def() {
 }
 
 t()
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Function Execution Statement
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/		
+
+var f = def(x) {
+    var f2 = def(f3) {
+        return f3()
+    }
+   
+    try {
+        return {
+            c -> f2
+        }
+    }
+    catch E {
+        debug:assertFail()
+    }
+}
+
+var z = 0
+f(z).c(def() { z+=1 })
+debug:assertEq(z, 1)

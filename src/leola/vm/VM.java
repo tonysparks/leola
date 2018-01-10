@@ -655,10 +655,9 @@ public class VM {
                         }
                         case TAIL_CALL: {                            
                             pc = 0;    /* return to the beginning of the function call, with the
-                                       stack persevered */
-                            LeoObject fun = stack[--top];
-                            
+                                       stack persevered */                                                        
                             int nargs = ARG1(i);
+                            LeoObject fun = stack[(top-1) - nargs];
                             
                              
                             /* determine if there are named parameters to resolve */
@@ -744,9 +743,8 @@ public class VM {
                             continue;
                         }
                         case INVOKE:    {
-                            LeoObject fun = stack[--top];
                             int nargs = ARG1(i);
-                            
+                            LeoObject fun = stack[(top-1) - nargs];
                             
                             /* determine if there are named parameters to resolve */
                             if(paramIndex > 0 && !fun.isNativeFunction() ) {
@@ -1407,39 +1405,42 @@ public class VM {
                         pc = blockStack.peekAddress();
                     }
                 }
-                else {
-                    final int stackSize = Math.min(stack.length, base+code.maxstacksize);
-                    /* close the outers for this function call */
-                    if (closeOuters) {
-                        for(int j=base;j<stackSize;j++) {
-                            if(openouters[j]!=null) {
-                                openouters[j].close();
-                                openouters[j] = null;
-                            }
-        
-                            stack[j] = null;
-                        }
-                    }
-                    else {
-                        for(int j=base;j<stackSize;j++) {
-                            stack[j] = null;
-                        }                
-                    }
-        
-                    top = base;
-                    
-                    /* expire this generator if we hit the end of the function */
-                    if(!yield && callee != null && callee.isGenerator()) {
-                        if(pc == len) {
-                            code.pc = pc;
-                        }
-                    }        
-                }
             }
         } while(blockStack != null && !blockStack.isEmpty());
         
+        exitCall(callee, code, closeOuters, base, yield, pc, len);
+        
         return isReturnedSafely ? 
                  result : errorThrown;
+    }
+    
+    private void exitCall(LeoObject callee, Bytecode code, boolean closeOuters, int base, boolean yield, int pc, int len) {
+        final int stackSize = Math.min(stack.length, base+code.maxstacksize);
+        /* close the outers for this function call */
+        if (closeOuters) {
+            for(int j=base;j<stackSize;j++) {
+                if(openouters[j]!=null) {
+                    openouters[j].close();
+                    openouters[j] = null;
+                }
+
+                stack[j] = null;
+            }
+        }
+        else {
+            for(int j=base;j<stackSize;j++) {
+                stack[j] = null;
+            }                
+        }
+
+        top = base;
+        
+        /* expire this generator if we hit the end of the function */
+        if(!yield && callee != null && callee.isGenerator()) {
+            if(pc == len) {
+                code.pc = pc;
+            }
+        }        
     }
 
     /**

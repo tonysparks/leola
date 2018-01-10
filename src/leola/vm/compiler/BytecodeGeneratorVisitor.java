@@ -544,7 +544,10 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         asm.start(ScopeType.GLOBAL_SCOPE);
         {
             for(Stmt n : s.getStatements()) {            
-                n.visit(this);        
+                n.visit(this);
+                if(n instanceof Expr) {
+                    asm.pop();
+                }
             }
         }
         asm.end();
@@ -683,11 +686,11 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
     public void visit(FuncInvocationExpr s) throws EvalException {        
         asm.line(s.getLineNumber());
         
+        s.getCallee().visit(this);
+        
         List<Expr> arguments = s.getArguments();
         int nargs = arguments.size();
-        int expandedArgsIndex = checkArguments(arguments);
-        
-        s.getCallee().visit(this);
+        int expandedArgsIndex = checkArguments(arguments);        
             
         boolean isTailcall = false;
         if(!this.tailCallStack.isEmpty()) {
@@ -743,13 +746,9 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         asm.loadnull();
         asm.neq();
         
-        String elseLabel = asm.ifeq();
-        asm.egetk(s.getIdentifier());
-        String end = asm.jmp();
-        
-        asm.label(elseLabel);
-        asm.loadnull();
-        
+        String end = asm.ifeq();
+        asm.egetk(s.getIdentifier());        
+                
         asm.label(end);
     }
     
