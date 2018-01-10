@@ -540,6 +540,51 @@ var t = def() {
 t()
 
 
+var t = def() {
+	var x = 0
+	try {
+		try {
+			throw "error"
+			debug:assertFail()		
+		}		
+		finally {	
+			x = 3
+			return x			
+		}
+		debug:assertFail()		
+
+	}
+	catch e {	
+		debug:assertFail()
+	}
+	finally {	
+		x = 4
+		return x
+	}
+	
+	debug:assertFail()
+}
+
+debug:assertEq(t(), 4)
+
+
+var t = def() {
+	var x = 0
+
+	try {
+		throw "error"
+		debug:assertFail()		
+	}		
+	finally {	
+		x = 3
+		return x			
+	}
+	debug:assertFail()		
+}
+
+debug:assertEq(t(), 3)
+
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
 	Function Execution Statement
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/		
@@ -562,3 +607,32 @@ var f = def(x) {
 var z = 0
 f(z).c(def() { z+=1 })
 debug:assertEq(z, 1)
+
+
+// non-tailcall recursion
+var r = def(n) {
+	if n <= 0 return 1
+	return r(n-1) + n
+}
+
+debug:assertEq(r(0), 1)
+debug:assertEq(r(1), 2)
+debug:assertEq(r(2), 4)
+debug:assertEq(r(3), 7)
+
+
+// uses tailcall opcode
+var fact = def(n) {
+	var iter = def(product, n) {
+		if n < 2 return product
+		return iter(product * n, n - 1)
+	}
+	return iter(1, n)
+}
+
+debug:assertEq(fact(1), 1)
+debug:assertEq(fact(4), 24)
+debug:assertEq(fact(39L), 2304077777655037952L)
+debug:assertEq(fact(10L), 3628800L)
+
+

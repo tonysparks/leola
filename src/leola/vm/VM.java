@@ -606,12 +606,12 @@ public class VM {
     
                         /* stack operators */
                         case POP:    {
-                            stack[top--] = null;
+                            stack[--top] = null;                            
                             continue;
                         }
                         case OPPOP:    {
                             if (top>topStack) {
-                                stack[top--] = null;
+                                stack[--top] = null;
                             }
                             continue;
                         }
@@ -739,7 +739,9 @@ public class VM {
                                 }
                             }
     
-    
+                            // pops the recursive function
+                            top--;
+                            
                             continue;
                         }
                         case INVOKE:    {
@@ -823,7 +825,7 @@ public class VM {
                                 }
                             }
     
-                            stack[top++] = c;    
+                            stack[top-1] = c;    
                             continue;
                         }
                         case NEW_OBJ:    {

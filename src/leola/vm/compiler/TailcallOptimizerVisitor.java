@@ -13,6 +13,7 @@ import leola.ast.BlockStmt;
 import leola.ast.Expr;
 import leola.ast.FuncInvocationExpr;
 import leola.ast.IfStmt;
+import leola.ast.ProgramStmt;
 import leola.ast.ReturnStmt;
 import leola.ast.Stmt;
 import leola.ast.YieldStmt;
@@ -54,19 +55,26 @@ public class TailcallOptimizerVisitor extends ASTNodeVisitorAdapter {
         return tailCallExpr;
     }
     
-    
-    /* (non-Javadoc)
-     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.BlockStmt)
-     */
-    @Override
-    public void visit(BlockStmt s) throws EvalException {
-        List<Stmt> nodes = s.getStatements();
+    private void findTerminal(List<Stmt> nodes) throws EvalException {
         int size = nodes.size();
         if ( size > 0 ) {
             this.isTerminal = true;
             ASTNode lastStatement = nodes.get(size-1);
             lastStatement.visit(this);
         }
+    }
+    
+    @Override
+    public void visit(ProgramStmt s) throws EvalException {
+        findTerminal(s.getStatements());
+    }
+    
+    /* (non-Javadoc)
+     * @see leola.ast.ASTNodeVisitor#visit(leola.ast.BlockStmt)
+     */
+    @Override
+    public void visit(BlockStmt s) throws EvalException {
+        findTerminal(s.getStatements());
     }
 
 
@@ -112,7 +120,7 @@ public class TailcallOptimizerVisitor extends ASTNodeVisitorAdapter {
             r.visit(this);
         }
     }
-    
+        
     /* (non-Javadoc)
      * @see leola.ast.ASTNodeVisitor#visit(leola.ast.ReturnStmt)
      */

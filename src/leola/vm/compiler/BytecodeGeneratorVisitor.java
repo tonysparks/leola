@@ -220,6 +220,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
         
         if(s.getOperator().getType() == TokenType.EQUALS) {
             s.getValue().visit(this);
+            asm.dup();
             asm.store(varName);
         }
         else {
@@ -227,10 +228,9 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
             s.getValue().visit(this);
             
             visitAssignmentOperator(s.getOperator());
+            asm.dup();
             asm.store(varName);
         }
-        
-        asm.dup();
     }
 
     private void visitAssignmentOperator(Token operator) {        
