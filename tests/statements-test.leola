@@ -635,4 +635,17 @@ debug:assertEq(fact(4), 24)
 debug:assertEq(fact(39L), 2304077777655037952L)
 debug:assertEq(fact(10L), 3628800L)
 
+var fact = def(n) {
+	var iter = def(product, n) {
+		if n < 2 return product
+		return iter(n=>n - 1, product=>product * n)
+	}
+	return iter(product=>1, n=>n)
+}
+
+debug:assertEq(fact(n=>1), 1)
+debug:assertEq(fact(n=>4), 24)
+debug:assertEq(fact(n=>39L), 2304077777655037952L)
+debug:assertEq(fact(n=>10L), 3628800L)
+
 
