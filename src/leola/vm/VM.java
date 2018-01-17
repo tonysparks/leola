@@ -10,6 +10,7 @@ import static leola.vm.Opcodes.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import leola.vm.Scope.ScopeType;
 import leola.vm.compiler.Bytecode;
 import leola.vm.compiler.Outer;
 import leola.vm.compiler.Outer.StackValue;
@@ -923,7 +924,7 @@ public class VM {
                             NamespaceDefinitions ndefs = scope.getNamespaceDefinitions();
                             LeoNamespace ns = ndefs.getNamespace(name);
                             if(ns==null) {
-                                ns = new LeoNamespace(this.runtime, namespacecode, new Scope(scope), name);
+                                ns = new LeoNamespace(this.runtime, namespacecode, new Scope(ScopeType.Namespace, scope), name);
                                 ndefs.storeNamespace(name, ns);
                             }
                             else {
@@ -939,8 +940,7 @@ public class VM {
                             pc += namespacecode.numOuters;
     
                             this.runtime.execute(ns, namespacecode);
-    
-                            stack[top++] = ns;
+   
                             continue;
                         }
                         case GEN_DEF: {

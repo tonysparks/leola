@@ -31,7 +31,11 @@ import leola.vm.util.ClassUtil;
  *
  */
 public class Scope {
-    
+    public enum ScopeType {
+        Namespace,
+        Class
+    }
+        
     /**
      * The parent scope
      */
@@ -57,14 +61,18 @@ public class Scope {
     private LeoMap values;
 
     /**
-     * @param symbols
-     * @param parent
-     * @param scopeType
+     * The type of scope this is
      */
-    public Scope(Scope parent) {
+    private ScopeType scopeType;
+    
+    /**
+     * @param scopeType
+     * @param parent
+     */
+    public Scope(ScopeType scopeType, Scope parent) {
+        this.scopeType = scopeType;
         this.parent = parent;
     }
-
     
     /**
      * This will clear out (i.e., remove) all data elements from this {@link Scope}.
@@ -273,14 +281,25 @@ public class Scope {
                 break;
             }
             
-            // else check the parent 
+            // We check the parent if and only if:
+            // 1) there is a parent scope that isn't the global scope
+            // 2) if this scope is a class, and the parent scope is a class
+            // 3) if this scope is a namespace
             if(current.parent != null && !current.parent.isGlobalScope()) {
-                current = current.parent;
+                if(current.isClassScope()) {
+                    if(!current.parent.isNamespaceScope()) {
+                        current = current.parent;
+                        continue;
+                    }
+                }
+                else {
+                    current = current.parent;
+                    continue;
+                }
             }
-            else {
-                current = this;
-                break;
-            }
+            
+            current = this;
+            break;            
         }
         
         return current.putObject(reference, newValue);
@@ -345,6 +364,20 @@ public class Scope {
     }
 
     /**
+     * @return if this scope belongs to a Namespace
+     */
+    public boolean isNamespaceScope() {
+        return this.scopeType == ScopeType.Namespace;
+    }
+    
+    /**
+     * @return if this scope belongs to a Class
+     */
+    public boolean isClassScope() {
+        return this.scopeType == ScopeType.Class;
+    }
+    
+    /**
      * @return the parent
      */
     public Scope getParent() {
@@ -356,7 +389,7 @@ public class Scope {
      * @see java.lang.Object#clone()
      */
     public Scope clone() {
-        Scope clone = new Scope(this.parent);
+        Scope clone = new Scope(this.scopeType, this.parent);
         clone.classDefinitions = this.classDefinitions;
         clone.namespaceDefinitions = this.namespaceDefinitions;
 
@@ -520,6 +553,24 @@ public class Scope {
         }
 
         return (result);
+    }
+    
+    /**
+     * Gets the specific {@link ClassDefinition} for the supplied className
+     * 
+     * @param className - the fully qualified class name
+     * @return the {@link ClassDefinition} if found
+     */
+    public ClassDefinition lookupClassDefinition(LeoObject className) {
+        ClassDefinitions defs = lookupClassDefinitions(className);
+        if(defs != null) {
+            LeoObject simpleClassName = getClassName(className);
+            if(defs.hasDefinitions() && defs.containsClass(simpleClassName)) {
+                return defs.getDefinition(simpleClassName);
+            }
+        }
+        
+        return null;
     }
     
     /**

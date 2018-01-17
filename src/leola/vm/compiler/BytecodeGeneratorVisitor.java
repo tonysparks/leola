@@ -506,7 +506,7 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
             s.getStmt().visit(this);
         }
         asm.end();
-        asm.addAndstorelocal(name);                        
+        //asm.addAndstorelocal(name);                        
     }
 
     /* (non-Javadoc)

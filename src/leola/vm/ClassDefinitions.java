@@ -8,6 +8,7 @@ package leola.vm;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import leola.vm.Scope.ScopeType;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.types.LeoClass;
 import leola.vm.types.LeoNull;
@@ -175,7 +176,7 @@ public class ClassDefinitions {
                                 ((LeoClass)parentClass).getScope() : definition.getDeclaredScope();
 
                                 
-        Scope scope = new Scope(parentScope);        
+        Scope scope = new Scope(ScopeType.Class, parentScope);        
         LeoClass klass = new LeoClass(runtime
                                     , scope
                                     , definition

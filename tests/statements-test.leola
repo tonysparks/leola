@@ -649,3 +649,15 @@ debug:assertEq(fact(n=>39L), 2304077777655037952L)
 debug:assertEq(fact(n=>10L), 3628800L)
 
 
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	Compound Statements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/	
+
+var y = 0
+var x = (case when y == 0 -> { m -> 1} else {}) ? m
+debug:assertEq(x, 1)
+
+// Valid but not recommended, assumes the elvis operator will never be null, will always invoke: (ElvisExpr)(2)
+var x = (case when y == 0 -> { m -> def(y) return y+=1} else {}) ? m(2)
+debug:assertEq(x, 3)
+

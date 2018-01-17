@@ -6,7 +6,6 @@
 package leola.vm.types;
 
 import java.lang.reflect.Method;
-import java.util.Map;
 
 import leola.vm.NamespaceDefinitions;
 import leola.vm.Scope;
@@ -255,20 +254,6 @@ public abstract class LeoScopedObject extends LeoOuterObject {
      */
     public void removeProperty(LeoObject member) {
         this.scope.removeObject(member);
-    }
-    
-    
-    protected LeoObject lazyGetProperty(LeoObject member, Map<String, Method> methods) {
-                
-        String reference = member.toString();
-        LeoObject result = scope.getObject(reference);
-        if ( result == null ) {
-            if ( methods.containsKey(reference) ) {
-                result = addMethod(methods.get(reference));
-            }
-        }
-        
-        return result;
-    }    
+    }  
 }
 

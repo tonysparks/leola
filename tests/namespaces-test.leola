@@ -1,0 +1,87 @@
+debug:enableAssert(true)
+
+namespace x {
+	var x = "x"
+}
+
+debug:assertEq(x:x, "x")
+
+namespace x {
+	var y = "y"
+	var z = "zz"
+}
+
+
+debug:assertEq(x:x, "x")
+debug:assertEq(x:y, "y")
+
+namespace x {
+	class X() {
+		var x = "xx"
+	}
+	
+	var y = "yy"
+	
+	var t = def() {
+		return new X();
+	}
+}
+
+debug:assertTrue(x:t() is x:X)	
+
+var x = new x:X()
+debug:assertEq(x:x, "x")
+debug:assertEq(x.x, "xx")
+debug:assertEq(x.y, "yy")
+debug:assertEq(x.z, "zz")
+debug:assertTrue(x is x:X)	
+
+var z = new x:X()
+debug:assertEq(x:x, "x")
+debug:assertEq(z.x, "xx")
+debug:assertEq(z.y, "yy")
+debug:assertEq(z.z, "zz")
+debug:assertTrue(z is x:X)	
+
+namespace x {
+	var z = "zzz"
+}
+
+debug:assertEq(x:z, "zzz")
+
+
+namespace x {
+	z = "zzzz"
+}
+
+debug:assertEq(x:z, "zzzz")
+
+
+
+namespace x {
+	class X() {
+	}
+}
+
+var z = new x:X()
+debug:assertEq(x:x, "x")
+debug:assertEq(z.x, "x") // should lookup namespace x
+debug:assertEq(z.y, "yy")
+debug:assertEq(x:z, "zzzz")
+debug:assertTrue(z is x:X)	
+debug:assertFalse(x is x:X) // we've redefined x:X class
+
+
+namespace x {
+	var v = "vv"
+	class Y() {
+		debug:assertEq(v, "vv")
+		v = "tt"
+		debug:assertEq(v, "tt")
+	}
+}
+
+debug:assertEq(x:v, "vv")
+var objV = new x:Y()
+debug:assertEq(x:v, "vv")
+debug:assertEq(objV.v, "tt")

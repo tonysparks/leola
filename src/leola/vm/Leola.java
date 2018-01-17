@@ -42,6 +42,7 @@ import leola.lang.SystemLeolaLibrary;
 import leola.lang.io.IOLeolaLibrary;
 import leola.lang.sql.SqlLeolaLibrary;
 import leola.vm.Args.ArgsBuilder;
+import leola.vm.Scope.ScopeType;
 import leola.vm.compiler.Bytecode;
 import leola.vm.compiler.Compiler;
 import leola.vm.debug.DebugListener;
@@ -282,7 +283,7 @@ public class Leola {
             };
         }        
         
-        Scope globalScope = new Scope(null);
+        Scope globalScope = new Scope(ScopeType.Namespace, null);
         this.global = new LeoNamespace(globalScope, LeoString.valueOf(GLOBAL_SCOPE_NAME));
         reset();
     }
@@ -600,7 +601,7 @@ public class Leola {
             nsScope = ns.getScope();
         }
         else {
-            nsScope = new Scope(this.global.getScope());
+            nsScope = new Scope(ScopeType.Namespace, this.global.getScope());
             ns = new LeoNamespace(nsScope, LeoString.valueOf(namespace));
             this.global.getNamespaceDefinitions().storeNamespace(ns);
         }
@@ -763,7 +764,7 @@ public class Leola {
     public LeoNamespace getOrCreateNamespace(String namespace) {
         LeoNamespace ns = namespace != null ? this.getNamespace(namespace) : this.global;
         if(ns == null) {
-            ns = new LeoNamespace(new Scope(this.global.getScope()), LeoString.valueOf(namespace));
+            ns = new LeoNamespace(new Scope(ScopeType.Namespace, this.global.getScope()), LeoString.valueOf(namespace));
             this.global.getScope().getNamespaceDefinitions().storeNamespace(ns);
         }
         return ns;

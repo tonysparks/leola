@@ -80,6 +80,8 @@ public class LeoClass extends LeoScopedObject {
     
     private LeoObject superClass;    
     
+    private ClassDefinition classDefinition;
+    
     /**
      * @param runtime
      * @param scope
@@ -97,6 +99,7 @@ public class LeoClass extends LeoScopedObject {
         super(LeoType.CLASS, scope, classDefinition.getBody().numOuters);
             
         this.runtime = runtime;
+        this.classDefinition = classDefinition;
         
         this.superClass = superClass;
         this.className = classDefinition.getClassName();
@@ -282,9 +285,30 @@ public class LeoClass extends LeoScopedObject {
      */
     @Override
     public boolean isOfType(String rawType) {
-        return this.className.toString().equals(rawType) 
-            || ((this.superClass != null)
-                     ? this.superClass.isOfType(rawType) : false);
+        boolean isType = false;
+        
+        /* If this is a fully qualified name, go ahead
+         * and check the class definitions are the same,
+         * otherwise we can simply check the class names
+         */
+        if(rawType.contains(":")) {
+            ClassDefinition def = this.getScope().lookupClassDefinition(LeoObject.valueOf(rawType));
+            if(def != null) {
+                isType = this.classDefinition == def;
+            }
+        }
+        else {
+            isType = this.className.toString().equals(rawType);
+        }
+        
+        /* Check the parent hierarchy if there is
+         * one.
+         */
+        if(!isType && this.superClass != null) {
+            isType = this.superClass.isOfType(rawType);
+        }
+        
+        return isType;
     }
     
         
