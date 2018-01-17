@@ -89,6 +89,9 @@ public class Parser {
         List<Expr> parentClassArguments = null;
         if(match(IS)) {
             parentClassName = className();
+            
+            match(LEFT_PAREN);
+            
             parentClassArguments = arguments();
         }
         
@@ -423,8 +426,8 @@ public class Parser {
                 expr = node(new NamespaceGetExpr(varExpr, name.getText()));
             }
             else if(match(IS)) {
-                Token name = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
-                expr = node(new IsExpr(expr, name.getText()));
+                String name = className();
+                expr = node(new IsExpr(expr, name));
             }
             else if(this.argumentsLevel > 0 && match(FAT_ARROW)) {
                 if(!(expr instanceof VarExpr)) {
@@ -542,9 +545,10 @@ public class Parser {
         return node(new CaseExpr(condition, whenStmts, elseExpr));
     }
     
-    private NewExpr newInstance() {
-        
+    private NewExpr newInstance() {        
         String className = className();
+        
+        match(LEFT_PAREN);
         
         List<Expr> arguments = arguments();        
         return node(new NewExpr(className, arguments));
@@ -659,20 +663,21 @@ public class Parser {
      * @return the class name
      */
     private String className() {
+        boolean requiresIdentifier;
+        
         StringBuilder className = new StringBuilder();
         do {
             Token classNamePart = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
             className.append(classNamePart.getText());
-            if(check(DOT)) {
-                advance();
-                className.append(".");
+            
+            requiresIdentifier = false;
+            
+            if(check(DOT) || check(COLON)) {
+                className.append(advance().getText());
+                requiresIdentifier = true;
             }
-            else if(check(COLON)) {
-                advance();
-                className.append(":");
-            }            
         }
-        while(!match(LEFT_PAREN));
+        while(requiresIdentifier);
         
         return className.toString();
     }
