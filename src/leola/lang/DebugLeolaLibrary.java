@@ -137,7 +137,7 @@ public class DebugLeolaLibrary implements LeolaLibrary {
 
 
     /**
-     * Assert that both objects are equal to each other.
+     * Assert that obj is true
      *
      * @param obj
      * @param message
@@ -151,6 +151,20 @@ public class DebugLeolaLibrary implements LeolaLibrary {
         }
     }
 
+    /**
+     * Assert that obj is false
+     *
+     * @param obj
+     * @param message
+     * @throws Exception
+     */
+    public final void assertFalse(LeoObject obj, String message) throws Exception {
+        if (assertEnabled.get()) {
+            if (LeoObject.isTrue(obj)) {
+                assertFail("ASSERT FAIL: The object is not equal to true. " + message);
+            }
+        }
+    }
 
     /**
      * Assert that both objects are equal to each other.
