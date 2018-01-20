@@ -180,7 +180,11 @@ public class Bytecode {
      * @return the name of the source file that created this {@link Bytecode}
      */
     public String getSourceFileName() {
-        return (this.debugSymbols!=null) ? this.debugSymbols.getSourceFile().getName() : "";
+        File sourceFile = getSourceFile();
+        if(sourceFile != null) {
+            return sourceFile.getName();
+        }
+        return "";
     }
     
     /**
