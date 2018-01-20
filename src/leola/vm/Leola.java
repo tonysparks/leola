@@ -117,15 +117,18 @@ public class Leola {
      */
     public static void main(String[] args) throws Exception {
 
-        if ( args.length == 0 ) {
+        if(args.length == 0) {
             System.out.println(USAGE);
         }
         else {
 
             Args pargs = Args.parse(args);
             try {
-                if ( pargs.executeStatement()) {
+                if(pargs.executeStatement()) {
                     executeStatement(pargs);
+                }
+                else if(pargs.isRepl()) {
+                    executeRepl(pargs);
                 }
                 else {
                     executeScript(pargs);
@@ -164,6 +167,17 @@ public class Leola {
             System.out.println(result);
         }
 
+    }
+    
+    /**
+     * Executes the REPL
+     * 
+     * @param args
+     * @throws Exception
+     */
+    private static void executeRepl(Args args) throws Exception {
+        Repl repl = new Repl(new Leola(args));
+        repl.execute();
     }
     
     /**
@@ -1118,5 +1132,3 @@ public class Leola {
 
    
 }
-
-
