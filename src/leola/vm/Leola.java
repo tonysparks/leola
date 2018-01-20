@@ -63,13 +63,17 @@ import leola.vm.util.ResourceLoader;
  */
 public class Leola {
 
+    public static final String VERSION = "0.10.0";
+    
     /**
      * Usage
      */
     private static final String USAGE =
+        "Leola v" + VERSION + "\n\n" +
         "<USAGE> leola " + Args.getOptions() + " <file> [script args] \n" +
         Args.getOptionsWithDescription();
 
+    
     private static final String LEOLA_COMPILED_EXT = "leolac";
     private static final String LEOLA_EXT = "leola";
 
@@ -163,16 +167,47 @@ public class Leola {
     }
     
     /**
+     * Finds the script file that was passed by the command line 
+     * 
+     * @param pargs
+     * @return the {@link File}
+     */
+    private static File findScriptFile(Args pargs) {
+        String fileName = pargs.getFileName();
+        
+        File file = new File(fileName);
+        if(!file.exists()) {
+            file = new File(System.getProperty("user.dir"), fileName);
+            
+            if(!file.exists()) {
+               for(File dir : pargs.getIncludeDirectories()) {
+                   file = new File(dir, fileName);
+                   if(file.exists()) {
+                       return file;
+                   }
+               }
+            }
+        }
+        
+        if(!file.exists()) {
+            System.out.println("Unable to find '" + fileName + "'");
+            System.exit(1);
+        }
+        
+        pargs.getIncludeDirectories().add(file.getParentFile());
+        
+        return file;
+    }
+    
+    /**
      * Execute or compile the supplied script
      * 
      * @param pargs
      * @throws Exception
      */
-    private static void executeScript(Args pargs) throws Exception {
-        File scriptFile = new File(pargs.getFileName());
-        pargs.getIncludeDirectories()
-             .add(new File(scriptFile.getParent()));
-
+    private static void executeScript(Args pargs) throws Exception {       
+        File scriptFile = findScriptFile(pargs);
+        
         Leola runtime = new Leola(pargs);
         
         boolean isCompiled = runtime.hasLeolaCompiledExtension(scriptFile);
@@ -1083,4 +1118,5 @@ public class Leola {
 
    
 }
+
 

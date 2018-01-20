@@ -323,19 +323,19 @@ public class Args {
         int i = 0;
         for(; i < args.length; i++) {
             String arg = args[i];
-            if ( arg.startsWith("b") ) {
+            if ( arg.equals("b") ) {
                 pargs.generateBytecode = true;
             }
-            else if ( arg.startsWith("d")) {
+            else if ( arg.equals("d")) {
                 pargs.displayBytecode = true;
             }
-            else if ( arg.startsWith("s")) {
+            else if ( arg.equals("s")) {
                 pargs.barebones = true;
             }
-            else if (arg.startsWith("g")) {
+            else if (arg.equals("g")) {
                 pargs.isDebugMode = true;
             }
-            else if (arg.startsWith("t")) {
+            else if (arg.equals("t")) {
                 pargs.allowThreadLocals = false;
             }                
             else if ( arg.startsWith("cp=") ) {
@@ -352,7 +352,7 @@ public class Args {
                 String value = arg.replace("mx=", "");
                 pargs.maxStackSize = Integer.parseInt(value);
             }
-            else if ( arg.startsWith("r") ) {
+            else if ( arg.equals("r") ) {
                 pargs.isExecuteStatement = true;
                 pargs.statement = "";
                 for(int j = i + 1; j < args.length; j++) {
