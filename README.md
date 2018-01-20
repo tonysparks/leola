@@ -393,7 +393,7 @@ You can download the latest version of Leola by using these Maven coordinates:
 <dependency>
   <groupId>leola</groupId>
   <artifactId>leola</artifactId>
-  <version>0.10.0</version>
+  <version>0.10.1</version>
 </dependency>
 ```
 
