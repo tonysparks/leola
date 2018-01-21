@@ -119,12 +119,7 @@ public class Parser {
     }
             
     private IfStmt ifStatement() {
-        boolean hasLeftParen = match(LEFT_PAREN);
         Expr condition = expression();
-        
-        if(hasLeftParen) {
-            consume(RIGHT_PAREN, ErrorCode.MISSING_RIGHT_PAREN);
-        }
 
         Stmt thenBranch = statement();
         Stmt elseBranch = null;
@@ -136,13 +131,8 @@ public class Parser {
     }
     
     private WhileStmt whileStatement() {
-        boolean hasLeftParen = match(LEFT_PAREN);
         Expr condition = expression();
-        
-        if(hasLeftParen) {
-            consume(RIGHT_PAREN, ErrorCode.MISSING_RIGHT_PAREN);
-        }
-        
+                
         try {
             this.loopLevel++;
             Stmt body = statement();

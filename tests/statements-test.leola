@@ -21,6 +21,72 @@ else {
 
 debug:assertEq(x, 0)
 
+x = 0
+if (x==0) {
+	x += 1
+}
+
+debug:assertEq(x, 1)
+
+
+x = -1
+if (x==0) || (x<0) {
+	x += 1
+}
+
+debug:assertEq(x, 0)
+
+x = -1
+if ((x==0) || (x<0)) {
+	x += 1
+}
+
+debug:assertEq(x, 0)
+
+x = -1
+if x==0 || (x<0) {
+	x += 1
+}
+
+debug:assertEq(x, 0)
+
+x = -1
+if (x==0) || x<0 {
+	x += 1
+}
+
+debug:assertEq(x, 0)
+
+
+x = -1
+if true && (x<0) {
+	x += 1
+}
+
+debug:assertEq(x, 0)
+
+
+x = -1
+if (true) && (x<0) {
+	x += 1
+}
+
+debug:assertEq(x, 0)
+
+
+x = -1
+if ((true) && (x<0)) {
+	x += 1
+}
+
+debug:assertEq(x, 0)
+
+x = -1
+if (true) && x<0 {
+	x += 1
+}
+
+debug:assertEq(x, 0)
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
 	While Statement
@@ -53,6 +119,76 @@ debug:assertEq(x, 1)
 x = 0
 i = 3
 while i > 0 {
+	i -= 1	
+	
+	if i == 1 {
+		continue
+	}
+	x += 1			
+} 
+
+debug:assertEq(x, 2)
+
+
+x = 0
+i = 3
+while i > 0 || i > 0 {
+	i -= 1	
+	
+	if i == 1 {
+		continue
+	}
+	x += 1			
+} 
+
+debug:assertEq(x, 2)
+
+
+x = 0
+i = 3
+while (i > 0) || (i > 0) {
+	i -= 1	
+	
+	if i == 1 {
+		continue
+	}
+	x += 1			
+} 
+
+debug:assertEq(x, 2)
+
+
+x = 0
+i = 3
+while (i > 0 || i > 0) {
+	i -= 1	
+	
+	if i == 1 {
+		continue
+	}
+	x += 1			
+} 
+
+debug:assertEq(x, 2)
+
+
+x = 0
+i = 3
+while ((i > 0) || (i > 0)){
+	i -= 1	
+	
+	if i == 1 {
+		continue
+	}
+	x += 1			
+} 
+
+debug:assertEq(x, 2)
+
+
+x = 0
+i = 3
+while ((i > 0) && (i > 0)){
 	i -= 1	
 	
 	if i == 1 {
