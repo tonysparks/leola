@@ -15,14 +15,20 @@ import leola.ast.Expr;
 import leola.ast.ProgramStmt;
 import leola.ast.ReturnStmt;
 import leola.ast.Stmt;
+import leola.frontend.ErrorCode;
+import leola.frontend.ParseException;
 import leola.frontend.Parser;
 import leola.frontend.Scanner;
 import leola.frontend.Source;
+import leola.frontend.tokens.Token;
+import leola.frontend.tokens.TokenType;
 import leola.vm.compiler.Bytecode;
 import leola.vm.compiler.Compiler;
 import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.types.LeoObject;
 import leola.vm.types.LeoUserFunction;
+
+import static leola.frontend.tokens.TokenType.*;
 
 /**
  * Read Evaluate Print Loop
@@ -81,24 +87,7 @@ public class Repl {
             try {
                 printStream.print(">>> ");
                 
-                StringBuilder sourceBuffer = new StringBuilder();
-                String line = readLine(reader);                
-                sourceBuffer.append(line).append("\n");
-                
-                int inBlock = readBlocks(line, 0);
-                while(inBlock > 0) {
-                    printStream.print("> ");
-                    line = readLine(reader);                    
-                    sourceBuffer.append(line).append("\n");
-                    
-                    inBlock = readBlocks(line, inBlock);
-                }
-                
-                Source source = new Source(new StringReader(sourceBuffer.toString()));
-                Scanner scanner = new Scanner(source);
-                
-                Parser parser = new Parser(scanner);
-                ProgramStmt program = parser.parse();
+                ProgramStmt program = readStmt(reader, printStream);                 
                 List<Stmt> stmts = program.getStatements();
                 
                 boolean isStmt = true;
@@ -121,45 +110,45 @@ public class Repl {
                 errStream.println(e.getMessage());
             }
         }
-    }
+    }        
     
-    private int readBlocks(String line, int blocks) {
-        for(int i = 0; i < line.length(); i++) {
-            char c = line.charAt(i);
-            if(c=='{') {
-                blocks++;
-            }
-            else if(c=='}') {
-                blocks--;
-            }
-        }
+    private ProgramStmt readStmt(BufferedReader reader, PrintStream out) throws Exception {
+        boolean isStatementCompleted = true;
         
-        return blocks;
-    }
-    
-    private String readLine(BufferedReader reader) throws Exception {
-        StringBuilder buffer = new StringBuilder();
-        String line = reader.readLine();
-        buffer.append(line).append("\n");
-        
-        // if the user pasted in a chunk of code
-        // the buffer will be able to read in the 
-        // full input, however we still want to
-        // block and wait for the user to press 
-        // enter for the final input
-        boolean pasted = false;
-        while(reader.ready()) {
-            line = reader.readLine();
-            buffer.append(line).append("\n");
-            
-            pasted = true;
-        }
-        
-        if(pasted) {
-            line = reader.readLine();
-            buffer.append(line).append("\n");
-        }
+        ProgramStmt program = null;
+        StringBuilder sourceBuffer = new StringBuilder();
+        do {
+            try {
+                String line = reader.readLine();
+                sourceBuffer.append(line).append("\n");
                 
-        return buffer.toString();
+                Source source = new Source(new StringReader(sourceBuffer.toString()));
+                Scanner scanner = new Scanner(source);
+                
+                Parser parser = new Parser(scanner);
+                program = parser.parse();
+                
+                isStatementCompleted = true;
+            }
+            catch(ParseException e) {
+                Token token = e.getToken();
+                TokenType type = token != null ? token.getType() : null;
+                
+                // if this is an end of file OR an Error of type Unexpected end of file, the user
+                // has submitted a partial statement
+                if(type != null && (type.equals(END_OF_FILE) || 
+                        (type.equals(ERROR) && token.getValue().equals(ErrorCode.UNEXPECTED_EOF)))) {
+                    
+                    isStatementCompleted = false;  
+                    out.print("> ");
+                }
+                else {
+                    throw e;
+                }
+            }
+        }
+        while(!isStatementCompleted); 
+        
+        return program;
     }
 }

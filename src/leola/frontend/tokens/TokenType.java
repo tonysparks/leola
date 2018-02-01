@@ -96,8 +96,8 @@ public enum TokenType {
             return Double.parseDouble(this.text);
         }
         catch(Exception e) {
-            throw new ParseException
-                (ErrorCode.INVALID_NUMBER, "Unable to parse: " + this.text + " as a number.", e);
+            throw new ParseException 
+                (ErrorCode.INVALID_NUMBER, null, "Unable to parse: " + this.text + " as a number.", e);
         }
     }
 

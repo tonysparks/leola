@@ -6,6 +6,9 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import leola.frontend.tokens.ErrorToken;
+import leola.frontend.tokens.Token;
+
 /**
  * Handles reading a source code file
  * 
@@ -14,9 +17,12 @@ import java.util.List;
  */
 public class Source implements AutoCloseable {
     
+    
     public static final char EOL = '\n'; // end-of-line character
     public static final char EOF = (char) 0; // end-of-file character
 
+    private final Token errorToken;
+    
     private BufferedReader reader; // reader for the source program
     private String line; // source line
     private int lineNum; // current source line number
@@ -37,11 +43,13 @@ public class Source implements AutoCloseable {
         this.lines = new ArrayList<>();
         this.reader = (reader instanceof BufferedReader) ? 
                 (BufferedReader)reader : new BufferedReader(reader);
+                
+        this.errorToken = new ErrorToken(this, ErrorCode.UNKNOWN_ERROR, "");
     }
 
     public String getLine(int lineNumber) {
         if(lineNumber < 1 || lineNumber > this.lines.size()) {
-            throw new ParseException("Invalid line number: " + lineNumber);
+            throw new ParseException(errorToken, "Invalid line number: " + lineNumber);
         }
         
         return this.lines.get(lineNumber - 1);
@@ -190,7 +198,7 @@ public class Source implements AutoCloseable {
             lines.add(line);
         }
         catch(IOException e) {
-            throw new ParseException(e);
+            throw new ParseException(errorToken, e);
         }
     }
 
@@ -206,7 +214,7 @@ public class Source implements AutoCloseable {
                 reader.close();
             }
             catch(IOException e) {
-                throw new ParseException(e);    
+                throw new ParseException(errorToken, e);    
             }
         }
     }
