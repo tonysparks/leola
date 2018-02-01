@@ -117,9 +117,10 @@ public class Repl {
         
         ProgramStmt program = null;
         StringBuilder sourceBuffer = new StringBuilder();
+        String line = null;
         do {
             try {
-                String line = reader.readLine();
+                line = readLine(reader);
                 sourceBuffer.append(line).append("\n");
                 
                 Source source = new Source(new StringReader(sourceBuffer.toString()));
@@ -139,8 +140,10 @@ public class Repl {
                 if(type != null && (type.equals(END_OF_FILE) || 
                         (type.equals(ERROR) && token.getValue().equals(ErrorCode.UNEXPECTED_EOF)))) {
                     
-                    isStatementCompleted = false;  
-                    out.print("> ");
+                    isStatementCompleted = false;
+                    if(!line.trim().isEmpty()) {
+                        out.print("> ");
+                    }
                 }
                 else {
                     throw e;
@@ -150,5 +153,31 @@ public class Repl {
         while(!isStatementCompleted); 
         
         return program;
+    }
+    
+    private String readLine(BufferedReader reader) throws Exception {
+        StringBuilder buffer = new StringBuilder();
+        String line = reader.readLine();
+        buffer.append(line).append("\n");
+        
+        // if the user pasted in a chunk of code
+        // the buffer will be able to read in the 
+        // full input, however we still want to
+        // block and wait for the user to press 
+        // enter for the final input
+        boolean pasted = false;
+        while(reader.ready()) {
+            line = reader.readLine();
+            buffer.append(line).append("\n");
+            
+            pasted = true;
+        }
+        
+        if(pasted) {
+            line = reader.readLine();
+            buffer.append(line).append("\n");
+        }
+                
+        return buffer.toString();
     }
 }
