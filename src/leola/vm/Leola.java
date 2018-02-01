@@ -63,7 +63,7 @@ import leola.vm.util.ResourceLoader;
  */
 public class Leola {
 
-    public static final String VERSION = "0.10.2";
+    public static final String VERSION = "0.10.3";
     
     /**
      * Usage
