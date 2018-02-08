@@ -842,6 +842,6 @@ public class Parser {
         
         flagBuffer.append("]");
 
-        return new ParseException(errorCode, flagBuffer.toString());
+        return new ParseException(errorCode, token, flagBuffer.toString());
     }
 }
