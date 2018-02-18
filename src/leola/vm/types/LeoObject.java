@@ -20,6 +20,7 @@ import leola.vm.exceptions.LeolaRuntimeException;
 import leola.vm.lib.LeolaMethod;
 import leola.vm.util.ClassUtil;
 import leola.vm.util.LeoTypeConverter;
+import leola.vm.util.LeoTypeConverter.Converter;
 
 
 /**
@@ -240,6 +241,35 @@ public abstract class LeoObject implements Comparable<LeoObject> {
      */
     public static final Object toJavaObject(Class<?> jtype, LeoObject v) {
         return LeoTypeConverter.convertLeoObjectToJavaObj(jtype, v);
+    }
+    
+    
+    /**
+     * This will create a <b>new</b> Java object based off of the supplied {@link LeoObject}, this is different from
+     * {@link LeoObject#toJavaObject(Class, LeoObject)} as this will attempt to coerce the existing object into
+     * a Java object.  This method acts much like <code>Gson</code> or <code>Jackson</code> libraries.
+     * 
+     * 
+     * @param value
+     * @param type
+     * @param converters
+     * @return the newly created Java object
+     */
+    public static final <T> T fromLeoObject(LeoObject value, Class<T> type, Map<Class<?>, Converter> converters) {
+        return LeoTypeConverter.fromLeoObject(value, converters, type);
+    }
+    
+    /**
+     * This will create a <b>new</b> Java object based off of the supplied {@link LeoObject}, this is different from
+     * {@link LeoObject#toJavaObject(Class, LeoObject)} as this will attempt to coerce the existing object into
+     * a Java object.  This method acts much like <code>Gson</code> or <code>Jackson</code> libraries.
+     * 
+     * @param value
+     * @param type
+     * @return the newly created Java object
+     */
+    public static final <T> T fromLeoObject(LeoObject value, Class<T> type) {
+        return LeoTypeConverter.fromLeoObject(value, null, type);
     }
     
     /*

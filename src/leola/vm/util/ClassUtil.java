@@ -9,9 +9,14 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -463,6 +468,22 @@ public class ClassUtil {
         return (result);
     }
 
+    /**
+     * Sets the Field to the supplied value
+     * 
+     * @param instance
+     * @param field
+     * @param value
+     */
+    public static void setFieldValue(Object instance, Field field, Object value) {
+        try {
+            field.setAccessible(true);
+            field.set(instance, value);
+        } 
+        catch (IllegalArgumentException | IllegalAccessException e) {
+            LeoObject.throwAttributeAccessError(instance.getClass(), LeoString.valueOf(field.getName()));
+        }
+    }
 
     /**
      * Retrieve a data members value.
@@ -644,6 +665,91 @@ public class ClassUtil {
         return methods;
     }
 
+    
+    /**
+     * Determines if the supplied field is a "Bean" field which is defined by:
+     * 
+     * 1) is a public field OR..
+     * 2) has a get/set public method
+     * 
+     * @param aClass
+     * @param field
+     * @return true if the supplied field is a bean field
+     */
+    private static boolean isBeanField(Class<?> aClass, Field field) {
+        if(field.isAnnotationPresent(LeolaIgnore.class)) {
+            return false;
+        }
+        
+        if((field.getModifiers() & Modifier.PUBLIC) > 0) {
+            return true;
+        }
+        
+        final String fieldName = field.getName();
+        final String beanName = String.valueOf(fieldName.charAt(0)).toUpperCase() + 
+                (fieldName.length() > 1 ? fieldName.substring(1) : "");
+        
+        Method setMethod = getMethodByName(aClass, "set" + beanName, field.getType());
+        if(setMethod == null) {
+            return false;
+        }
+        
+        if(setMethod.isAnnotationPresent(LeolaIgnore.class)) {
+            return false;
+        }
+        
+        if((setMethod.getModifiers() & Modifier.PUBLIC) == 0) {
+            return false;
+        }
+        
+        Method getMethod = getMethodByName(aClass, "get" + beanName, field.getType());
+        if(getMethod == null) {
+            return false;
+        }
+        
+        if(getMethod.isAnnotationPresent(LeolaIgnore.class)) {
+            return false;
+        }
+        
+        if((getMethod.getModifiers() & Modifier.PUBLIC) == 0) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Retrieves all of the Java Bean fields. This will navigate up the class
+     * hierarchy up until the Object class is reached.
+     * 
+     * <p>
+     * This will not grab any fields annotated with {@link LeolaIgnore}.
+     * 
+     * @param aClass
+     * @return the list of all Java Bean fields
+     */
+    public static List<Field> getBeanFields(Class<?> aClass) {
+        List<Field> fields = new ArrayList<Field>();
+        try {            
+            for(Class<?> i = aClass;
+                i != null &&             
+                i != Object.class; 
+                i = i.getSuperclass() ) {
+
+                for(Field field : i.getDeclaredFields()) {                    
+                    if(isBeanField(aClass, field)) {
+                        fields.add(field);
+                    }
+                }                
+            }
+        }
+        catch(Exception e) {
+            /* ignore */
+        }
+
+        return (fields);
+    }
+    
     /**
      * Retrieves all of the fields defined in the supplied {@link Class}.  This will navigate up the class
      * hierarchy up until the Object class is reached.
@@ -735,6 +841,49 @@ public class ClassUtil {
         return null;
     }
 
+    /**
+     * Get the underlying raw {@link Class} of the supplied {@link Type}
+     * 
+     * @param type
+     * @return the Class associated with the {@link Type}
+     */
+    public static Class<?> getRawType(Type type) {
+        if (type instanceof Class<?>) {
+            return (Class<?>) type;
+        }
+        
+        if (type instanceof WildcardType) {
+            WildcardType wt = (WildcardType) type;
+            Type[] upperBounds = wt.getUpperBounds();
+            if (upperBounds != null && upperBounds.length == 1) {
+                return getRawType(upperBounds[0]);
+            }
+        }
+        
+        if (type instanceof GenericArrayType) {
+            try {
+                return Class.forName("[L" + getRawType(((GenericArrayType) type).getGenericComponentType()).getName() + ";");
+            } 
+            catch (ClassNotFoundException e) {
+                return new Object[0].getClass();
+            }
+        }
+        
+        if (type instanceof ParameterizedType) {
+            return (Class<?>) ((ParameterizedType) type).getRawType();
+        }
+        
+        if (type instanceof TypeVariable<?>) {
+            TypeVariable<?> tv = (TypeVariable<?>) type;
+            Type[] bounds = tv.getBounds();
+            if (bounds != null && bounds.length == 1) {
+                return getRawType(bounds[0]);
+            }
+        }
+        
+        return Object.class;
+    }
+    
     /**
      * Retrieves the annotation from the method, if it is not on the method, the parent
      * is checked.  This solves the "inherited annotation" problem for interfaces.
