@@ -370,7 +370,7 @@ You can also instantiate any Java object on the Leola classpath.  The LeolaLibra
 write API's tailored towards Leola.
 
 ````javascript
-var jMap = new java.lang.HashMap()
+var jMap = new java.util.HashMap()
 jMap.put("winners", "Packers")
 var winners = jMap.get("winners")
 println(winners) // prints Packers
@@ -391,7 +391,7 @@ Maven
 You can download the latest version of Leola by using these Maven coordinates:
 ```
 <dependency>
-  <groupId>leola</groupId>
+  <groupId>com.github.tonysparks.leola</groupId>
   <artifactId>leola</artifactId>
   <version>0.10.3</version>
 </dependency>
