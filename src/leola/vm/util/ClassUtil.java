@@ -299,10 +299,11 @@ public class ClassUtil {
                             currentScore--; // Nulls will be assumed for missing parameters
                         }
                         else {
+                            
                             /* Determine if the supplied argument type is assignable
                              * to the expected type
                              */
-                            if(args[j].isAssignable(types[j])) {
+                            if(args[j].isAssignable(types[j]) || types[j].equals(Object.class)) {
                                 currentScore+=3;                                    
                             }                   
                             else {

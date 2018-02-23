@@ -1501,6 +1501,21 @@ public abstract class LeoObject implements Comparable<LeoObject> {
      */
     protected static void removeInterfaceMethods(List<Method> methods) {
         if(methods.size() > 1) {
+            // This occurs when an implementation implements an interface
+            // with an overridden method, we want to grab the Overriding one
+            // and NOT the parent
+            
+            // first determine that we indeed have multiple of the same 
+            // method signature
+            String signature = methods.get(0).toGenericString();
+            for (int i = 1; i < methods.size(); i++) {
+                // if we have different method signatures, this just means
+                // we have overloaded methods
+                if(!signature.equals(methods.get(i).toGenericString())) {
+                    return;
+                }
+            }
+            
             for (int i = 0; i < methods.size(); i++) {
                 Method method = methods.get(i);
                 boolean isOverride = method.isAnnotationPresent(LeolaMethod.class) ||
