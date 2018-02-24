@@ -27,6 +27,7 @@ import leola.vm.types.LeoNativeClass;
 import leola.vm.types.LeoNativeFunction;
 import leola.vm.types.LeoNull;
 import leola.vm.types.LeoObject;
+import leola.vm.types.LeoScopedObject;
 import leola.vm.types.LeoString;
 import leola.vm.util.ArrayUtil;
 import leola.vm.util.ClassUtil;
@@ -98,20 +99,26 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
      * @return the list of names of attributes
      * @throws Exception
      */
-    public LeoArray instrospectNames(Object obj) throws Exception {
-        Class<?> aClass = obj.getClass();//obj.getValue().getClass();        
+    public LeoArray instrospectNames(LeoObject obj) throws Exception {
         LeoArray result = new LeoArray();
         
-        List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);        
-        for(Method m : methods) {            
-            result.add(LeoString.valueOf(m.getName()));
+        if(obj.isNativeClass()) {
+            Class<?> aClass = obj.getClass();//obj.getValue().getClass();        
+            
+            List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);        
+            for(Method m : methods) {            
+                result.add(LeoString.valueOf(m.getName()));
+            }
+            
+            List<Field> fields = ClassUtil.getAllDeclaredFields(aClass);
+            for(Field m : fields) {
+                result.add(LeoString.valueOf(m.getName()));
+            }
         }
-        
-        List<Field> fields = ClassUtil.getAllDeclaredFields(aClass);
-        for(Field m : fields) {
-            result.add(LeoString.valueOf(m.getName()));
+        else if(obj.isScopedObject()) {
+            LeoScopedObject scopedObj = obj.as();
+            return scopedObj.getPropertyNames();
         }
-        
         
         return result;
     }
@@ -123,30 +130,36 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
      * @return the list of attributes the object contains
      * @throws Exception
      */
-    public LeoArray instrospect(Object obj) throws Exception {
-        Class<?> aClass = obj.getClass();//obj.getValue().getClass();
-        Object jObj = obj;
+    public LeoArray instrospect(LeoObject obj) throws Exception {
+        
         LeoArray result = new LeoArray();
-        
-        List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);        
-        for(Method m : methods) {
-            m.setAccessible(true);
+        if(obj.isNativeClass()) { 
+            Class<?> aClass = obj.getClass();//obj.getValue().getClass();
+            Object jObj = obj;
             
-            boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
-            if(isStatic) {
-                result.add(new LeoNativeFunction(m, null));
+            List<Method> methods = ClassUtil.getAllDeclaredMethods(aClass);        
+            for(Method m : methods) {
+                m.setAccessible(true);
+                
+                boolean isStatic = (m.getModifiers() & Modifier.STATIC) != 0;
+                if(isStatic) {
+                    result.add(new LeoNativeFunction(m, null));
+                }
+                else {
+                    result.add(new LeoNativeFunction(m, jObj));
+                }
             }
-            else {
-                result.add(new LeoNativeFunction(m, jObj));
+            
+            List<Field> fields = ClassUtil.getAllDeclaredFields(aClass);
+            for(Field m : fields) {
+                m.setAccessible(true);
+                result.add(new LeoNativeClass(m.get(jObj)));
             }
         }
-        
-        List<Field> fields = ClassUtil.getAllDeclaredFields(aClass);
-        for(Field m : fields) {
-            m.setAccessible(true);
-            result.add(new LeoNativeClass(m.get(jObj)));
+        else if(obj.isScopedObject()) {
+            LeoScopedObject scopedObj = obj.as();
+            return scopedObj.getProperties();
         }
-        
         
         return result;
     }
@@ -337,6 +350,19 @@ public class ReflectionLeolaLibrary implements LeolaLibrary {
         }
         
         throw new LeolaRuntimeException(aClass + " is not of LeoClass type.");
+    }
+    
+    /**
+     * Get the {@link LeoNamespace} object
+     * 
+     * @param namespace
+     * @return the {@link LeoNamespace}
+     */
+    public LeoObject getNamespace(String namespace) {
+        if(namespace == null) {
+            return this.runtime.getGlobalNamespace();
+        }
+        return this.runtime.getNamespace(namespace);
     }
 }
 

@@ -170,6 +170,16 @@ public class LeoNativeClass extends LeoObject {
         return getMember(key) != null;
     }
     
+    /**
+     * If the underlying native class can be indexed into
+     * @return true if indexable
+     */
+    private boolean isIndexable() {
+        return List.class.isAssignableFrom(this.nativeClass) ||
+               Map.class.isAssignableFrom(this.nativeClass); 
+    }
+
+    
     /* (non-Javadoc)
      * @see leola.vm.types.LeoObject#$sindex(leola.vm.types.LeoObject, leola.vm.types.LeoObject)
      */
@@ -183,6 +193,13 @@ public class LeoNativeClass extends LeoObject {
             catch (Exception e) {
                 throw new LeolaRuntimeException(e);
             }
+        }
+        else if(isIndexable()) {
+            String functionName = (List.class.isAssignableFrom(this.nativeClass)) ?
+                    "set" : "put";
+                            
+            LeoObject func = getMember(LeoObject.valueOf(functionName));
+            func.call(key, other);
         }
         else {
             super.$sindex(key, other);
@@ -203,6 +220,11 @@ public class LeoNativeClass extends LeoObject {
                 throw new LeolaRuntimeException(e);
             }
         }        
+        else if(isIndexable()){            
+            LeoObject func = getMember(LeoObject.valueOf("get"));
+            return func.call(other);
+        }
+        
         return super.$index(other);        
     }
     
