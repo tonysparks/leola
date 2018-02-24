@@ -165,6 +165,9 @@ public class ASTNodeVisitorAdapter implements ASTNodeVisitor {
     public void visit(NamespaceGetExpr s) throws EvalException {}
     
     @Override
+    public void visit(NamespaceSetExpr s) throws EvalException {}
+    
+    @Override
     public void visit(ElvisGetExpr s) throws EvalException {}
     
     /* (non-Javadoc)

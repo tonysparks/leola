@@ -85,3 +85,10 @@ debug:assertEq(x:v, "vv")
 var objV = new x:Y()
 debug:assertEq(x:v, "vv")
 debug:assertEq(objV.v, "tt")
+
+
+namespace t {
+    var x = "y"
+}
+t:x = "z"
+debug:assertEq(t:x, "z")

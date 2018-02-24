@@ -1116,7 +1116,7 @@ public class VM {
                         }
                         case GET_NAMESPACE: {
                             int iname = ARGx(i);
-                            LeoNamespace ns = scope.getNamespace(constants[iname]);
+                            LeoNamespace ns = scope.lookupNamespace(constants[iname]);
                             stack[top++] = ns;
                             
                             continue;
