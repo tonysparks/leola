@@ -74,6 +74,41 @@ array[0] ^= 2
 debug:assertEq(array[0], 0)
 
 
+var array = [[1]]
+array[0][0] += 1
+debug:assertEq(array[0][0], 2)
+
+array[0][0] -= 1
+debug:assertEq(array[0][0], 1)
+
+array[0][0] *= 10
+debug:assertEq(array[0][0], 10)
+
+array[0][0] /= 10
+debug:assertEq(array[0][0], 1)
+
+array[0][0] = 5
+array[0][0] %= 2
+debug:assertEq(array[0][0], 1)
+
+array[0][0] = 1
+array[0][0] <<= 1
+debug:assertEq(array[0][0], 2)
+
+array[0][0] >>= 1
+debug:assertEq(array[0][0], 1)
+
+array[0][0] |= 2
+debug:assertEq(array[0][0], 3)
+
+array[0][0] &= 2
+debug:assertEq(array[0][0], 2)
+
+array[0][0] ^= 2
+debug:assertEq(array[0][0], 0)
+
+
+
 var map = { "x" -> 1 }
 map.x += 1
 debug:assertEq(map.x, 2)
@@ -109,3 +144,109 @@ debug:assertEq(map.x, 0)
 
 
 
+var map = { "map" -> { "x" -> 1 }}
+map.map.x += 1
+debug:assertEq(map.map.x, 2)
+
+map.map.x -= 1
+debug:assertEq(map.map.x, 1)
+
+map.map.x *= 10
+debug:assertEq(map.map.x, 10)
+
+map.map.x /= 10
+debug:assertEq(map.map.x, 1)
+
+map.map.x = 5
+map.map.x %= 2
+debug:assertEq(map.map.x, 1)
+
+map.map.x = 1
+map.map.x <<= 1
+debug:assertEq(map.map.x, 2)
+
+map.map.x >>= 1
+debug:assertEq(map.map.x, 1)
+
+map.map.x |= 2
+debug:assertEq(map.map.x, 3)
+
+map.map.x &= 2
+debug:assertEq(map.map.x, 2)
+
+map.map.x ^= 2
+debug:assertEq(map.map.x, 0)
+
+
+namespace ns {
+    var x = 1
+}
+ns:x += 1
+debug:assertEq(ns:x, 2)
+
+ns:x -= 1
+debug:assertEq(ns:x, 1)
+
+ns:x *= 10
+debug:assertEq(ns:x, 10)
+
+ns:x /= 10
+debug:assertEq(ns:x, 1)
+
+ns:x = 5
+ns:x %= 2
+debug:assertEq(ns:x, 1)
+
+ns:x = 1
+ns:x <<= 1
+debug:assertEq(ns:x, 2)
+
+ns:x >>= 1
+debug:assertEq(ns:x, 1)
+
+ns:x |= 2
+debug:assertEq(ns:x, 3)
+
+ns:x &= 2
+debug:assertEq(ns:x, 2)
+
+ns:x ^= 2
+debug:assertEq(ns:x, 0)
+
+
+namespace ns {
+    namespace ns {
+        var x = 1
+    }
+}
+ns:ns:x += 1
+debug:assertEq(ns:ns:x, 2)
+
+ns:ns:x -= 1
+debug:assertEq(ns:ns:x, 1)
+
+ns:ns:x *= 10
+debug:assertEq(ns:ns:x, 10)
+
+ns:ns:x /= 10
+debug:assertEq(ns:ns:x, 1)
+
+ns:ns:x = 5
+ns:ns:x %= 2
+debug:assertEq(ns:ns:x, 1)
+
+ns:ns:x = 1
+ns:ns:x <<= 1
+debug:assertEq(ns:ns:x, 2)
+
+ns:ns:x >>= 1
+debug:assertEq(ns:ns:x, 1)
+
+ns:ns:x |= 2
+debug:assertEq(ns:ns:x, 3)
+
+ns:ns:x &= 2
+debug:assertEq(ns:ns:x, 2)
+
+ns:x ^= 2
+debug:assertEq(ns:x, 0)

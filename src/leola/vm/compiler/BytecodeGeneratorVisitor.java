@@ -36,6 +36,7 @@ import leola.ast.LongExpr;
 import leola.ast.MapDeclExpr;
 import leola.ast.NamedParameterExpr;
 import leola.ast.NamespaceGetExpr;
+import leola.ast.NamespaceSetExpr;
 import leola.ast.NamespaceStmt;
 import leola.ast.NewExpr;
 import leola.ast.NullExpr;
@@ -114,6 +115,25 @@ public class BytecodeGeneratorVisitor implements ASTNodeVisitor {
      */
     public BytecodeEmitter getAsm() {
         return asm;
+    }
+        
+    @Override
+    public void visit(NamespaceSetExpr s) throws EvalException {
+        asm.line(s.getLineNumber());
+        
+        if(s.getOperator().getType() != TokenType.EQUALS) {
+            asm.getnamespace(s.getNamespace().getVarName());            
+            asm.getk(s.getIdentifier());
+            s.getValue().visit(this);
+            
+            visitAssignmentOperator(s.getOperator());
+        }
+        else {
+            s.getValue().visit(this);    
+        }
+        
+        asm.getnamespace(s.getNamespace().getVarName());        
+        asm.setk(s.getIdentifier());
     }
     
     @Override

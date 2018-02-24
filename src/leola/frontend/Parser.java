@@ -300,6 +300,10 @@ public class Parser {
                 SubscriptGetExpr subscriptExpr = (SubscriptGetExpr)expr;
                 return node(new SubscriptSetExpr(subscriptExpr.getObject(), subscriptExpr.getElementIndex(), value, operatorEquals));
             }
+            else if(expr instanceof NamespaceGetExpr) {
+                NamespaceGetExpr getExpr = (NamespaceGetExpr)expr;                
+                return node(new NamespaceSetExpr(getExpr.getNamespace(), getExpr.getIdentifier(), value, operatorEquals));
+            }
             
             throw error(operatorEquals, ErrorCode.INVALID_ASSIGNMENT);
         }
@@ -408,10 +412,18 @@ public class Parser {
                 expr = node(new ElvisGetExpr(expr, name.getText()));
             }
             else if(match(COLON)) {
-                if(!(expr instanceof VarExpr)) {
+                VarExpr varExpr = null;
+                if((expr instanceof VarExpr)) {
+                    varExpr = (VarExpr)expr;
+                }
+                else if(expr instanceof NamespaceGetExpr) {
+                    NamespaceGetExpr getExpr = (NamespaceGetExpr)expr;
+                    varExpr = new VarExpr(getExpr.getNamespace().getVarName() + ":" + getExpr.getIdentifier());
+                }
+                else {
                     throw error(previous(), ErrorCode.INVALID_NAMESPACE_ACCESS);
                 }
-                VarExpr varExpr = (VarExpr)expr;
+                
                 Token name = consume(IDENTIFIER, ErrorCode.MISSING_IDENTIFIER);
                 expr = node(new NamespaceGetExpr(varExpr, name.getText()));
             }
