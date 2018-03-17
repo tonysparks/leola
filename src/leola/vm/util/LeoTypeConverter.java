@@ -447,9 +447,11 @@ public class LeoTypeConverter {
                 
                 if(obj.hasObject(fieldName)) {     
                     Converter converter = getConverter(fieldType, converters);                    
-                    if(converter != null) {
-                        ClassUtil.setFieldValue(result, field, converter.fromLeoObject(field, fieldType, obj.getObject(fieldName)));
+                    if(converter == null) {
+                        converter = objectConverter;
                     }
+                    
+                    ClassUtil.setFieldValue(result, field, converter.fromLeoObject(field, fieldType, obj.getObject(fieldName)));                    
                 }
             }
             
