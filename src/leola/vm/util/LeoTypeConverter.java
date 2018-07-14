@@ -216,6 +216,17 @@ public class LeoTypeConverter {
         }
     };             
     
+    private final static Converter leolaConverter = new Converter() {
+        @Override
+        public LeoObject convert(Class<?> type, Object javaObj) {
+            return (LeoObject) javaObj;
+        }
+        
+        @Override
+        public Object fromLeoObject(Field field, Class<?> type, LeoObject leoObj) {             
+            return leoObj;
+        }
+    };
     
     private final static Converter listConverter = new Converter() {
         @Override
@@ -358,6 +369,22 @@ public class LeoTypeConverter {
         
         FROM_CONVERTERS.put(List.class, listConverter);
         FROM_CONVERTERS.put(Map.class, mapConverter);
+        
+        Converter leolaConverter = new Converter() {
+            
+            
+            @Override
+            public LeoObject convert(Class<?> type, Object javaObj) {
+                return LeoObject.valueOf(javaObj);
+            }
+            
+            @Override
+            public Object fromLeoObject(Field field, Class<?> type, LeoObject leoObj) {
+                return leoObj;
+            }            
+        };
+        
+        FROM_CONVERTERS.put(LeoObject.class, leolaConverter);
     }
     
     /**
@@ -407,13 +434,16 @@ public class LeoTypeConverter {
         if(converter == null) {
             converter = FROM_CONVERTERS.get(type);
         }
-        
-        if(List.class.isAssignableFrom(type)) {
+             
+        if(LeoObject.class.isAssignableFrom(type)) {
+            converter = leolaConverter;
+        }
+        else if(List.class.isAssignableFrom(type)) {
             converter = listConverter;
         }
         else if(Map.class.isAssignableFrom(type)) {
             converter = mapConverter;
-        }  
+        } 
         
         return converter;
     }
