@@ -303,6 +303,26 @@ public class LeoTypeConverter {
         }
     };
     
+    private final static Converter enumConverter = new Converter() {
+        @Override
+        public LeoObject convert(Class<?> type, Object javaObj) {        
+            return LeoObject.valueOf(javaObj.toString());
+        }
+      
+        @Override
+        public Object fromLeoObject(Field field, Class<?> type, LeoObject leoObj) {                                    
+            Object[] constants = type.getEnumConstants();
+            String name = leoObj.toString();
+            for(int i = 0; i < constants.length; i++) {
+                if(constants[i].toString().equals(name)) {
+                    return constants[i];
+                }
+            }
+            
+            return null;
+        }
+    };
+    
     private static final Map<Class<?>, Converter> FROM_CONVERTERS = new HashMap<Class<?>, LeoTypeConverter.Converter>(CONVERTERS);
     static {
         Converter charConverter = new Converter() {
@@ -444,6 +464,9 @@ public class LeoTypeConverter {
         else if(Map.class.isAssignableFrom(type)) {
             converter = mapConverter;
         } 
+        else if(type.isEnum()) {
+            converter = enumConverter;
+        }
         
         return converter;
     }

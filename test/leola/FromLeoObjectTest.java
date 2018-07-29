@@ -238,4 +238,20 @@ public class FromLeoObjectTest {
         //assertEquals(testAArray.get(1), );
     }
 
+    public static enum EnumType {
+        A,B
+    }
+    
+    public static class TestEnum {
+        public EnumType e;
+    }
+    
+    @Test
+    public void testEnum() {
+        LeoMap map = new LeoMap();
+        map.putByString("e", LeoObject.valueOf("A"));
+        
+        TestEnum e = LeoObject.fromLeoObject(map, TestEnum.class);
+        assertEquals(EnumType.A, e.e);
+    }
 }
