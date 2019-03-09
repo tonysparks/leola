@@ -1,0 +1,46 @@
+var n = 1_000
+debug:assertEq(n, 1000)
+
+var x = 1000_
+debug:assertEq(x, 1000)
+
+var y = 1000_0
+debug:assertEq(y, 10000)
+
+
+var z = 1000_L
+debug:assertEq(z, 1000L)
+
+var w = 1000L
+debug:assertEq(w, 1000)
+
+var v = 1000.
+debug:assertEq(v, 1000.0)
+
+var a = 0.1
+debug:assertEq(a, 0.1)
+
+var b = 0xff_ff
+debug:assertEq(b, 0xffff)
+
+var c = 0x_ff_ff
+debug:assertEq(c, 0xffff)
+
+var d = 0x_ff_ff_
+debug:assertEq(d, 0xffff)
+
+
+var e = 0_xff_ff
+debug:assertEq(e, 0xffff)
+
+var f = 0x0ff_ff
+debug:assertEq(f, 0xffff)
+
+var g = 10_00.10
+debug:assertEq(g, 1000.10)
+
+var h = 10_00.1_0
+debug:assertEq(h, 1000.10)
+
+var i = 0_00.10
+debug:assertEq(i, 0.10)

@@ -9,7 +9,7 @@
     
 	<groupId>com.github.tonysparks.leola</groupId>
 	<artifactId>leola</artifactId>
-	<version>0.10.3</version>
+	<version>0.10.4</version>
 
 	<description>
         The Leola Programming Language.  It is an embeddable (or standalone) scripting language for the JVM.

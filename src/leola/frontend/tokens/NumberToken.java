@@ -68,9 +68,11 @@ public class NumberToken extends Token {
                 currentChar = this.source.nextChar(); // consume decimal point
 
                 // Collect the digits of the fraction part of the number.
-                fractionDigits = unsignedIntegerDigits(textBuffer);
-                if (type == ERROR) {
-                    return;
+                if(Character.isDigit(currentChar)) {
+                    fractionDigits = unsignedIntegerDigits(textBuffer);
+                    if (type == ERROR) {
+                        return;
+                    }
                 }
             }
         }
@@ -150,19 +152,33 @@ public class NumberToken extends Token {
         // Extract the digits.
         StringBuilder digits = new StringBuilder();
         while (Character.isDigit(currentChar) || 
+               ('_' == currentChar) ||
                ('x' == currentChar && !isHex) || 
                (isHex && isHexDigit(currentChar))) {
 
             if ('x' == currentChar) {
                 isHex = true;
+            }            
+            else if ('_' == currentChar) {
+                currentChar = this.source.nextChar(); // consume _
+                continue;
             }
 
             textBuffer.append(currentChar);
             digits.append(currentChar);
             currentChar = this.source.nextChar(); // consume digit
         }
+        
+        String digitsStr = digits.toString();
+        if(isHex) {
+            if(!digitsStr.startsWith("0x")) {
+                type = ERROR;
+                value = INVALID_NUMBER;
+                return null;    
+            }
+        }
 
-        return digits.toString();
+        return digitsStr;
     }
 
     /**
