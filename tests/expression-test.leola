@@ -24,6 +24,19 @@ debug:assertEq(x, -1)
 x = 5 * (2+2) / 2
 debug:assertEq(x, 10)
 
+x = 1 << 0
+debug:assertEq(x, 1)
+
+x = 1 << 2
+debug:assertEq(x, 4)
+
+x = 1 >> 0
+debug:assertEq(x, 1)
+
+x = 4 >> 2
+debug:assertEq(x, 1)
+
+x = 10
 debug:assertTrue( x == 10 )
 debug:assertTrue( x != -10 )
 debug:assertTrue( x > 1 )
