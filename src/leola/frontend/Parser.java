@@ -348,9 +348,21 @@ public class Parser {
     }
     
     private Expr comparison() {
-        Expr expr = term();
+        Expr expr = bitShift();
         
         while(match(GREATER_THAN, GREATER_EQUALS, LESS_THAN, LESS_EQUALS)) {
+            Token operator = previous();
+            Expr right = bitShift();
+            expr = node(new BinaryExpr(expr, right, operator));
+        }
+        
+        return expr;
+    }
+    
+    private Expr bitShift() {
+        Expr expr = term();
+        
+        while(match(BIT_SHIFT_LEFT, BIT_SHIFT_RIGHT)) {
             Token operator = previous();
             Expr right = term();
             expr = node(new BinaryExpr(expr, right, operator));
